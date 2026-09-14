@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
 
@@ -19,7 +18,7 @@ class BillboardHeroBanner extends StatefulWidget {
     this.onPlayTap,
     this.onDetailsTap,
     this.height,
-    this.autoScroll = true,
+    this.autoScroll = false,
   });
 
   @override
@@ -30,8 +29,6 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
   late final PageController _pageController;
   int _currentPage = 0;
   Timer? _autoScrollTimer;
-  double _playScale = 1.0;
-  double _infoScale = 1.0;
 
   @override
   void initState() {
@@ -71,7 +68,7 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
     }
 
     final bannerHeight =
-        widget.height ?? MediaQuery.of(context).size.height * 0.60;
+        widget.height ?? MediaQuery.of(context).size.height * 0.42;
 
     return SizedBox(
       height: bannerHeight,
@@ -153,116 +150,51 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
           bottom: 24,
           left: 20,
           right: 20,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (index < 10) ...[
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.title,
+                      style: context.auraText.displayHero.copyWith(fontSize: 26),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Gritty • Psychological • Mystery',
+                      style: context.auraText.caption.copyWith(
+                        color: const Color(0xFFE5E5E5),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () => widget.onDetailsTap?.call(item),
+                child: Container(
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.accentPink,
-                    borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
-                  ),
-                  child: Text(
-                    'TOP 10',
-                    style: context.auraText.caption.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
+                    color: Colors.black.withValues(alpha: 0.55),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0x33FFFFFF),
+                      width: 1,
                     ),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline_rounded,
+                    color: Colors.white,
+                    size: 22,
                   ),
                 ),
-              ],
-              Text(
-                item.title,
-                style: context.auraText.displayHero.copyWith(fontSize: 28),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Gritty • Psychological • Mystery',
-                style: context.auraText.caption.copyWith(
-                  color: const Color(0xFFE5E5E5),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTapDown: (_) => setState(() => _playScale = 0.96),
-                    onTapUp: (_) {
-                      setState(() => _playScale = 1.0);
-                      widget.onPlayTap?.call(item);
-                    },
-                    onTapCancel: () => setState(() => _playScale = 1.0),
-                    child: Transform.scale(
-                      scale: _playScale,
-                      child: Container(
-                        height: 42,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF),
-                          borderRadius:
-                              BorderRadius.circular(AppTokens.radiusSmall),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.play_arrow_rounded,
-                                color: Color(0xFF000000), size: 24),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Play',
-                              style: context.auraText.itemTitle.copyWith(
-                                color: const Color(0xFF000000),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTapDown: (_) => setState(() => _infoScale = 0.96),
-                    onTapUp: (_) {
-                      setState(() => _infoScale = 1.0);
-                      widget.onDetailsTap?.call(item);
-                    },
-                    onTapCancel: () => setState(() => _infoScale = 1.0),
-                    child: Transform.scale(
-                      scale: _infoScale,
-                      child: Container(
-                        height: 42,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: const Color(0x33FFFFFF),
-                          borderRadius:
-                              BorderRadius.circular(AppTokens.radiusSmall),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.info_outline_rounded,
-                                color: Color(0xFFFFFFFF), size: 20),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Info',
-                              style: context.auraText.itemTitle.copyWith(
-                                color: const Color(0xFFFFFFFF),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

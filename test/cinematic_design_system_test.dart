@@ -118,8 +118,7 @@ void main() {
       );
 
       expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.text('Play'), findsOneWidget);
-      expect(find.text('Info'), findsOneWidget);
+      expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
     });
 
     testWidgets('HorizontalContentShelf renders section header and posters', (
