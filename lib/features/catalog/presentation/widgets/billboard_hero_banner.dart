@@ -68,7 +68,7 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
     }
 
     final bannerHeight =
-        widget.height ?? MediaQuery.of(context).size.height * 0.42;
+        widget.height ?? MediaQuery.of(context).size.height * 0.55;
 
     return SizedBox(
       height: bannerHeight,
@@ -116,6 +116,11 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
 
   Widget _buildHeroSlide(
       BuildContext context, MediaItem item, double height, int index) {
+    final primaryGenre =
+        item.genres.isNotEmpty ? item.genres.first.name : 'Movie';
+    final year = item.releaseYear;
+    final metadataText = year.isNotEmpty ? '$primaryGenre  •  $year' : primaryGenre;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -150,49 +155,63 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
           bottom: 24,
           left: 20,
           right: 20,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item.title,
-                      style: context.auraText.displayHero.copyWith(fontSize: 26),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.title,
+                    style: context.auraText.displayHero.copyWith(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                      shadows: const [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 10.0,
+                          color: Colors.black87,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Gritty • Psychological • Mystery',
-                      style: context.auraText.caption.copyWith(
-                        color: const Color(0xFFE5E5E5),
-                        fontWeight: FontWeight.w500,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    metadataText,
+                    style: context.auraText.caption.copyWith(
+                      color: const Color(0xFFE5E5E5),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              Positioned(
+                right: 0,
+                child: GestureDetector(
+                  onTap: () => widget.onDetailsTap?.call(item),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0x33FFFFFF),
+                        width: 1,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () => widget.onDetailsTap?.call(item),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0x33FFFFFF),
-                      width: 1,
+                    child: const Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.info_outline_rounded,
-                    color: Colors.white,
-                    size: 22,
                   ),
                 ),
               ),
