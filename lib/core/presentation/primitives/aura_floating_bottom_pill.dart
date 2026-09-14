@@ -95,19 +95,12 @@ class AuraFloatingBottomPill extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(10.0),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.accentPink.withValues(alpha: 0.15)
-              : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: AuraIcon(
           icon,
-          color: isSelected ? AppColors.accentPink : AppColors.textPrimary,
-          size: 22,
+          color: isSelected ? Colors.white : AppColors.textSecondary,
+          size: 24,
           fill: isSelected ? 1.0 : 0.0,
         ),
       ),
