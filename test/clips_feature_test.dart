@@ -228,7 +228,6 @@ void main() {
       expect(find.text('4K HDR'), findsOneWidget);
       expect(find.text('MOVIE'), findsOneWidget);
       expect(find.text('My List'), findsOneWidget);
-      expect(find.text('Rate'), findsOneWidget);
       expect(find.text('Share'), findsOneWidget);
       expect(find.text('Audio'), findsOneWidget);
       expect(find.text('Play'), findsOneWidget);

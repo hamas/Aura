@@ -163,22 +163,6 @@ class ClipPageItem extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(height: 18),
-
-                  // Rate / Like Button
-                  _buildRailAction(
-                    icon: AppIcons.thumbUp,
-                    fill: isLiked ? 1.0 : 0.0,
-                    iconColor: isLiked ? AppColors.accentPink : Colors.white,
-                    label: 'Rate',
-                    onTap: () {
-                      context
-                          .read<ClipsBloc>()
-                          .add(ToggleClipLikeEvent(clip.id));
-                    },
-                  ),
-                  const SizedBox(height: 18),
-
                   // Share Sheet Button (Forward Icon)
                   _buildRailAction(
                     icon: AppIcons.forward,
