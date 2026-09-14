@@ -115,7 +115,8 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     }
   }
 
-  double get _currentOpacity {
+  @visibleForTesting
+  double get currentOpacity {
     if (widget.opacity != null) {
       return widget.opacity!.clamp(0.0, 1.0);
     }
@@ -172,12 +173,11 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
   @override
   Widget build(BuildContext context) {
     final canPop = _evaluateCanPop(context);
-    final opacity = _currentOpacity;
     final topPadding = MediaQuery.of(context).padding.top;
 
-    final topAlpha = (0.51 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
-    final midAlpha = (0.21 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
-    final bottomAlpha = opacity.clamp(0.0, 1.0);
+    const topAlpha = 0.51;
+    const midAlpha = 0.21;
+    const bottomAlpha = 0.0;
 
     return ClipRect(
       child: Stack(
@@ -219,15 +219,6 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
                   ],
                   stops: const [0.0, 0.60, 1.0],
                 ),
-                boxShadow: opacity > 0.4
-                    ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
               ),
             ),
           ),
