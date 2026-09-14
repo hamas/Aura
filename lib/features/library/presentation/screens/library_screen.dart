@@ -9,6 +9,8 @@ import '../bloc/library_bloc.dart';
 import '../bloc/library_event.dart';
 import '../bloc/library_state.dart';
 
+import 'package:aura/features/downloads/presentation/screens/downloads_screen.dart';
+
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
 
@@ -23,7 +25,7 @@ class _LibraryScreenState extends State<LibraryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     context.read<LibraryBloc>().add(LoadLibraryEvent());
   }
 
@@ -44,9 +46,12 @@ class _LibraryScreenState extends State<LibraryScreen>
           indicatorColor: AppTheme.primaryAccent,
           labelColor: AppTheme.primaryAccent,
           unselectedLabelColor: AppTheme.textMuted,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: 'Continue Watching'),
             Tab(text: 'Watchlist'),
+            Tab(text: 'Downloads'),
             Tab(text: 'History'),
           ],
         ),
@@ -66,6 +71,7 @@ class _LibraryScreenState extends State<LibraryScreen>
             children: [
               _buildContinueWatchingList(context, state.continueWatching),
               _buildWatchlistGrid(context, state.watchlist),
+              const DownloadsScreen(),
               _buildHistoryList(context, state.history),
             ],
           );

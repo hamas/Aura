@@ -14,6 +14,10 @@ import '../features/catalog/presentation/bloc/catalog_bloc.dart';
 import '../features/clips/data/repositories/clips_repository_impl.dart';
 import '../features/clips/domain/repositories/clips_repository.dart';
 import '../features/clips/presentation/bloc/clips_bloc.dart';
+import '../features/downloads/data/repositories/download_repository_impl.dart';
+import '../features/downloads/domain/repositories/download_repository.dart';
+import '../features/downloads/presentation/bloc/downloads_bloc.dart';
+import '../features/downloads/presentation/bloc/downloads_event.dart';
 import '../features/library/data/repositories/library_repository_impl.dart';
 import '../features/library/domain/repositories/library_repository.dart';
 import '../features/library/presentation/bloc/library_bloc.dart';
@@ -37,6 +41,7 @@ class AuraApp extends StatelessWidget {
     );
     final ClipsRepository clipsRepository =
         ClipsRepositoryImpl(catalogRepository: catalogRepository);
+    final DownloadRepository downloadRepository = DownloadRepositoryImpl();
 
     return MultiRepositoryProvider(
       providers: [
@@ -45,6 +50,7 @@ class AuraApp extends StatelessWidget {
         RepositoryProvider<AddonRepository>.value(value: addonRepository),
         RepositoryProvider<LibraryRepository>.value(value: libraryRepository),
         RepositoryProvider<ClipsRepository>.value(value: clipsRepository),
+        RepositoryProvider<DownloadRepository>.value(value: downloadRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -65,6 +71,11 @@ class AuraApp extends StatelessWidget {
           ),
           BlocProvider<ClipsBloc>(
             create: (context) => ClipsBloc(clipsRepository: clipsRepository),
+          ),
+          BlocProvider<DownloadsBloc>(
+            create: (context) =>
+                DownloadsBloc(downloadRepository: downloadRepository)
+                  ..add(LoadDownloadsEvent()),
           ),
         ],
         child: MaterialApp.router(

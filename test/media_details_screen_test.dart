@@ -9,6 +9,9 @@ import 'package:aura/features/catalog/domain/entities/season_episode.dart';
 import 'package:aura/features/catalog/domain/repositories/catalog_repository.dart';
 import 'package:aura/features/catalog/presentation/bloc/catalog_bloc.dart';
 import 'package:aura/features/catalog/presentation/screens/media_details_screen.dart';
+import 'package:aura/features/downloads/domain/entities/download_task.dart';
+import 'package:aura/features/downloads/domain/repositories/download_repository.dart';
+import 'package:aura/features/downloads/presentation/bloc/downloads_bloc.dart';
 import 'package:aura/features/library/domain/entities/library_item.dart';
 import 'package:aura/features/library/domain/repositories/library_repository.dart';
 import 'package:aura/features/library/presentation/bloc/library_bloc.dart';
@@ -117,6 +120,29 @@ class FakeAddonRepository implements AddonRepository {
       [];
 }
 
+class FakeDownloadRepository implements DownloadRepository {
+  @override
+  Future<List<DownloadTask>> getAllDownloads() async => [];
+  @override
+  Stream<List<DownloadTask>> watchDownloads() => const Stream.empty();
+  @override
+  Future<void> startDownload(DownloadTask task) async {}
+  @override
+  Future<void> pauseDownload(String taskId) async {}
+  @override
+  Future<void> resumeDownload(String taskId) async {}
+  @override
+  Future<void> cancelDownload(String taskId) async {}
+  @override
+  Future<void> deleteDownload(String taskId) async {}
+  @override
+  Future<void> clearAllDownloads() async {}
+  @override
+  Future<int> getTotalStorageUsage() async => 0;
+  @override
+  Future<String> getSandboxedVaultDirectory() async => '/mock/vault';
+}
+
 void main() {
   group('MediaDetailsScreen Widget Tests', () {
     const testCast = [
@@ -181,6 +207,7 @@ void main() {
       );
       final libraryRepo = FakeLibraryRepository();
       final addonRepo = FakeAddonRepository();
+      final downloadRepo = FakeDownloadRepository();
 
       return MultiBlocProvider(
         providers: [
@@ -192,6 +219,9 @@ void main() {
           ),
           BlocProvider<AddonBloc>(
             create: (_) => AddonBloc(addonRepository: addonRepo),
+          ),
+          BlocProvider<DownloadsBloc>(
+            create: (_) => DownloadsBloc(downloadRepository: downloadRepo),
           ),
         ],
         child: MaterialApp(

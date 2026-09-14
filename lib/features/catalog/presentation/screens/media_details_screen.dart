@@ -13,6 +13,10 @@ import '../../../addons/domain/entities/addon_stream.dart';
 import '../../../addons/presentation/bloc/addon_bloc.dart';
 import '../../../addons/presentation/bloc/addon_event.dart';
 import '../../../addons/presentation/bloc/addon_state.dart';
+import '../../../downloads/domain/entities/download_task.dart';
+import '../../../downloads/presentation/bloc/downloads_bloc.dart';
+import '../../../downloads/presentation/bloc/downloads_event.dart';
+import '../../../downloads/presentation/widgets/download_action_button.dart';
 import '../../../engine/http_debrid_engine.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
@@ -189,6 +193,161 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           ),
         );
       }
+    }
+  }
+
+  void _initiateDownload(
+    BuildContext context,
+    MediaItem item, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) {
+    final effectiveSeason = item.type == MediaType.series
+        ? (seasonNumber ?? _selectedSeasonNumber)
+        : null;
+    final effectiveEpisode =
+        item.type == MediaType.series ? (episodeNumber ?? 1) : null;
+
+    final stremioId = item.getStremioId(
+      season: effectiveSeason,
+      episode: effectiveEpisode,
+    );
+
+    final addonBloc = context.read<AddonBloc>();
+    addonBloc.add(FetchStreamsForMediaEvent(
+      type: item.type == MediaType.movie ? 'movie' : 'series',
+      id: stremioId,
+    ));
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return BlocBuilder<AddonBloc, AddonState>(
+          bloc: addonBloc,
+          builder: (context, addonState) {
+            return StreamPickerModal(
+              streams: addonState.resolvedStreams,
+              isLoading: addonState.isLoadingStreams,
+              onStreamSelected: (stream) => _startDownloadWithStream(
+                context,
+                item,
+                stream,
+                seasonNumber: effectiveSeason,
+                episodeNumber: effectiveEpisode,
+                episodeTitle: episodeTitle,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _startDownloadWithStream(
+    BuildContext context,
+    MediaItem item,
+    AddonStream stream, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) async {
+    final engine = HttpDebridEngine();
+    try {
+      final rawTarget = stream.url ?? stream.infoHash ?? '';
+      final resolved = await engine.resolveStream(
+        rawUrlOrInfoHash: rawTarget,
+        extraParams: {
+          'title': stream.title ?? item.title,
+          'quality': stream.resolution,
+          'headers': stream.headers,
+        },
+      );
+
+      if (context.mounted) {
+        final taskId = item.type == MediaType.movie
+            ? 'movie_${item.id}'
+            : 'series_${item.id}_s${seasonNumber ?? 1}_e${episodeNumber ?? 1}';
+
+        final task = DownloadTask(
+          id: taskId,
+          mediaId: item.id,
+          title: item.title,
+          mediaType: item.type,
+          seasonNumber: seasonNumber,
+          episodeNumber: episodeNumber,
+          episodeTitle: episodeTitle,
+          posterPath: item.posterPath,
+          backdropPath: item.backdropPath,
+          downloadUrl: resolved.streamUrl,
+          localFilePath: '', // Generated sandboxed path by repository
+          createdAt: DateTime.now(),
+        );
+
+        context.read<DownloadsBloc>().add(StartDownloadEvent(task));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.surfaceElevated,
+            content: Text(
+              item.type == MediaType.series && episodeNumber != null
+                  ? 'Started downloading Episode $episodeNumber...'
+                  : 'Started downloading "${item.title}"...',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.errorAccent,
+            content: Text('Failed to start download: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _playOfflineDirect(
+    BuildContext context,
+    MediaItem item, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) {
+    final downloadsBloc = context.read<DownloadsBloc>();
+    final task = downloadsBloc.state.getMediaTask(
+      mediaId: item.id,
+      mediaType: item.type,
+      seasonNumber: seasonNumber,
+      episodeNumber: episodeNumber,
+    );
+
+    if (task != null && task.isCompleted) {
+      context.push(
+        '/player',
+        extra: {
+          'streamUrl': task.localFilePath,
+          'title': item.title,
+          'subtitle': item.type == MediaType.series &&
+                  seasonNumber != null &&
+                  episodeNumber != null
+              ? (episodeTitle != null && episodeTitle.isNotEmpty
+                  ? 'S$seasonNumber:E$episodeNumber • $episodeTitle'
+                  : 'Season $seasonNumber Episode $episodeNumber')
+              : 'Offline Download',
+          'mediaId': item.id.toString(),
+          'posterPath': item.posterPath,
+          'backdropPath': item.backdropPath,
+          'type': item.type.name,
+          'seasonNumber': seasonNumber,
+          'episodeNumber': episodeNumber,
+        },
+      );
     }
   }
 
@@ -525,7 +684,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
 
         // Trailer / Secondary Button (Glass)
         Expanded(
@@ -556,6 +715,15 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             ),
           ),
         ),
+        if (item.type == MediaType.movie) ...[
+          const SizedBox(width: 8),
+          DownloadActionButton(
+            mediaId: item.id,
+            mediaType: MediaType.movie,
+            onStartDownload: () => _initiateDownload(context, item),
+            onPlayOffline: () => _playOfflineDirect(context, item),
+          ),
+        ],
       ],
     );
   }
@@ -873,6 +1041,30 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                   ),
                 ],
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Download Action for Episode
+          DownloadActionButton(
+            mediaId: item.id,
+            mediaType: MediaType.series,
+            seasonNumber: ep.seasonNumber,
+            episodeNumber: ep.episodeNumber,
+            iconSize: 20,
+            onStartDownload: () => _initiateDownload(
+              context,
+              item,
+              seasonNumber: ep.seasonNumber,
+              episodeNumber: ep.episodeNumber,
+              episodeTitle: ep.name,
+            ),
+            onPlayOffline: () => _playOfflineDirect(
+              context,
+              item,
+              seasonNumber: ep.seasonNumber,
+              episodeNumber: ep.episodeNumber,
+              episodeTitle: ep.name,
             ),
           ),
         ],

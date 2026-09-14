@@ -8,6 +8,7 @@ import '../../features/catalog/presentation/screens/detail_screen.dart';
 import '../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
 import '../../features/clips/presentation/screens/clips_screen.dart';
+import '../../features/downloads/presentation/screens/downloads_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/player/data/services/media_kit_player_service.dart';
 import '../../features/player/presentation/bloc/player_bloc.dart';
@@ -55,6 +56,12 @@ class AppRouter {
             path: '/library',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: LibraryScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/downloads',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: DownloadsScreen(),
             ),
           ),
           GoRoute(
