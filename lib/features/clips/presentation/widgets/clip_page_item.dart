@@ -1,5 +1,6 @@
-import 'package:aura/core/presentation/primitives/aura_badge.dart';
+import 'package:aura/core/presentation/primitives/primitives.dart';
 import 'package:aura/core/theme/app_colors.dart';
+import 'package:aura/core/theme/app_icons.dart';
 import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/core/theme/app_typography.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
@@ -26,8 +27,8 @@ class ClipPageItem extends StatelessWidget {
     super.key,
     required this.clip,
     required this.isActive,
-    required this.isMuted,
-    required this.isLiked,
+    this.isMuted = false,
+    this.isLiked = false,
     required this.onPlayTap,
     required this.onShareTap,
   });
@@ -39,7 +40,7 @@ class ClipPageItem extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Full-Bleed High-Res Visual Backdrop
+        // 1. Full-Bleed 9:16 Video Canvas / Backdrop
         clip.backdropPath != null
             ? CachedNetworkImage(
                 imageUrl: clip.fullBackdropUrl,
@@ -53,50 +54,71 @@ class ClipPageItem extends StatelessWidget {
               )
             : Container(color: AppColors.surfaceBackground),
 
-        // 2. Linear Top Scrim (Non-blur, 60fps native gradient)
+        // 2. High-Performance Dark Scrim Overlays (Top and Bottom)
         const Positioned(
           top: 0,
           left: 0,
           right: 0,
-          height: 140,
+          height: 120,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xCC141414),
-                  Color(0x00141414),
+                  Color(0xD9000000),
+                  Colors.transparent,
                 ],
               ),
             ),
           ),
         ),
-
-        // 3. Linear Bottom Scrim (Seamless transition into slate canvas)
         const Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          height: 380,
+          height: 320,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
                 colors: [
-                  Color(0x00141414),
-                  Color(0x80141414),
-                  Color(0xF0141414),
-                  Color(0xFF141414),
+                  Color(0xF2141414),
+                  Color(0x99141414),
+                  Colors.transparent,
                 ],
-                stops: [0.0, 0.35, 0.75, 1.0],
               ),
             ),
           ),
         ),
 
-        // 4. Right Floating Action Rail
+        // 3. Top Header Label: "Clips"
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          left: 20,
+          child: Row(
+            children: [
+              const AuraIcon(
+                AppIcons.clips,
+                color: AppColors.accentPink,
+                size: 20,
+                fill: 1.0,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'CLIPS',
+                style: AppTypography.sectionTitle.copyWith(
+                  letterSpacing: 2.0,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 4. Vertical Interactive Action Rail (Right Side)
         Positioned(
           right: 14,
           bottom: 120,
@@ -111,8 +133,9 @@ class ClipPageItem extends StatelessWidget {
                   // Add to My List Toggle
                   _buildRailAction(
                     icon: isInWatchlist
-                        ? Icons.bookmark_added_rounded
-                        : Icons.bookmark_add_outlined,
+                        ? AppIcons.bookmarkAdded
+                        : AppIcons.bookmarkAdd,
+                    fill: isInWatchlist ? 1.0 : 0.0,
                     iconColor:
                         isInWatchlist ? AppColors.accentPink : Colors.white,
                     label: 'My List',
@@ -146,9 +169,8 @@ class ClipPageItem extends StatelessWidget {
 
                   // Rate / Like Button
                   _buildRailAction(
-                    icon: isLiked
-                        ? Icons.thumb_up_alt_rounded
-                        : Icons.thumb_up_alt_outlined,
+                    icon: AppIcons.thumbUp,
+                    fill: isLiked ? 1.0 : 0.0,
                     iconColor: isLiked ? AppColors.accentPink : Colors.white,
                     label: 'Rate',
                     onTap: () {
@@ -161,7 +183,7 @@ class ClipPageItem extends StatelessWidget {
 
                   // Share Sheet Button
                   _buildRailAction(
-                    icon: Icons.share_rounded,
+                    icon: AppIcons.share,
                     label: 'Share',
                     onTap: onShareTap,
                   ),
@@ -169,9 +191,7 @@ class ClipPageItem extends StatelessWidget {
 
                   // Audio Mute Toggle
                   _buildRailAction(
-                    icon: isMuted
-                        ? Icons.volume_off_rounded
-                        : Icons.volume_up_rounded,
+                    icon: isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
                     label: isMuted ? 'Muted' : 'Audio',
                     onTap: () {
                       context.read<ClipsBloc>().add(ToggleClipMuteEvent());
@@ -256,10 +276,11 @@ class ClipPageItem extends StatelessWidget {
                   elevation: 4,
                 ),
                 onPressed: onPlayTap,
-                icon: const Icon(
-                  Icons.play_arrow_rounded,
+                icon: const AuraIcon(
+                  AppIcons.play,
                   size: 22,
                   color: Color(0xFF0E0F12),
+                  fill: 1.0,
                 ),
                 label: const Text(
                   'Play',
@@ -283,6 +304,7 @@ class ClipPageItem extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
     Color iconColor = Colors.white,
+    double fill = 0.0,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -299,10 +321,11 @@ class ClipPageItem extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Icon(
+            child: AuraIcon(
               icon,
               color: iconColor,
               size: 24,
+              fill: fill,
             ),
           ),
           const SizedBox(height: 4),

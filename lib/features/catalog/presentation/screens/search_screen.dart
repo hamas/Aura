@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../bloc/catalog_bloc.dart';
 import '../bloc/catalog_event.dart';
 import '../bloc/catalog_state.dart';
@@ -19,6 +20,13 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   Timer? _debounceTimer;
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
   void _onSearchChanged(String query) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () {
@@ -26,13 +34,6 @@ class _SearchScreenState extends State<SearchScreen> {
         context.read<CatalogBloc>().add(SearchQueryChangedEvent(query));
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _debounceTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -53,11 +54,12 @@ class _SearchScreenState extends State<SearchScreen> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search movies, series, anime...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
+                prefixIcon:
+                    const AuraIcon(AppIcons.search, color: AppTheme.textMuted),
                 suffixIcon: _controller.text.isNotEmpty
                     ? IconButton(
-                        icon:
-                            const Icon(Icons.clear, color: AppTheme.textMuted),
+                        icon: const AuraIcon(AppIcons.close,
+                            color: AppTheme.textMuted),
                         onPressed: () {
                           _controller.clear();
                           _onSearchChanged('');
@@ -84,7 +86,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.movie_filter_outlined,
+                        AuraIcon(AppIcons.movie,
                             size: 64, color: AppTheme.textMuted),
                         SizedBox(height: 12),
                         Text(
@@ -134,12 +136,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                   placeholder: (_, __) => Container(
                                       color: AppTheme.surfaceElevated),
                                   errorWidget: (_, __, ___) => const Center(
-                                    child: Icon(Icons.movie,
+                                    child: AuraIcon(AppIcons.movie,
                                         color: AppTheme.textMuted),
                                   ),
                                 )
                               : const Center(
-                                  child: Icon(Icons.movie,
+                                  child: AuraIcon(AppIcons.movie,
                                       color: AppTheme.textMuted),
                                 ),
                         ),

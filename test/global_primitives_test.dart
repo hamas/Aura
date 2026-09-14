@@ -106,7 +106,7 @@ void main() {
 
       expect(find.text('Trending Movies'), findsOneWidget);
       expect(find.text('Top 10 this week'), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.chevronRight), findsOneWidget);
 
       await tester.tap(find.byType(AuraSectionHeader));
       expect(headerTapped, isTrue);
@@ -127,7 +127,7 @@ void main() {
       );
 
       expect(find.text('8.9'), findsOneWidget);
-      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.star), findsOneWidget);
     });
 
     testWidgets('AuraBadge.quality renders quality tag', (tester) async {

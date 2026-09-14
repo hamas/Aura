@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_icons.dart';
 import '../../theme/app_typography.dart';
+import 'aura_icon.dart';
 
 /// Global section header with title, optional subtitle, and interactive trailing action.
 class AuraSectionHeader extends StatelessWidget {
@@ -49,8 +51,8 @@ class AuraSectionHeader extends StatelessWidget {
                       ),
                       if (showChevron && onTap != null) ...[
                         const SizedBox(width: 4),
-                        const Icon(
-                          Icons.chevron_right_rounded,
+                        const AuraIcon(
+                          AppIcons.chevronRight,
                           color: AppColors.accentPink,
                           size: 20,
                         ),

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/presentation/primitives/aura_badge.dart';
-import '../../../../core/presentation/primitives/aura_card.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../library/domain/entities/library_item.dart';
@@ -66,8 +66,8 @@ class ContinueWatchingCard extends StatelessWidget {
                         errorWidget: (_, __, ___) => Container(
                           color: AppColors.surfaceElevated,
                           child: const Center(
-                            child: Icon(
-                              Icons.play_circle_outline,
+                            child: AuraIcon(
+                              AppIcons.clips,
                               color: AppColors.textMuted,
                               size: 32,
                             ),
@@ -77,8 +77,8 @@ class ContinueWatchingCard extends StatelessWidget {
                     : Container(
                         color: AppColors.surfaceElevated,
                         child: const Center(
-                          child: Icon(
-                            Icons.play_circle_outline,
+                          child: AuraIcon(
+                            AppIcons.clips,
                             color: AppColors.textMuted,
                             size: 32,
                           ),
@@ -103,9 +103,10 @@ class ContinueWatchingCard extends StatelessWidget {
                         width: 1.5,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
+                    child: const AuraIcon(
+                      AppIcons.play,
                       color: Colors.white,
+                      fill: 1.0,
                       size: 22,
                     ),
                   ),

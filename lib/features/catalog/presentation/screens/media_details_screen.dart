@@ -2,11 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/presentation/primitives/aura_badge.dart';
-import '../../../../core/presentation/primitives/aura_card.dart';
-import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
-import '../../../../core/presentation/primitives/aura_section_header.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
@@ -496,8 +494,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           shape: BoxShape.circle,
         ),
         child: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
+          icon: const AuraIcon(
+            AppIcons.back,
             color: Colors.white,
             size: 18,
           ),
@@ -512,11 +510,10 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             shape: BoxShape.circle,
           ),
           child: IconButton(
-            icon: Icon(
-              isInWatchlist
-                  ? Icons.bookmark_added_rounded
-                  : Icons.bookmark_add_outlined,
+            icon: AuraIcon(
+              isInWatchlist ? AppIcons.bookmarkAdded : AppIcons.bookmarkAdd,
               color: isInWatchlist ? AppColors.accentPink : Colors.white,
+              fill: isInWatchlist ? 1.0 : 0.0,
               size: 20,
             ),
             onPressed: () => _toggleWatchlist(item, isInWatchlist),
@@ -668,10 +665,11 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               elevation: 4,
             ),
             onPressed: () => _openStreamPicker(context, item),
-            icon: const Icon(
-              Icons.play_arrow_rounded,
+            icon: const AuraIcon(
+              AppIcons.play,
               size: 24,
               color: Color(0xFF0E0F12),
+              fill: 1.0,
             ),
             label: const Text(
               'Play',
@@ -700,8 +698,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               ),
             ),
             onPressed: () => _launchTrailer(item.trailerUrl),
-            icon: const Icon(
-              Icons.movie_filter_outlined,
+            icon: const AuraIcon(
+              AppIcons.movie,
               size: 18,
               color: AppColors.textPrimary,
             ),
@@ -807,16 +805,16 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                 ),
                                 errorWidget: (_, __, ___) => Container(
                                   color: AppColors.surfaceElevated,
-                                  child: const Icon(
-                                    Icons.person,
+                                  child: const AuraIcon(
+                                    AppIcons.person,
                                     color: AppColors.textMuted,
                                   ),
                                 ),
                               )
                             : Container(
                                 color: AppColors.surfaceElevated,
-                                child: const Icon(
-                                  Icons.person,
+                                child: const AuraIcon(
+                                  AppIcons.person,
                                   color: AppColors.textMuted,
                                 ),
                               ),
@@ -993,9 +991,10 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                       color: Colors.black.withAlpha((0.7 * 255).round()),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
+                    child: const AuraIcon(
+                      AppIcons.play,
                       color: Colors.white,
+                      fill: 1.0,
                       size: 20,
                     ),
                   ),

@@ -5,6 +5,7 @@ import 'app_typography.dart';
 import 'aura_theme_extension.dart';
 
 export 'app_colors.dart';
+export 'app_icons.dart';
 export 'app_tokens.dart';
 export 'app_typography.dart';
 export 'aura_theme_extension.dart';
@@ -20,6 +21,16 @@ class AuraTheme {
       scaffoldBackgroundColor: AppColors.surfaceBackground,
       canvasColor: AppColors.surfaceBackground,
       textTheme: AppTypography.textTheme,
+      iconTheme: const IconThemeData(
+        color: AppColors.textPrimary,
+        weight: 600.0,
+        fill: 0.0,
+      ),
+      primaryIconTheme: const IconThemeData(
+        color: AppColors.textPrimary,
+        weight: 600.0,
+        fill: 0.0,
+      ),
       extensions: const [
         AuraThemeExtension.dark,
       ],
@@ -39,7 +50,11 @@ class AuraTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: AppTypography.sectionTitle,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(
+          color: AppColors.textPrimary,
+          weight: 600.0,
+          fill: 0.0,
+        ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceBackground,

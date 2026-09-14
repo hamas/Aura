@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/player_state.dart';
 import '../../domain/entities/stream_track.dart';
@@ -263,8 +264,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.replay_10_rounded,
-                        color: Colors.white, size: 48),
+                    AuraIcon(AppIcons.replay10, color: Colors.white, size: 48),
                     SizedBox(height: 6),
                     Text(
                       '-10s',
@@ -302,8 +302,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.forward_10_rounded,
-                        color: Colors.white, size: 48),
+                    AuraIcon(AppIcons.forward10, color: Colors.white, size: 48),
                     SizedBox(height: 6),
                     Text(
                       '+10s',
@@ -328,8 +327,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
             child: Center(
               child: _buildHudIndicator(
                 icon: _currentBrightness > 0.5
-                    ? Icons.brightness_high_rounded
-                    : Icons.brightness_medium_rounded,
+                    ? AppIcons.brightnessHigh
+                    : AppIcons.brightnessMedium,
                 percent: _currentBrightness,
                 label: '${(_currentBrightness * 100).toInt()}%',
               ),
@@ -345,10 +344,10 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
             child: Center(
               child: _buildHudIndicator(
                 icon: _currentVolume == 0
-                    ? Icons.volume_off_rounded
+                    ? AppIcons.volumeOff
                     : _currentVolume > 50
-                        ? Icons.volume_up_rounded
-                        : Icons.volume_down_rounded,
+                        ? AppIcons.volumeUp
+                        : AppIcons.volumeDown,
                 percent: _currentVolume / 100.0,
                 label: '${_currentVolume.toInt()}%',
               ),
@@ -381,10 +380,10 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        AuraIcon(
                           _scrubOffset.isNegative
-                              ? Icons.fast_rewind_rounded
-                              : Icons.fast_forward_rounded,
+                              ? AppIcons.fastRewind
+                              : AppIcons.fastForward,
                           color: AppTheme.primaryAccent,
                           size: 24,
                         ),
@@ -403,11 +402,11 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${Formatters.formatDuration(_scrubTarget)} / ${Formatters.formatDuration(widget.state.duration)}',
+                      Formatters.formatDuration(_scrubTarget),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -416,37 +415,47 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
             ),
           ),
 
-        // Main Animated Controls UI
-        Positioned.fill(
-          child: AnimatedOpacity(
-            opacity: _isVisible ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 250),
-            child: IgnorePointer(
-              ignoring: !_isVisible,
-              child: Container(
-                color: Colors.black.withAlpha((0.55 * 255).round()),
-                child: SafeArea(
-                  child: Stack(
-                    children: [
-                      // Top Bar
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: _buildTopBar(context),
-                      ),
+        // Top, Center & Bottom Overlay Controls (Faded on Inactivity)
+        AnimatedOpacity(
+          opacity: _isVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 250),
+          child: IgnorePointer(
+            ignoring: !_isVisible,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withAlpha((0.75 * 255).round()),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withAlpha((0.85 * 255).round()),
+                  ],
+                  stops: const [0.0, 0.25, 0.7, 1.0],
+                ),
+              ),
+              child: SafeArea(
+                child: Stack(
+                  children: [
+                    // Top Controls (Back, Title, Subtitle, AspectRatio, Tracks)
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: _buildTopBar(context),
+                    ),
 
-                      // Center Controls (Rewind, Play/Pause, Forward)
-                      Align(
-                        alignment: Alignment.center,
-                        child: _buildCenterControls(),
-                      ),
+                    // Center Controls (Play, Pause, Buffering)
+                    Align(
+                      alignment: Alignment.center,
+                      child: _buildCenterControls(),
+                    ),
 
-                      // Bottom Controls (Timeline, Aspect Ratio, Tracks)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: _buildBottomBar(context),
-                      ),
-                    ],
-                  ),
+                    // Bottom Controls (Timeline, Aspect Ratio, Tracks)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _buildBottomBar(context),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -472,7 +481,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 20),
+          AuraIcon(icon, color: Colors.white, size: 20),
           const SizedBox(height: 8),
           Expanded(
             child: RotatedBox(
@@ -508,7 +517,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            icon: const AuraIcon(AppIcons.arrowBackIosNew, color: Colors.white),
             onPressed: widget.onBack,
           ),
           const SizedBox(width: 8),
@@ -542,8 +551,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
           // Picture-in-Picture (PiP) Button
           IconButton(
-            icon: const Icon(Icons.picture_in_picture_alt_rounded,
-                color: Colors.white),
+            icon: const AuraIcon(AppIcons.pip, color: Colors.white),
             tooltip: 'Picture-in-Picture',
             onPressed: () {
               if (widget.onPictureInPicture != null) {
@@ -560,7 +568,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
           // Aspect Ratio Toggle
           IconButton(
-            icon: const Icon(Icons.aspect_ratio, color: Colors.white),
+            icon: const AuraIcon(AppIcons.aspectRatio, color: Colors.white),
             tooltip: 'Aspect Ratio',
             onPressed: () {
               final nextFit = widget.state.fit == BoxFit.contain
@@ -573,13 +581,13 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
           // Subtitle Track Selector
           IconButton(
-            icon: const Icon(Icons.subtitles_outlined, color: Colors.white),
+            icon: const AuraIcon(AppIcons.subtitles, color: Colors.white),
             tooltip: 'Subtitles',
             onPressed: () => _showSubtitlePicker(context),
           ),
           // Audio Track Selector
           IconButton(
-            icon: const Icon(Icons.audiotrack_outlined, color: Colors.white),
+            icon: const AuraIcon(AppIcons.audiotrack, color: Colors.white),
             tooltip: 'Audio Tracks',
             onPressed: () => _showAudioPicker(context),
           ),
@@ -602,7 +610,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
         // Rewind 10s
         IconButton(
           iconSize: 36,
-          icon: const Icon(Icons.replay_10, color: Colors.white),
+          icon: const AuraIcon(AppIcons.replay10, color: Colors.white),
           onPressed: () {
             final target = widget.state.position - const Duration(seconds: 10);
             widget.onSeek(target < Duration.zero ? Duration.zero : target);
@@ -624,8 +632,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
           child: IconButton(
             iconSize: 48,
-            icon: Icon(
-              widget.state.isPlaying ? Icons.pause : Icons.play_arrow,
+            icon: AuraIcon(
+              widget.state.isPlaying ? AppIcons.pause : AppIcons.play,
               color: Colors.white,
             ),
             onPressed: () {
@@ -638,7 +646,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
         // Forward 10s
         IconButton(
           iconSize: 36,
-          icon: const Icon(Icons.forward_10, color: Colors.white),
+          icon: const AuraIcon(AppIcons.forward10, color: Colors.white),
           onPressed: () {
             final target = widget.state.position + const Duration(seconds: 10);
             widget.onSeek(target > widget.state.duration
@@ -726,7 +734,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
             ListTile(
               title: const Text('Off'),
               trailing: widget.state.selectedSubtitleTrack == null
-                  ? const Icon(Icons.check, color: AppTheme.primaryAccent)
+                  ? const AuraIcon(AppIcons.check,
+                      color: AppTheme.primaryAccent)
                   : null,
               onTap: () {
                 widget.onSelectSubtitleTrack(null);
@@ -738,7 +747,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
               return ListTile(
                 title: Text(s.title ?? s.language ?? 'Track ${s.id}'),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: AppTheme.primaryAccent)
+                    ? const AuraIcon(AppIcons.check,
+                        color: AppTheme.primaryAccent)
                     : null,
                 onTap: () {
                   widget.onSelectSubtitleTrack(s);
@@ -769,7 +779,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
               return ListTile(
                 title: Text(a.title ?? a.language ?? 'Audio Track ${a.id}'),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: AppTheme.primaryAccent)
+                    ? const AuraIcon(AppIcons.check,
+                        color: AppTheme.primaryAccent)
                     : null,
                 onTap: () {
                   widget.onSelectAudioTrack(a);

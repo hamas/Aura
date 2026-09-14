@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_icons.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/aura_theme_extension.dart';
+import 'aura_icon.dart';
 
 /// Universal pill badge for quality indicators (4K, HDR), ratings, episodes, and tags.
 class AuraBadge extends StatelessWidget {
@@ -36,7 +38,7 @@ class AuraBadge extends StatelessWidget {
     return AuraBadge(
       key: key,
       label: rating,
-      icon: Icon(Icons.star_rounded, color: color, size: 12),
+      icon: AuraIcon(AppIcons.star, color: color, size: 12),
       backgroundColor: color.withAlpha((0.18 * 255).round()),
       borderColor: color.withAlpha((0.6 * 255).round()),
       textColor: color,

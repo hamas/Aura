@@ -6,8 +6,10 @@ import '../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../features/auth/presentation/bloc/auth_state.dart';
 import '../../constants/app_assets.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_icons.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_typography.dart';
+import 'aura_icon.dart';
 
 /// Data model representing a category filter pill in [AuraAdaptiveAppBar].
 class AuraCategoryPill {
@@ -28,9 +30,10 @@ class AuraCategoryPill {
 /// 1. **Root State (`canPop == false`)**: Displays the 34px "A" brand glyph,
 ///    adjacent category switcher pills ("TV Shows", "Movies", "Categories ▾"),
 ///    and right-side action buttons (Cast, Search, Profile Avatar).
-/// 2. **Nested Route State (`canPop == true`)**: Displays a translucent circular
-///    back button (`Icons.arrow_back_ios_new_rounded`), nested view title, and
-///    contextual actions.
+/// 2. **Nested / Pushed Route State (`canPop == true`)**:
+///    Displays an authentic Netflix-style header with standard back navigation
+///    back button (`AppIcons.arrowBackIosNew`), nested view title, and
+///    search/action buttons.
 /// 3. **Scroll Transparency**: Interpolates background from 100% transparent at offset 0.0
 ///    to solid `#141414` past offset > 50.0.
 class AuraAdaptiveAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -157,7 +160,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
         backgroundColor: AppColors.surfaceCard,
         title: const Row(
           children: [
-            Icon(Icons.cast_rounded, color: AppColors.accentPink),
+            AuraIcon(AppIcons.cast, color: AppColors.accentPink),
             SizedBox(width: 10),
             Text(
               'Connect Device',
@@ -264,8 +267,8 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
-        icon: const Icon(
-          Icons.arrow_back_ios_new_rounded,
+        icon: const AuraIcon(
+          AppIcons.back,
           color: Colors.white,
           size: 18,
         ),
@@ -370,8 +373,8 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
         padding: const EdgeInsets.all(6),
         constraints: const BoxConstraints(),
         onPressed: widget.onCastTap ?? () => _showDefaultCastDialog(context),
-        icon: const Icon(
-          Icons.cast_rounded,
+        icon: const AuraIcon(
+          AppIcons.cast,
           color: AppColors.textPrimary,
           size: 22,
         ),
@@ -384,8 +387,8 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
         padding: const EdgeInsets.all(6),
         constraints: const BoxConstraints(),
         onPressed: widget.onSearchTap ?? () => context.push('/search'),
-        icon: const Icon(
-          Icons.search_rounded,
+        icon: const AuraIcon(
+          AppIcons.search,
           color: AppColors.textPrimary,
           size: 23,
         ),
@@ -433,14 +436,14 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
                   placeholder: (_, __) => Container(
                     color: AppColors.surfaceElevated,
                   ),
-                  errorWidget: (_, __, ___) => const Icon(
-                    Icons.person_rounded,
+                  errorWidget: (_, __, ___) => const AuraIcon(
+                    AppIcons.person,
                     color: AppColors.textSecondary,
                     size: 16,
                   ),
                 )
-              : const Icon(
-                  Icons.person_rounded,
+              : const AuraIcon(
+                  AppIcons.person,
                   color: AppColors.textSecondary,
                   size: 16,
                 ),

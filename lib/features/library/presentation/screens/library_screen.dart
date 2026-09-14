@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../domain/entities/library_item.dart';
 import '../bloc/library_bloc.dart';
 import '../bloc/library_event.dart';
@@ -161,7 +162,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.play_circle_fill,
+                  icon: const AuraIcon(AppIcons.playCircle,
                       color: AppTheme.primaryAccent, size: 32),
                   onPressed: () =>
                       context.push('/detail/${item.type}/${item.id}'),
@@ -208,7 +209,8 @@ class _LibraryScreenState extends State<LibraryScreen>
                       fit: BoxFit.cover,
                     )
                   : const Center(
-                      child: Icon(Icons.movie, color: AppTheme.textMuted)),
+                      child:
+                          AuraIcon(AppIcons.movie, color: AppTheme.textMuted)),
             ),
           ),
         );
@@ -241,7 +243,8 @@ class _LibraryScreenState extends State<LibraryScreen>
             style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
           ),
           trailing: IconButton(
-            icon: const Icon(Icons.close, color: AppTheme.textMuted, size: 18),
+            icon: const AuraIcon(AppIcons.close,
+                color: AppTheme.textMuted, size: 18),
             onPressed: () {
               context.read<LibraryBloc>().add(RemoveLibraryItemEvent(item.id));
             },

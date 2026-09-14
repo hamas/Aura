@@ -1,4 +1,5 @@
 import 'package:aura/core/presentation/primitives/aura_adaptive_app_bar.dart';
+import 'package:aura/core/theme/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,8 +37,8 @@ void main() {
       expect(find.text('Movies'), findsOneWidget);
 
       // Verify default actions (Cast & Search icons)
-      expect(find.byIcon(Icons.cast_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.cast), findsOneWidget);
+      expect(find.byIcon(AppIcons.search), findsOneWidget);
 
       // Test interaction with pills
       await tester.tap(find.text('TV Shows'));
@@ -64,11 +65,11 @@ void main() {
       );
 
       // Verify back button is displayed instead of glyph/categories
-      expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.arrowBackIosNew), findsOneWidget);
       expect(find.text('Stranger Things'), findsOneWidget);
 
       // Tap back button
-      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+      await tester.tap(find.byIcon(AppIcons.arrowBackIosNew));
       expect(backPressed, isTrue);
     });
 

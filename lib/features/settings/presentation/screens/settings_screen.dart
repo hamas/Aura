@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -123,27 +124,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
           // 1. Account Section
-          _buildSectionHeader(
-              'Account & Cloud Continuity', Icons.cloud_sync_outlined),
+          _buildSectionHeader('Account & Cloud Continuity', AppIcons.cloudSync),
           const SizedBox(height: 10),
           _buildAccountCard(),
           const SizedBox(height: 24),
 
           // 2. Streaming & Debrid Engine Section
-          _buildSectionHeader(
-              'Debrid Engine & Multi-hoster', Icons.bolt_outlined),
+          _buildSectionHeader('Debrid Engine & Multi-hoster', AppIcons.bolt),
           const SizedBox(height: 10),
           _buildDebridCard(),
           const SizedBox(height: 24),
 
           // 3. Player Preferences Section
-          _buildSectionHeader('Player Preferences', Icons.tune_rounded),
+          _buildSectionHeader('Player Preferences', AppIcons.tune),
           const SizedBox(height: 10),
           _buildPlayerPreferencesCard(),
           const SizedBox(height: 24),
 
           // 4. About & Legal Section
-          _buildSectionHeader('About & Legal', Icons.info_outline_rounded),
+          _buildSectionHeader('About & Legal', AppIcons.infoOutline),
           const SizedBox(height: 10),
           _buildAboutAndLegalCard(),
           const SizedBox(height: 40),
@@ -155,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: AppTheme.primaryAccent, size: 18),
+        AuraIcon(icon, color: AppTheme.primaryAccent, size: 18),
         const SizedBox(width: 8),
         Text(
           title.toUpperCase(),
@@ -194,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? NetworkImage(user!.photoUrl!)
                           : null,
                       child: user?.photoUrl == null
-                          ? const Icon(Icons.person,
+                          ? const AuraIcon(AppIcons.person,
                               color: AppTheme.textMuted, size: 28)
                           : null,
                     ),
@@ -238,7 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           onPressed: () =>
                               context.read<AuthBloc>().add(SignOutEvent()),
-                          icon: const Icon(Icons.logout, size: 18),
+                          icon: const AuraIcon(AppIcons.logout, size: 18),
                           label: const Text('Sign Out of Google'),
                         )
                       : ElevatedButton.icon(
@@ -250,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onPressed: () => context
                               .read<AuthBloc>()
                               .add(SignInWithGoogleEvent()),
-                          icon: const Icon(Icons.login, size: 18),
+                          icon: const AuraIcon(AppIcons.login, size: 18),
                           label: const Text('Sign In with Google'),
                         ),
                 ),
@@ -372,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     await _debridRepo.removeToken();
                     setState(() => _debridAccount = null);
                   },
-                  icon: const Icon(Icons.link_off, size: 16),
+                  icon: const AuraIcon(AppIcons.linkOff, size: 16),
                   label: const Text('Disconnect Real-Debrid'),
                 ),
               ),
@@ -386,7 +385,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   hintText: 'Paste API Token from real-debrid.com/apitoken',
                   hintStyle:
                       const TextStyle(color: AppTheme.textMuted, fontSize: 12),
-                  prefixIcon: const Icon(Icons.vpn_key_rounded,
+                  prefixIcon: const AuraIcon(AppIcons.vpnKey,
                       color: AppTheme.primaryAccent, size: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -403,7 +402,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     foregroundColor: Colors.black,
                   ),
                   onPressed: _saveDebridKey,
-                  icon: const Icon(Icons.add_link, size: 18),
+                  icon: const AuraIcon(AppIcons.addLink, size: 18),
                   label: const Text('Connect Real-Debrid'),
                 ),
               ),
@@ -545,7 +544,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         AppTheme.primaryAccent.withAlpha((0.15 * 255).round()),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.movie_filter_rounded,
+                  child: const AuraIcon(AppIcons.movieFilter,
                       color: AppTheme.primaryAccent, size: 24),
                 ),
                 const SizedBox(width: 12),
@@ -587,7 +586,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.video_library_rounded,
+                  AuraIcon(AppIcons.videoLibrary,
                       color: Color(0xFF01D277), size: 20),
                   SizedBox(width: 10),
                   Expanded(
@@ -613,7 +612,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Copyright (c) 2026 Hamas Younis\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.',
                     );
                   },
-                  icon: const Icon(Icons.gavel_rounded,
+                  icon: const AuraIcon(AppIcons.gavel,
                       size: 14, color: AppTheme.primaryAccent),
                   label: const Text('License',
                       style: TextStyle(
@@ -627,7 +626,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Aura is a metadata aggregator, media player, and add-on host client. It does not host, upload, archive, or distribute any video or media content itself. All streaming catalogs and links are resolved dynamically through third-party user-installed add-on manifests.',
                     );
                   },
-                  icon: const Icon(Icons.shield_outlined,
+                  icon: const AuraIcon(AppIcons.shield,
                       size: 14, color: AppTheme.primaryAccent),
                   label: const Text('Disclaimer',
                       style: TextStyle(

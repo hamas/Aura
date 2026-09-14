@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../catalog/domain/entities/media_item.dart';
 import '../../domain/entities/download_task.dart';
 import '../bloc/downloads_bloc.dart';
@@ -74,8 +76,8 @@ class DownloadActionButton extends StatelessWidget {
           ),
         ),
         onPressed: onStartDownload,
-        icon: Icon(
-          Icons.arrow_circle_down_rounded,
+        icon: AuraIcon(
+          AppIcons.download,
           size: iconSize,
           color: AppColors.textPrimary,
         ),
@@ -92,8 +94,8 @@ class DownloadActionButton extends StatelessWidget {
 
     return IconButton(
       iconSize: iconSize,
-      icon: const Icon(
-        Icons.arrow_circle_down_rounded,
+      icon: const AuraIcon(
+        AppIcons.download,
         color: AppColors.textSecondary,
       ),
       tooltip: 'Download Offline',
@@ -158,10 +160,11 @@ class DownloadActionButton extends StatelessWidget {
                     const AlwaysStoppedAnimation<Color>(AppColors.accentPink),
               ),
             ),
-            Icon(
-              Icons.pause_rounded,
+            AuraIcon(
+              AppIcons.pause,
               size: iconSize * 0.7,
               color: AppColors.accentPink,
+              fill: 1.0,
             ),
           ],
         ),
@@ -184,10 +187,11 @@ class DownloadActionButton extends StatelessWidget {
         onPressed: () {
           context.read<DownloadsBloc>().add(ResumeDownloadEvent(task.id));
         },
-        icon: const Icon(
-          Icons.play_arrow_rounded,
+        icon: const AuraIcon(
+          AppIcons.play,
           size: 18,
           color: AppColors.textSecondary,
+          fill: 1.0,
         ),
         label: const Text(
           'Resume',
@@ -202,8 +206,8 @@ class DownloadActionButton extends StatelessWidget {
 
     return IconButton(
       iconSize: iconSize,
-      icon: const Icon(
-        Icons.play_circle_outline_rounded,
+      icon: const AuraIcon(
+        AppIcons.play,
         color: AppColors.textSecondary,
       ),
       tooltip: 'Resume Download',
@@ -226,10 +230,11 @@ class DownloadActionButton extends StatelessWidget {
           ),
         ),
         onPressed: onPlayOffline ?? () => _showDownloadedOptions(context, task),
-        icon: const Icon(
-          Icons.check_circle_rounded,
+        icon: const AuraIcon(
+          AppIcons.checkCircle,
           size: 18,
           color: AppColors.accentPink,
+          fill: 1.0,
         ),
         label: const Text(
           'Downloaded',
@@ -244,9 +249,10 @@ class DownloadActionButton extends StatelessWidget {
 
     return IconButton(
       iconSize: iconSize,
-      icon: const Icon(
-        Icons.check_circle_rounded,
+      icon: const AuraIcon(
+        AppIcons.checkCircle,
         color: AppColors.accentPink,
+        fill: 1.0,
       ),
       tooltip: 'Downloaded (Ready Offline)',
       onPressed: () => _showDownloadedOptions(context, task),
@@ -268,8 +274,8 @@ class DownloadActionButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.play_circle_filled_rounded,
-                      color: AppColors.accentPink),
+                  leading: const AuraIcon(AppIcons.play,
+                      color: AppColors.accentPink, fill: 1.0),
                   title: const Text('Play Offline',
                       style: TextStyle(
                           color: AppColors.textPrimary,
@@ -285,7 +291,7 @@ class DownloadActionButton extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded,
+                  leading: const AuraIcon(AppIcons.delete,
                       color: AppColors.errorAccent),
                   title: const Text('Delete Download',
                       style: TextStyle(color: AppColors.errorAccent)),

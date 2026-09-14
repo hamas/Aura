@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
 import '../bloc/auth_bloc.dart';
@@ -94,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ? NetworkImage(user!.photoUrl!)
                                 : null,
                             child: user?.photoUrl == null
-                                ? const Icon(Icons.person,
+                                ? const AuraIcon(AppIcons.person,
                                     color: AppTheme.textMuted)
                                 : null,
                           ),
@@ -140,14 +141,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 onPressed: () => context
                                     .read<AuthBloc>()
                                     .add(SignOutEvent()),
-                                icon: const Icon(Icons.logout, size: 18),
+                                icon: const AuraIcon(AppIcons.logout, size: 18),
                                 label: const Text('Sign Out'),
                               )
                             : ElevatedButton.icon(
                                 onPressed: () => context
                                     .read<AuthBloc>()
                                     .add(SignInWithGoogleEvent()),
-                                icon: const Icon(Icons.login, size: 18),
+                                icon: const AuraIcon(AppIcons.login, size: 18),
                                 label: const Text('Sign In with Google'),
                               ),
                       ),
@@ -168,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.bolt, color: AppTheme.warningAccent),
+                      AuraIcon(AppIcons.bolt, color: AppTheme.warningAccent),
                       SizedBox(width: 8),
                       Text(
                         'Real-Debrid Integration',
@@ -246,8 +247,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         hintText: 'Enter API Key from real-debrid.com/apitoken',
-                        prefixIcon:
-                            Icon(Icons.vpn_key, color: AppTheme.warningAccent),
+                        prefixIcon: AuraIcon(AppIcons.vpnKey,
+                            color: AppTheme.warningAccent),
                       ),
                     ),
                     const SizedBox(height: 10),

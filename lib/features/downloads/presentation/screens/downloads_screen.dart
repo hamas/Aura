@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/presentation/primitives/aura_badge.dart';
 import '../../../../core/presentation/primitives/aura_card.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
 import '../../../../core/presentation/primitives/aura_section_header.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../catalog/domain/entities/media_item.dart';
@@ -100,8 +102,8 @@ class DownloadsScreen extends StatelessWidget {
                 builder: (context, state) {
                   if (state.tasks.isEmpty) return const SizedBox.shrink();
                   return IconButton(
-                    icon: const Icon(
-                      Icons.delete_sweep_outlined,
+                    icon: const AuraIcon(
+                      AppIcons.deleteSweep,
                       color: AppColors.textSecondary,
                     ),
                     tooltip: 'Clear All Downloads',
@@ -220,8 +222,8 @@ class DownloadsScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0x24FFFFFF)),
               ),
-              child: const Icon(
-                Icons.download_for_offline_outlined,
+              child: const AuraIcon(
+                AppIcons.downloadForOffline,
                 size: 56,
                 color: AppColors.textMuted,
               ),
@@ -261,8 +263,8 @@ class DownloadsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.folder_special_rounded,
+          const AuraIcon(
+            AppIcons.folderSpecial,
             color: AppColors.accentPink,
             size: 22,
           ),
@@ -406,10 +408,8 @@ class DownloadsScreen extends StatelessWidget {
             children: [
               IconButton(
                 iconSize: 24,
-                icon: Icon(
-                  task.isPaused
-                      ? Icons.play_arrow_rounded
-                      : Icons.pause_rounded,
+                icon: AuraIcon(
+                  task.isPaused ? AppIcons.play : AppIcons.pause,
                   color: AppColors.accentPink,
                 ),
                 onPressed: () {
@@ -426,8 +426,8 @@ class DownloadsScreen extends StatelessWidget {
               ),
               IconButton(
                 iconSize: 20,
-                icon: const Icon(
-                  Icons.close_rounded,
+                icon: const AuraIcon(
+                  AppIcons.close,
                   color: AppColors.textMuted,
                 ),
                 onPressed: () {
@@ -454,7 +454,7 @@ class DownloadsScreen extends StatelessWidget {
           color: AppColors.errorAccent,
           borderRadius: AppTokens.borderRadiusSmall,
         ),
-        child: const Icon(Icons.delete_rounded, color: Colors.white),
+        child: const AuraIcon(AppIcons.delete, color: Colors.white),
       ),
       onDismissed: (_) {
         context.read<DownloadsBloc>().add(DeleteDownloadEvent(task.id));
@@ -510,8 +510,8 @@ class DownloadsScreen extends StatelessWidget {
                   ],
                   Row(
                     children: [
-                      const Icon(
-                        Icons.offline_pin_rounded,
+                      const AuraIcon(
+                        AppIcons.offlinePin,
                         size: 13,
                         color: AppColors.accentPink,
                       ),
@@ -531,8 +531,8 @@ class DownloadsScreen extends StatelessWidget {
 
             // Play Button
             IconButton(
-              icon: const Icon(
-                Icons.play_circle_filled_rounded,
+              icon: const AuraIcon(
+                AppIcons.playCircle,
                 color: AppColors.accentPink,
                 size: 32,
               ),

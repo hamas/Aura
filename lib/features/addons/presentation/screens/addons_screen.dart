@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../data/datasources/stremio_addon_api.dart';
 import '../../domain/entities/addon_manifest.dart';
 import '../bloc/addon_bloc.dart';
@@ -73,7 +74,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     ),
                     const Row(
                       children: [
-                        Icon(Icons.extension_rounded,
+                        AuraIcon(AppIcons.extension,
                             color: AppTheme.primaryAccent, size: 22),
                         SizedBox(width: 8),
                         Text(
@@ -106,7 +107,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                             decoration: const InputDecoration(
                               hintText:
                                   'https://addon-domain.com/manifest.json',
-                              prefixIcon: Icon(Icons.link_rounded,
+                              prefixIcon: AuraIcon(AppIcons.link,
                                   color: AppTheme.primaryAccent, size: 20),
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
@@ -188,7 +189,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline_rounded,
+                            const AuraIcon(AppIcons.errorOutline,
                                 color: AppTheme.errorAccent, size: 18),
                             const SizedBox(width: 8),
                             Expanded(
@@ -227,7 +228,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                         .withAlpha((0.15 * 255).round()),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.check_circle_rounded,
+                                  child: const AuraIcon(AppIcons.checkCircle,
                                       color: AppTheme.successAccent, size: 20),
                                 ),
                                 const SizedBox(width: 10),
@@ -301,7 +302,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                 );
                             Navigator.pop(sheetContext);
                           },
-                          icon: const Icon(Icons.download_rounded, size: 20),
+                          icon: const AuraIcon(AppIcons.download, size: 20),
                           label: const Text('Confirm & Install Add-on'),
                         ),
                       ),
@@ -326,8 +327,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
         title: const Text('Community Add-ons'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_link_rounded,
-                color: AppTheme.primaryAccent),
+            icon:
+                const AuraIcon(AppIcons.addLink, color: AppTheme.primaryAccent),
             tooltip: 'Install via URL',
             onPressed: () => _showInstallDialog(context),
           ),
@@ -336,7 +337,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showInstallDialog(context),
         backgroundColor: AppTheme.primaryAccent,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        icon: const AuraIcon(AppIcons.add, color: Colors.white),
         label: const Text('Install Addon',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
@@ -373,7 +374,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.extension_off_outlined,
+                    const AuraIcon(AppIcons.extensionOff,
                         size: 64, color: AppTheme.textMuted),
                     const SizedBox(height: 16),
                     const Text(
@@ -394,7 +395,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () => _showInstallDialog(context),
-                      icon: const Icon(Icons.add),
+                      icon: const AuraIcon(AppIcons.add),
                       label: const Text('Install Manifest URL'),
                     ),
                   ],
@@ -438,7 +439,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF26324D)),
                 ),
-                child: const Icon(Icons.extension_rounded,
+                child: const AuraIcon(AppIcons.extension,
                     color: AppTheme.primaryAccent, size: 24),
               ),
               const SizedBox(width: 14),
@@ -553,7 +554,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.delete_outline_rounded,
+                icon: const AuraIcon(AppIcons.delete,
                     color: AppTheme.errorAccent, size: 20),
                 tooltip: 'Uninstall',
                 onPressed: () {

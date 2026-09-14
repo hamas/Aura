@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/presentation/primitives/aura_badge.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
@@ -280,10 +281,11 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                         widget.onPlayTap!(item);
                       }
                     },
-                    icon: const Icon(
-                      Icons.play_arrow_rounded,
+                    icon: const AuraIcon(
+                      AppIcons.play,
                       size: 22,
                       color: Color(0xFF0E0F12),
+                      fill: 1.0,
                     ),
                     label: const Text(
                       'Play',
@@ -316,8 +318,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                         widget.onDetailsTap!(item);
                       }
                     },
-                    icon: const Icon(
-                      Icons.info_outline_rounded,
+                    icon: const AuraIcon(
+                      AppIcons.info,
                       size: 18,
                       color: AppColors.textPrimary,
                     ),

@@ -1,5 +1,6 @@
-import 'package:aura/core/presentation/primitives/aura_page_scaffold.dart';
+import 'package:aura/core/presentation/primitives/primitives.dart';
 import 'package:aura/core/theme/app_colors.dart';
+import 'package:aura/core/theme/app_icons.dart';
 import 'package:aura/features/addons/domain/entities/addon_stream.dart';
 import 'package:aura/features/addons/presentation/bloc/addon_bloc.dart';
 import 'package:aura/features/addons/presentation/bloc/addon_event.dart';
@@ -152,8 +153,8 @@ class _ClipsScreenState extends State<ClipsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.movie_filter_outlined,
+                  const AuraIcon(
+                    AppIcons.clips,
                     size: 48,
                     color: AppColors.textMuted,
                   ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
-import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
@@ -73,7 +73,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         backgroundColor: AppColors.surfaceCard,
         title: const Row(
           children: [
-            Icon(Icons.cast_rounded, color: AppColors.accentPink),
+            AuraIcon(AppIcons.cast, color: AppColors.accentPink),
             SizedBox(width: 10),
             Text(
               'Connect Device',
@@ -159,8 +159,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      trailing: const Icon(
-                        Icons.chevron_right_rounded,
+                      trailing: const AuraIcon(
+                        AppIcons.chevronRight,
                         color: AppColors.textMuted,
                         size: 20,
                       ),

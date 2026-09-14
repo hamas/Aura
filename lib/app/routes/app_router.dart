@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/presentation/primitives/primitives.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_icons.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/detail_screen.dart';
@@ -217,33 +219,33 @@ class MainNavigationScaffold extends StatelessWidget {
           onDestinationSelected: (idx) => _onItemTapped(idx, context),
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon:
-                  Icon(Icons.home_rounded, color: AppColors.accentPink),
+              icon: AuraIcon(AppIcons.home),
+              selectedIcon: AuraIcon(AppIcons.home,
+                  color: AppColors.accentPink, fill: 1.0),
               label: 'Home',
             ),
             NavigationDestination(
-              icon: Icon(Icons.video_collection_outlined),
-              selectedIcon: Icon(Icons.video_collection_rounded,
-                  color: AppColors.accentPink),
+              icon: AuraIcon(AppIcons.clips),
+              selectedIcon: AuraIcon(AppIcons.clips,
+                  color: AppColors.accentPink, fill: 1.0),
               label: 'Clips',
             ),
             NavigationDestination(
-              icon: Icon(Icons.search_outlined),
+              icon: AuraIcon(AppIcons.search),
               selectedIcon:
-                  Icon(Icons.search_rounded, color: AppColors.accentPink),
+                  AuraIcon(AppIcons.search, color: AppColors.accentPink),
               label: 'Search',
             ),
             NavigationDestination(
-              icon: Icon(Icons.video_library_outlined),
-              selectedIcon: Icon(Icons.video_library_rounded,
-                  color: AppColors.accentPink),
+              icon: AuraIcon(AppIcons.library),
+              selectedIcon: AuraIcon(AppIcons.library,
+                  color: AppColors.accentPink, fill: 1.0),
               label: 'Library',
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon:
-                  Icon(Icons.settings_rounded, color: AppColors.accentPink),
+              icon: AuraIcon(AppIcons.settings),
+              selectedIcon: AuraIcon(AppIcons.settings,
+                  color: AppColors.accentPink, fill: 1.0),
               label: 'Settings',
             ),
           ],

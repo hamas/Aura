@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/presentation/primitives/aura_badge.dart';
-import '../../../../core/presentation/primitives/aura_card.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
@@ -62,8 +62,8 @@ class MediaPosterCard extends StatelessWidget {
                     errorWidget: (_, __, ___) => Container(
                       color: AppColors.surfaceElevated,
                       child: const Center(
-                        child: Icon(
-                          Icons.movie_outlined,
+                        child: AuraIcon(
+                          AppIcons.movie,
                           color: AppColors.textMuted,
                           size: 28,
                         ),
@@ -73,8 +73,8 @@ class MediaPosterCard extends StatelessWidget {
                 : Container(
                     color: AppColors.surfaceElevated,
                     child: const Center(
-                      child: Icon(
-                        Icons.movie_outlined,
+                      child: AuraIcon(
+                        AppIcons.movie,
                         color: AppColors.textMuted,
                         size: 28,
                       ),

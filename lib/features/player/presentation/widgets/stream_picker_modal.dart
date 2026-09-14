@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
 
 class StreamPickerModal extends StatelessWidget {
@@ -103,8 +104,8 @@ class StreamPickerModal extends StatelessWidget {
                         AppTheme.primaryAccent.withAlpha((0.15 * 255).round()),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.play_circle_fill_rounded,
+                  child: const AuraIcon(
+                    AppIcons.playCircle,
                     color: AppTheme.primaryAccent,
                     size: 20,
                   ),
@@ -196,7 +197,7 @@ class StreamPickerModal extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.cloud_off_rounded,
+                    const AuraIcon(AppIcons.cloudOff,
                         size: 44, color: AppTheme.textMuted),
                     const SizedBox(height: 12),
                     const Text(
@@ -228,7 +229,7 @@ class StreamPickerModal extends StatelessWidget {
                         Navigator.of(context).pop();
                         context.push('/addons');
                       },
-                      icon: const Icon(Icons.extension_rounded, size: 18),
+                      icon: const AuraIcon(AppIcons.extension, size: 18),
                       label: const Text(
                         'Configure Add-ons',
                         style: TextStyle(
@@ -421,8 +422,8 @@ class StreamPickerModal extends StatelessWidget {
                                           const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(
-                                                Icons.bolt,
+                                              AuraIcon(
+                                                AppIcons.bolt,
                                                 size: 13,
                                                 color: AppTheme.warningAccent,
                                               ),
@@ -443,8 +444,8 @@ class StreamPickerModal extends StatelessWidget {
                               ),
 
                               const SizedBox(width: 8),
-                              const Icon(
-                                Icons.play_circle_outline_rounded,
+                              const AuraIcon(
+                                AppIcons.playCircle,
                                 color: AppTheme.primaryAccent,
                                 size: 26,
                               ),
