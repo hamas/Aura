@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_icons.dart';
-import '../../../../core/theme/app_tokens.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../../library/presentation/bloc/library_event.dart';
@@ -13,6 +11,8 @@ import '../../domain/entities/media_item.dart';
 import '../bloc/catalog_bloc.dart';
 import '../bloc/catalog_event.dart';
 import '../bloc/catalog_state.dart';
+import '../widgets/components/discovery_dialogs.dart';
+import '../widgets/components/discovery_shimmer_skeleton.dart';
 import '../widgets/widgets.dart';
 
 enum MediaCategoryFilter { all, tvShows, movies }
@@ -66,125 +66,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _navigateToDetail(mediaItem);
   }
 
-  void _showCastDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Row(
-          children: [
-            AuraIcon(AppIcons.cast, color: AppColors.accentPink),
-            SizedBox(width: 10),
-            Text(
-              'Connect Device',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Searching for available Chromecast, Android TV, and DLNA display targets on your local network...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close',
-                style: TextStyle(color: AppColors.accentPink)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCategoriesModal() {
-    final genres = [
-      'Action & Adventure',
-      'Sci-Fi & Cyberpunk',
-      'Crime & Mystery',
-      'Drama',
-      'Comedy',
-      'Animation & Anime',
-      'Documentary',
-      'Thriller & Suspense',
-      'Fantasy',
-      'Horror',
-    ];
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surfaceCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const Text(
-                'Browse Categories',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: genres.length,
-                  itemBuilder: (context, index) {
-                    final genre = genres[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        genre,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      trailing: const AuraIcon(
-                        AppIcons.chevronRight,
-                        color: AppColors.textMuted,
-                        size: 20,
-                      ),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: AppColors.surfaceElevated,
-                            content: Text('Filtering by "$genre"'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AuraScaffold(
@@ -199,7 +80,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               builder: (context, catalogState) {
                 if (catalogState.status == CatalogStatus.loading &&
                     catalogState.trending.isEmpty) {
-                  return _buildNetflixShimmerSkeleton(context);
+                  return const DiscoveryShimmerSkeleton();
                 }
 
                 List<MediaItem> heroItems;
@@ -343,7 +224,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             right: 0,
             child: AuraAdaptiveAppBar(
               scrollController: _scrollController,
-              onCastTap: _showCastDialog,
+              onCastTap: () => DiscoveryDialogs.showCastDialog(context),
               categories: [
                 AuraCategoryPill(
                   label: 'TV Shows',
@@ -372,7 +253,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 AuraCategoryPill(
                   label: 'Categories ▾',
                   isSelected: false,
-                  onTap: _showCategoriesModal,
+                  onTap: () => DiscoveryDialogs.showCategoriesModal(context),
                 ),
                 if (_selectedFilter != MediaCategoryFilter.all)
                   AuraCategoryPill(
@@ -388,133 +269,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNetflixShimmerSkeleton(BuildContext context) {
-    final heroHeight = MediaQuery.of(context).size.height * 0.58;
-
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              _buildShimmerBox(
-                width: double.infinity,
-                height: heroHeight,
-                borderRadius: 0,
-              ),
-              Positioned(
-                bottom: 24,
-                left: 20,
-                right: 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildShimmerBox(
-                      width: 80,
-                      height: 12,
-                      borderRadius: AppTokens.radiusSmall,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildShimmerBox(
-                      width: 240,
-                      height: 28,
-                      borderRadius: AppTokens.radiusSmall,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildShimmerBox(
-                          width: 50,
-                          height: 20,
-                          borderRadius: AppTokens.radiusSmall,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildShimmerBox(
-                          width: 44,
-                          height: 20,
-                          borderRadius: AppTokens.radiusSmall,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildShimmerBox(
-                          width: 60,
-                          height: 20,
-                          borderRadius: AppTokens.radiusSmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        _buildShimmerBox(
-                          width: 110,
-                          height: 38,
-                          borderRadius: AppTokens.radiusSmall,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildShimmerBox(
-                          width: 100,
-                          height: 38,
-                          borderRadius: AppTokens.radiusSmall,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          for (int s = 0; s < 2; s++) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: _buildShimmerBox(
-                width: 160,
-                height: 18,
-                borderRadius: AppTokens.radiusSmall,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 180,
-              child: ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                scrollDirection: Axis.horizontal,
-                itemCount: 4,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (_, __) {
-                  return _buildShimmerBox(
-                    width: AppTokens.posterWidthMobile,
-                    height: 180,
-                    borderRadius: AppTokens.radiusSmall,
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 22),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShimmerBox({
-    required double width,
-    required double height,
-    required double borderRadius,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: const Color(0xFF262626), width: 0.8),
       ),
     );
   }

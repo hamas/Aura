@@ -23,6 +23,11 @@ class AppColors {
       Color(0xFFF59E0B); // Amber / 4K Badge / Rating
   static const Color successAccent = Color(0xFF10B981); // Emerald Green
   static const Color errorAccent = Color(0xFFEF4444); // Crimson Red
+  static const Color statusSuccess = successAccent;
+  static const Color statusWarning = warningAccent;
+  static const Color statusError = errorAccent;
+  static const Color borderSubtle = Color(0x1AFFFFFF);
+
 
   // Dark Neutral & Text Colors
   static const Color textPrimary = Color(0xFFF5F5F7); // 95% opacity white

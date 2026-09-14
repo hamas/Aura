@@ -82,4 +82,6 @@ extension TextThemeAuraExtension on TextTheme {
   TextStyle get itemTitle => AppTypography.itemTitle;
   TextStyle get metadataPill => AppTypography.metadataPill;
   TextStyle get bodyOverview => AppTypography.bodyOverview;
+  TextStyle get caption => AppTypography.caption;
 }
+

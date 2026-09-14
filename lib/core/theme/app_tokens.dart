@@ -30,6 +30,19 @@ class AppTokens {
   static const BorderRadius borderRadiusPill =
       BorderRadius.all(Radius.circular(radiusPill));
 
+  // Standard Spacing Constants
+  static const double spacingXs = 4.0;
+  static const double spacingSm = 8.0;
+  static const double spacingMd = 16.0;
+  static const double spacingLg = 24.0;
+  static const double spacingXl = 32.0;
+
+  static const EdgeInsets paddingXs = EdgeInsets.all(spacingXs);
+  static const EdgeInsets paddingSm = EdgeInsets.all(spacingSm);
+  static const EdgeInsets paddingMd = EdgeInsets.all(spacingMd);
+  static const EdgeInsets paddingLg = EdgeInsets.all(spacingLg);
+  static const EdgeInsets paddingXl = EdgeInsets.all(spacingXl);
+
   // Focus & Motion Transitions
   static const double focusScaleFactor = 1.06;
   static const Duration focusAnimationDuration = Duration(milliseconds: 200);

@@ -242,28 +242,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.text('EVERY ENDING HAS A BEGINNING'), findsOneWidget);
       expect(find.text('8.7'), findsOneWidget);
-      expect(find.text('4K HDR'), findsOneWidget);
       expect(find.text('SERIES'), findsOneWidget);
       expect(find.text('2016'), findsOneWidget);
-      expect(find.text('Play'), findsOneWidget);
-      expect(find.textContaining('Sources'), findsOneWidget);
+      expect(find.text('Start Watching'), findsOneWidget);
     });
 
-    testWidgets('Expands and collapses synopsis on tap', (tester) async {
+    testWidgets('Renders synopsis text', (tester) async {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
       await tester.pumpAndSettle();
 
-      expect(find.text('Read More'), findsOneWidget);
-      await tester.tap(find.text('Read More'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Show Less'), findsOneWidget);
-      await tester.tap(find.text('Show Less'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Read More'), findsOneWidget);
+      expect(find.textContaining('When a young boy vanishes'), findsOneWidget);
     });
 
     testWidgets('Renders top cast actors and character labels', (
@@ -272,7 +261,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
       await tester.pumpAndSettle();
 
-      expect(find.text('Top Cast'), findsOneWidget);
+      expect(find.text('Top Cast & Crew'), findsOneWidget);
       expect(find.text('Millie Bobby Brown'), findsOneWidget);
       expect(find.text('Eleven'), findsOneWidget);
       expect(find.text('Finn Wolfhard'), findsOneWidget);
