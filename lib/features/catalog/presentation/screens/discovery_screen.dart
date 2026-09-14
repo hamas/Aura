@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -240,18 +241,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       child: Row(
         children: [
           // Aura Brand Wordmark
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'AURA',
-                style: AppTypography.displayHero.copyWith(
-                  color: AppColors.accentPink,
-                  fontSize: 22,
-                  letterSpacing: 2.0,
-                ),
-              ),
-            ],
+          Image.asset(
+            AppAssets.logoWordmark,
+            height: 28,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Text(
+              'AURA',
+              style: context.auraText.displayHero.copyWith(fontSize: 22),
+            ),
           ),
           const Spacer(),
 

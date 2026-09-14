@@ -73,4 +73,13 @@ class AppTypography {
 /// Convenience extension on [BuildContext] for Aura typography
 extension AuraTypographyExtension on BuildContext {
   TextTheme get auraText => Theme.of(this).textTheme;
+  TextStyle get auraDisplayHero => AppTypography.displayHero;
+}
+
+extension TextThemeAuraExtension on TextTheme {
+  TextStyle get displayHero => AppTypography.displayHero;
+  TextStyle get sectionTitle => AppTypography.sectionTitle;
+  TextStyle get itemTitle => AppTypography.itemTitle;
+  TextStyle get metadataPill => AppTypography.metadataPill;
+  TextStyle get bodyOverview => AppTypography.bodyOverview;
 }

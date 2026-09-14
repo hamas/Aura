@@ -1,3 +1,4 @@
+import 'package:aura/core/constants/app_assets.dart';
 import 'package:aura/core/theme/aura_theme.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/widgets.dart';
@@ -25,6 +26,12 @@ void main() {
       expect(
           theme.scaffoldBackgroundColor, equals(AppColors.surfaceBackground));
       expect(theme.colorScheme.primary, equals(AppColors.accentPink));
+    });
+
+    test('AppAssets contains valid branding asset paths', () {
+      expect(AppAssets.appIcon, equals('assets/branding/app_icon.png'));
+      expect(
+          AppAssets.logoWordmark, equals('assets/branding/logo_wordmark.png'));
     });
   });
 
