@@ -20,6 +20,7 @@ import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../../library/presentation/bloc/library_event.dart';
 import '../../../library/presentation/bloc/library_state.dart';
+import '../../../player/domain/services/smart_stream_selector.dart';
 import '../../../player/presentation/widgets/stream_picker_modal.dart';
 import '../../domain/entities/media_item.dart';
 import '../../domain/entities/season_episode.dart';
@@ -48,6 +49,7 @@ class MediaDetailsScreen extends StatefulWidget {
 class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
   int _selectedSeasonNumber = 1;
   bool _isSynopsisExpanded = false;
+  bool _isSmartPlayLoading = false;
 
   @override
   void initState() {
@@ -349,39 +351,6 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     }
   }
 
-  void _launchTrailer(String? trailerUrl) {
-    if (trailerUrl == null || trailerUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: AppColors.surfaceElevated,
-          content: Text('No trailer is available for this title.'),
-        ),
-      );
-      return;
-    }
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Text(
-          'Trailer Available',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          'Trailer link: $trailerUrl',
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Close',
-                style: TextStyle(color: AppColors.accentPink)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AuraScaffold(
@@ -644,85 +613,177 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     );
   }
 
+  Future<void> _handleSmartPlay(
+    MediaItem item, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) async {
+    if (_isSmartPlayLoading) return;
+
+    setState(() {
+      _isSmartPlayLoading = true;
+    });
+
+    final effectiveSeason = item.type == MediaType.series
+        ? (seasonNumber ?? _selectedSeasonNumber)
+        : null;
+    final effectiveEpisode =
+        item.type == MediaType.series ? (episodeNumber ?? 1) : null;
+
+    final stremioId = item.getStremioId(
+      season: effectiveSeason,
+      episode: effectiveEpisode,
+    );
+
+    final addonBloc = context.read<AddonBloc>();
+    addonBloc.add(FetchStreamsForMediaEvent(
+      type: item.type == MediaType.movie ? 'movie' : 'series',
+      id: stremioId,
+    ));
+
+    AddonState currentState = addonBloc.state;
+    if (currentState.isLoadingStreams) {
+      try {
+        await addonBloc.stream.firstWhere((st) => !st.isLoadingStreams).timeout(
+            const Duration(milliseconds: 2500),
+            onTimeout: () => addonBloc.state);
+        currentState = addonBloc.state;
+      } catch (_) {
+        currentState = addonBloc.state;
+      }
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSmartPlayLoading = false;
+    });
+
+    final streams = currentState.resolvedStreams;
+    const selector = SmartStreamSelector();
+    final bestStream = selector.selectBestStream(streams);
+
+    if (bestStream != null) {
+      if (!mounted) return;
+      await _launchPlayerWithStream(
+        context,
+        item,
+        bestStream,
+        seasonNumber: effectiveSeason,
+        episodeNumber: effectiveEpisode,
+        episodeTitle: episodeTitle,
+      );
+    } else {
+      if (!mounted) return;
+      _openStreamPicker(
+        context,
+        item,
+        seasonNumber: effectiveSeason,
+        episodeNumber: effectiveEpisode,
+        episodeTitle: episodeTitle,
+      );
+    }
+  }
+
   Widget _buildActionButtons(
     BuildContext context,
     MediaItem item,
     bool isInWatchlist,
   ) {
-    return Row(
-      children: [
-        // Primary Play Button (Electric Pink)
-        Expanded(
-          flex: 3,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentPink,
-              foregroundColor: const Color(0xFF0E0F12),
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppTokens.borderRadiusSmall,
-              ),
-              elevation: 4,
-            ),
-            onPressed: () => _openStreamPicker(context, item),
-            icon: const AuraIcon(
-              AppIcons.play,
-              size: 24,
-              color: Color(0xFF0E0F12),
-              fill: 1.0,
-            ),
-            label: const Text(
-              'Play',
-              style: TextStyle(
-                color: Color(0xFF0E0F12),
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
+    return BlocBuilder<AddonBloc, AddonState>(
+      builder: (context, addonState) {
+        final sourcesCount = addonState.resolvedStreams.length;
+        final sourcesLabel =
+            sourcesCount > 0 ? 'Sources ($sourcesCount)' : 'Sources';
 
-        // Trailer / Secondary Button (Glass)
-        Expanded(
-          flex: 2,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textPrimary,
-              backgroundColor: AppColors.glassWhite,
-              side: const BorderSide(color: Colors.white24, width: 1),
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppTokens.borderRadiusSmall,
+        return Row(
+          children: [
+            // Primary Smart Play Button (#B877FF / AppColors.accentPink)
+            Expanded(
+              flex: 3,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentPink,
+                  foregroundColor: const Color(0xFF0E0F12),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppTokens.borderRadiusSmall,
+                  ),
+                  elevation: 4,
+                ),
+                onPressed: _isSmartPlayLoading
+                    ? null
+                    : () => _handleSmartPlay(item),
+                icon: _isSmartPlayLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Color(0xFF0E0F12),
+                        ),
+                      )
+                    : const AuraIcon(
+                        AppIcons.play,
+                        size: 24,
+                        color: Color(0xFF0E0F12),
+                        fill: 1.0,
+                      ),
+                label: Text(
+                  _isSmartPlayLoading ? 'Resolving...' : 'Play',
+                  style: const TextStyle(
+                    color: Color(0xFF0E0F12),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
+                ),
               ),
             ),
-            onPressed: () => _launchTrailer(item.trailerUrl),
-            icon: const AuraIcon(
-              AppIcons.movie,
-              size: 18,
-              color: AppColors.textPrimary,
-            ),
-            label: const Text(
-              'Trailer',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
+            const SizedBox(width: 8),
+
+            // Secondary "Sources" Pill Button (Enthusiast Manual Override)
+            Expanded(
+              flex: 2,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimary,
+                  backgroundColor: const Color(0x33FFFFFF),
+                  side: const BorderSide(color: Colors.white24, width: 1),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppTokens.borderRadiusSmall,
+                  ),
+                ),
+                onPressed: () => _openStreamPicker(context, item),
+                icon: const AuraIcon(
+                  AppIcons.search,
+                  size: 18,
+                  color: AppColors.textPrimary,
+                ),
+                label: Text(
+                  sourcesLabel,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        if (item.type == MediaType.movie) ...[
-          const SizedBox(width: 8),
-          DownloadActionButton(
-            mediaId: item.id,
-            mediaType: MediaType.movie,
-            onStartDownload: () => _initiateDownload(context, item),
-            onPlayOffline: () => _playOfflineDirect(context, item),
-          ),
-        ],
-      ],
+            if (item.type == MediaType.movie) ...[
+              const SizedBox(width: 8),
+              DownloadActionButton(
+                mediaId: item.id,
+                mediaType: MediaType.movie,
+                onStartDownload: () => _initiateDownload(context, item),
+                onPlayOffline: () => _playOfflineDirect(context, item),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 

@@ -248,7 +248,7 @@ void main() {
       expect(find.text('SERIES'), findsOneWidget);
       expect(find.text('2016'), findsOneWidget);
       expect(find.text('Play'), findsOneWidget);
-      expect(find.text('Trailer'), findsOneWidget);
+      expect(find.textContaining('Sources'), findsOneWidget);
     });
 
     testWidgets('Expands and collapses synopsis on tap', (tester) async {
