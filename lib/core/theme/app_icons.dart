@@ -97,4 +97,5 @@ abstract final class AppIcons {
   static const IconData autoAwesome = Symbols.auto_awesome_rounded;
   static const IconData gavel = Symbols.gavel_rounded;
   static const IconData shield = Symbols.shield_rounded;
+  static const IconData group = Symbols.group_rounded;
 }

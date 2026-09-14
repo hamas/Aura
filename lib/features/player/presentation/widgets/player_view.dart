@@ -12,6 +12,10 @@ import 'aura_glow_backdrop.dart';
 import 'player_controls_overlay.dart';
 
 import '../../data/services/chapter_ingestion_service.dart';
+import '../../../watch_together/data/services/watch_together_service.dart';
+import '../../../watch_together/domain/entities/watch_room_session.dart';
+import '../../../watch_together/presentation/widgets/join_create_watch_room_dialog.dart';
+import '../../../watch_together/presentation/widgets/watch_together_overlay_hud.dart';
 
 class PlayerView extends StatefulWidget {
   final MediaKitPlayerService playerService;
@@ -43,6 +47,9 @@ class PlayerView extends StatefulWidget {
 
 class _PlayerViewState extends State<PlayerView> {
   Timer? _progressSyncTimer;
+  WatchRoomSession? _watchSession;
+  WatchTogetherService? _watchService;
+  StreamSubscription<WatchSyncEvent>? _syncSubscription;
 
   @override
   void initState() {
@@ -109,6 +116,8 @@ class _PlayerViewState extends State<PlayerView> {
   void dispose() {
     _syncProgress(); // Final sync before exiting player
     _progressSyncTimer?.cancel();
+    _syncSubscription?.cancel();
+    _watchService?.dispose();
 
     // Mobile Hardening: Restore system orientations and edge-to-edge UI
     SystemChrome.setPreferredOrientations([
@@ -120,6 +129,38 @@ class _PlayerViewState extends State<PlayerView> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     super.dispose();
+  }
+
+  Future<void> _openWatchTogetherDialog() async {
+    final state = widget.playerService.state;
+    final session = await showDialog<WatchRoomSession>(
+      context: context,
+      builder: (context) => JoinCreateWatchRoomDialog(
+        mediaId: widget.mediaId ?? 'media_id',
+        streamUrl: state.currentStreamUrl ?? '',
+      ),
+    );
+
+    if (session != null && mounted) {
+      setState(() => _watchSession = session);
+      _watchService = WatchTogetherService();
+      _subscribeToWatchTogether();
+    }
+  }
+
+  void _subscribeToWatchTogether() {
+    if (_watchService == null) return;
+    _syncSubscription = _watchService!.eventStream.listen((event) {
+      if (!mounted) return;
+      final currentPos = widget.playerService.state.position;
+      final correction = WatchTogetherService.calculateDriftCorrection(
+        clientPos: currentPos,
+        hostPos: event.position,
+      );
+      if (correction != null) {
+        context.read<PlayerBloc>().add(SeekPositionEvent(correction));
+      }
+    });
   }
 
   @override
@@ -175,8 +216,31 @@ class _PlayerViewState extends State<PlayerView> {
                 onSkipInterval: () =>
                     bloc.add(const SkipCurrentIntervalEvent()),
                 onNextEpisode: widget.onNextEpisode,
+                onWatchTogether: _openWatchTogetherDialog,
                 onBack: widget.onBack,
               ),
+
+              // Watch Together Synchronized Multi-User Overlay HUD
+              if (_watchSession != null)
+                WatchTogetherOverlayHUD(
+                  session: _watchSession!,
+                  onSendReaction: (emoji) {
+                    _watchService?.broadcastEvent(WatchSyncEvent(
+                      type: WatchSyncEventType.reaction,
+                      senderId: _watchService?.currentUserId ?? 'user',
+                      position: state.position,
+                      timestamp: DateTime.now(),
+                      payload: emoji,
+                    ));
+                  },
+                  onToggleHostControl: (val) {
+                    _watchService?.toggleHostOnlyControl(val);
+                  },
+                  onLeaveRoom: () {
+                    _watchService?.leaveRoom();
+                    setState(() => _watchSession = null);
+                  },
+                ),
             ],
           ),
         );

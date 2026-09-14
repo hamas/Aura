@@ -25,6 +25,7 @@ class PlayerControlsOverlay extends StatefulWidget {
   final VoidCallback? onToggleAuraGlow;
   final VoidCallback? onSkipInterval;
   final VoidCallback? onNextEpisode;
+  final VoidCallback? onWatchTogether;
   final VoidCallback onBack;
 
   const PlayerControlsOverlay({
@@ -44,6 +45,7 @@ class PlayerControlsOverlay extends StatefulWidget {
     this.onToggleAuraGlow,
     this.onSkipInterval,
     this.onNextEpisode,
+    this.onWatchTogether,
     required this.onBack,
   });
 
@@ -589,6 +591,12 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                   ),
               ],
             ),
+          ),
+          // Watch Together Multi-User Sync Button
+          IconButton(
+            icon: const AuraIcon(AppIcons.group, color: Colors.white),
+            tooltip: 'Watch Together',
+            onPressed: widget.onWatchTogether,
           ),
           // Picture-in-Picture (PiP) Button
           IconButton(
