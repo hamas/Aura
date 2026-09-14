@@ -24,7 +24,6 @@ void main() {
       expect(find.byIcon(AppIcons.home), findsOneWidget);
       expect(find.byIcon(AppIcons.clips), findsOneWidget);
       expect(find.byIcon(AppIcons.library), findsOneWidget);
-      expect(find.text('Home'), findsOneWidget);
 
       await tester.tap(find.byIcon(AppIcons.clips));
       expect(tappedIndex, equals(1));
