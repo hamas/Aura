@@ -1,5 +1,12 @@
+# GitHub Linguist Overrides - Treat generated runner directories as vendored code
 android/** linguist-vendored
 ios/** linguist-vendored
 windows/** linguist-vendored
 macos/** linguist-vendored
 linux/** linguist-vendored
+web/** linguist-vendored
+
+# Treat generated code and lockfiles as vendored/documentation
+*.g.dart linguist-generated
+*.freezed.dart linguist-generated
+pubspec.lock linguist-generated
