@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/presentation/primitives/primitives.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_icons.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/detail_screen.dart';
@@ -167,16 +166,8 @@ class MainNavigationScaffold extends StatelessWidget {
     if (location.startsWith('/clips')) {
       return 1;
     }
-    if (location.startsWith('/search')) {
-      return 2;
-    }
     if (location.startsWith('/library')) {
-      return 3;
-    }
-    if (location.startsWith('/settings') ||
-        location.startsWith('/profile') ||
-        location.startsWith('/addons')) {
-      return 4;
+      return 2;
     }
     return 0;
   }
@@ -190,13 +181,7 @@ class MainNavigationScaffold extends StatelessWidget {
         context.go('/clips');
         break;
       case 2:
-        context.go('/search');
-        break;
-      case 3:
         context.go('/library');
-        break;
-      case 4:
-        context.go('/settings');
         break;
     }
   }
@@ -204,52 +189,26 @@ class MainNavigationScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _calculateSelectedIndex(context);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      body: child,
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceBackground,
-          border: Border(top: BorderSide(color: Color(0xFF1F1F1F), width: 1)),
-        ),
-        child: NavigationBar(
-          backgroundColor: AppColors.surfaceBackground,
-          indicatorColor: AppColors.surfaceElevated,
-          selectedIndex: currentIndex,
-          onDestinationSelected: (idx) => _onItemTapped(idx, context),
-          destinations: const [
-            NavigationDestination(
-              icon: AuraIcon(AppIcons.home),
-              selectedIcon: AuraIcon(AppIcons.home,
-                  color: AppColors.accentPink, fill: 1.0),
-              label: 'Home',
+      extendBody: true,
+      backgroundColor: AppColors.surfaceBackground,
+      body: Stack(
+        children: [
+          Positioned.fill(child: child),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomPadding + 16,
+            child: Center(
+              child: AuraFloatingBottomPill(
+                currentIndex: currentIndex,
+                onTap: (idx) => _onItemTapped(idx, context),
+              ),
             ),
-            NavigationDestination(
-              icon: AuraIcon(AppIcons.clips),
-              selectedIcon: AuraIcon(AppIcons.clips,
-                  color: AppColors.accentPink, fill: 1.0),
-              label: 'Clips',
-            ),
-            NavigationDestination(
-              icon: AuraIcon(AppIcons.search),
-              selectedIcon:
-                  AuraIcon(AppIcons.search, color: AppColors.accentPink),
-              label: 'Search',
-            ),
-            NavigationDestination(
-              icon: AuraIcon(AppIcons.library),
-              selectedIcon: AuraIcon(AppIcons.library,
-                  color: AppColors.accentPink, fill: 1.0),
-              label: 'Library',
-            ),
-            NavigationDestination(
-              icon: AuraIcon(AppIcons.settings),
-              selectedIcon: AuraIcon(AppIcons.settings,
-                  color: AppColors.accentPink, fill: 1.0),
-              label: 'Settings',
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
