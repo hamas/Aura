@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_icons.dart';
@@ -47,89 +49,122 @@ class DiscoveryDialogs {
 
   static void showCategoriesModal(BuildContext context) {
     final genres = [
-      'Action & Adventure',
-      'Sci-Fi & Cyberpunk',
-      'Crime & Mystery',
-      'Drama',
+      'Action',
+      'Adventure',
+      'Animation',
       'Comedy',
-      'Animation & Anime',
+      'Crime',
       'Documentary',
-      'Thriller & Suspense',
+      'Drama',
+      'Family',
       'Fantasy',
+      'History',
       'Horror',
+      'Music',
+      'Mystery',
+      'Romance',
+      'Sci-Fi',
+      'Thriller',
+      'War',
+      'Western',
     ];
 
-    showModalBottomSheet<void>(
+    final mediaQuery = MediaQuery.of(context);
+    final screenRadius = mediaQuery.padding.top > 0
+        ? (mediaQuery.padding.top * 0.75).clamp(24.0, 36.0)
+        : 28.0;
+
+    showGeneralDialog<void>(
       context: context,
-      backgroundColor: AppColors.surfaceCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppTokens.radiusLarge)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppTokens.spacingMd),
-                  decoration: BoxDecoration(
-                    color: AppColors.borderSubtle,
-                    borderRadius: BorderRadius.circular(2),
+      barrierDismissible: true,
+      barrierLabel: 'Categories',
+      barrierColor: Colors.black.withValues(alpha: 0.40),
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (ctx, anim1, anim2) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: mediaQuery.size.width * 0.88,
+                constraints: BoxConstraints(
+                  maxHeight: mediaQuery.size.height * 0.72,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.40),
+                  borderRadius: BorderRadius.circular(screenRadius),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 32,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
                 ),
-              ),
-              Text(
-                'Browse Categories',
-                style: context.auraText.sectionTitle.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: ListView.builder(
+                child: GridView.builder(
                   shrinkWrap: true,
+                  padding: EdgeInsets.zero,
                   itemCount: genres.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 3.2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
                   itemBuilder: (context, index) {
                     final genre = genres[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        genre,
-                        style: context.auraText.bodyOverview.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
+                    return Material(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          GoRouter.of(context).push(
+                              '/category?genre=${Uri.encodeComponent(genre)}');
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            genre,
+                            textAlign: TextAlign.center,
+                            style: context.auraText.bodyOverview.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
                       ),
-                      trailing: const AuraIcon(
-                        AppIcons.chevronRight,
-                        color: AppColors.textMuted,
-                        size: 20,
-                      ),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: AppColors.surfaceElevated,
-                            content: Text('Filtering by "$genre"'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
                     );
                   },
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: anim1, curve: Curves.easeOut),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.94, end: 1.0).animate(
+              CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+            ),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

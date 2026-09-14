@@ -8,6 +8,9 @@ import 'package:aura/features/downloads/presentation/bloc/downloads_bloc.dart';
 import 'package:aura/features/downloads/presentation/bloc/downloads_event.dart';
 import 'package:aura/features/downloads/presentation/screens/downloads_screen.dart';
 import 'package:aura/features/downloads/presentation/widgets/download_action_button.dart';
+import 'package:aura/features/library/domain/entities/library_item.dart';
+import 'package:aura/features/library/domain/repositories/library_repository.dart';
+import 'package:aura/features/library/presentation/bloc/library_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -90,6 +93,56 @@ class MockDownloadRepository implements DownloadRepository {
   Future<String> getSandboxedVaultDirectory() async {
     return '/mock/sandbox/offline_vault';
   }
+
+  @override
+  Future<DownloadTask?> getCompletedTask(int mediaId) async {
+    try {
+      return _tasks.values.firstWhere(
+        (t) => t.mediaId == mediaId && t.status == DownloadStatus.completed,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> smartDeleteWatchedEpisode(
+      int mediaId, int season, int episode) async {
+    _tasks.removeWhere((_, t) =>
+        t.mediaId == mediaId &&
+        t.seasonNumber == season &&
+        t.episodeNumber == episode &&
+        t.status == DownloadStatus.completed);
+    _emit();
+  }
+}
+
+class MockLibraryRepository implements LibraryRepository {
+  List<LibraryItem> items = [];
+
+  @override
+  Future<List<LibraryItem>> getLibraryItems(
+          {LibraryCategory? category}) async =>
+      items;
+  @override
+  Future<void> saveLibraryItem(LibraryItem item) async => items.add(item);
+  @override
+  Future<void> updateWatchProgress({
+    required String mediaId,
+    required String title,
+    required String? posterPath,
+    required String? backdropPath,
+    required String type,
+    required int positionSeconds,
+    required int durationSeconds,
+    int? seasonNumber,
+    int? episodeNumber,
+  }) async {}
+  @override
+  Future<void> removeItem(String mediaId) async =>
+      items.removeWhere((i) => i.id == mediaId);
+  @override
+  Future<void> syncWithCloud() async {}
 }
 
 void main() {
@@ -226,13 +279,21 @@ void main() {
 
       final repo =
           MockDownloadRepository(initialTasks: [testTaskMovie, testTaskSeries]);
+      final libraryRepo = MockLibraryRepository();
 
       await tester.pumpWidget(
         MaterialApp(
           theme: AuraTheme.darkTheme,
-          home: BlocProvider<DownloadsBloc>(
-            create: (_) => DownloadsBloc(downloadRepository: repo)
-              ..add(LoadDownloadsEvent()),
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<DownloadsBloc>(
+                create: (_) => DownloadsBloc(downloadRepository: repo)
+                  ..add(LoadDownloadsEvent()),
+              ),
+              BlocProvider<LibraryBloc>(
+                create: (_) => LibraryBloc(libraryRepository: libraryRepo),
+              ),
+            ],
             child: const DownloadsScreen(),
           ),
         ),

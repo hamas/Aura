@@ -18,14 +18,14 @@ void main() {
               forceCanPop: false,
               categories: [
                 AuraCategoryPill(
-                  label: 'TV Shows',
-                  isSelected: false,
-                  onTap: () => tvShowsTapped = true,
-                ),
-                AuraCategoryPill(
                   label: 'Movies',
                   isSelected: true,
                   onTap: () => moviesTapped = true,
+                ),
+                AuraCategoryPill(
+                  label: 'Shows',
+                  isSelected: false,
+                  onTap: () => tvShowsTapped = true,
                 ),
               ],
             ),
@@ -33,12 +33,12 @@ void main() {
         ),
       );
 
-      expect(find.text('TV Shows'), findsOneWidget);
+      expect(find.text('Shows'), findsOneWidget);
       expect(find.text('Movies'), findsOneWidget);
 
       expect(find.byIcon(AppIcons.search), findsOneWidget);
 
-      await tester.tap(find.text('TV Shows'));
+      await tester.tap(find.text('Shows'));
       expect(tvShowsTapped, isTrue);
 
       await tester.tap(find.text('Movies'));

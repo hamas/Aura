@@ -38,12 +38,22 @@ class DownloadStorageService {
     return directory;
   }
 
-  /// Generates an obfuscated sandboxed file path for a task.
-  Future<String> generateObfuscatedFilePath(String taskId) async {
+  /// Generates a sandboxed file path partitioned by profileId and mediaId: vault/downloads/{profileId}/{mediaId}/...
+  Future<String> generateObfuscatedFilePath(
+    String taskId, {
+    String profileId = 'default',
+    int? mediaId,
+  }) async {
     final dir = await getVaultDirectory();
+    final mediaIdStr = mediaId != null ? mediaId.toString() : 'general';
+    final profileDir =
+        Directory('${dir.path}/downloads/$profileId/$mediaIdStr');
+    if (!await profileDir.exists()) {
+      await profileDir.create(recursive: true);
+    }
     final hash = taskId.hashCode.abs().toRadixString(16).padLeft(8, '0');
     final sanitizedId = taskId.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
-    return '${dir.path}/${sanitizedId}_$hash.vault';
+    return '${profileDir.path}/${sanitizedId}_$hash.vault';
   }
 
   /// Gets the .part file path for in-progress downloads.
@@ -86,7 +96,7 @@ class DownloadStorageService {
       final dir = await getVaultDirectory();
       var total = 0;
       await for (final entity
-          in dir.list(recursive: false, followLinks: false)) {
+          in dir.list(recursive: true, followLinks: false)) {
         if (entity is File) {
           final len = await entity.length();
           total += len;

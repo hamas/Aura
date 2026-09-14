@@ -17,6 +17,8 @@ class DownloadTaskModel {
   final int bytesDownloaded;
   final int totalBytes;
   final double downloadSpeed;
+  final String qualityLabel;
+  final String profileId;
   final String createdAt;
   final String? completedAt;
   final String? error;
@@ -33,6 +35,8 @@ class DownloadTaskModel {
     this.backdropPath,
     required this.downloadUrl,
     required this.localFilePath,
+    this.qualityLabel = '1080p Web-DL',
+    this.profileId = 'default',
     required this.status,
     required this.bytesDownloaded,
     required this.totalBytes,
@@ -55,6 +59,8 @@ class DownloadTaskModel {
       backdropPath: json['backdropPath'] as String?,
       downloadUrl: json['downloadUrl'] as String,
       localFilePath: json['localFilePath'] as String,
+      qualityLabel: json['qualityLabel'] as String? ?? '1080p Web-DL',
+      profileId: json['profileId'] as String? ?? 'default',
       status: json['status'] as String? ?? 'queued',
       bytesDownloaded: json['bytesDownloaded'] as int? ?? 0,
       totalBytes: json['totalBytes'] as int? ?? 0,
@@ -78,6 +84,8 @@ class DownloadTaskModel {
       if (backdropPath != null) 'backdropPath': backdropPath,
       'downloadUrl': downloadUrl,
       'localFilePath': localFilePath,
+      'qualityLabel': qualityLabel,
+      'profileId': profileId,
       'status': status,
       'bytesDownloaded': bytesDownloaded,
       'totalBytes': totalBytes,
@@ -101,6 +109,8 @@ class DownloadTaskModel {
       backdropPath: task.backdropPath,
       downloadUrl: task.downloadUrl,
       localFilePath: task.localFilePath,
+      qualityLabel: task.qualityLabel,
+      profileId: task.profileId,
       status: task.status.name,
       bytesDownloaded: task.bytesDownloaded,
       totalBytes: task.totalBytes,
@@ -134,6 +144,8 @@ class DownloadTaskModel {
       backdropPath: backdropPath,
       downloadUrl: downloadUrl,
       localFilePath: localFilePath,
+      qualityLabel: qualityLabel,
+      profileId: profileId,
       status: parsedStatus,
       bytesDownloaded: bytesDownloaded,
       totalBytes: totalBytes,

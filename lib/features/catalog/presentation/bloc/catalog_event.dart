@@ -10,6 +10,8 @@ abstract class CatalogEvent extends Equatable {
 
 class LoadDiscoveryFeedsEvent extends CatalogEvent {}
 
+class LoadMoreCatalogEvent extends CatalogEvent {}
+
 class SearchQueryChangedEvent extends CatalogEvent {
   final String query;
   const SearchQueryChangedEvent(this.query);

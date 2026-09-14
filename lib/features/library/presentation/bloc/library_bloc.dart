@@ -12,6 +12,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         super(const LibraryState()) {
     on<LoadLibraryEvent>(_onLoadLibrary);
     on<ToggleWatchlistEvent>(_onToggleWatchlist);
+    on<ToggleWishlistEvent>(_onToggleWishlist);
     on<UpdateProgressEvent>(_onUpdateProgress);
     on<RemoveLibraryItemEvent>(_onRemoveLibraryItem);
   }
@@ -22,6 +23,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     try {
       final results = await Future.wait([
         _libraryRepository.getLibraryItems(category: LibraryCategory.watchlist),
+        _libraryRepository.getLibraryItems(category: LibraryCategory.wishlist),
         _libraryRepository.getLibraryItems(
             category: LibraryCategory.continueWatching),
         _libraryRepository.getLibraryItems(category: LibraryCategory.history),
@@ -30,8 +32,9 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       emit(state.copyWith(
         status: LibraryStatus.success,
         watchlist: results[0],
-        continueWatching: results[1],
-        history: results[2],
+        wishlist: results[1],
+        continueWatching: results[2],
+        history: results[3],
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -52,6 +55,30 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       add(LoadLibraryEvent());
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Failed to update watchlist: $e'));
+    }
+  }
+
+  Future<void> _onToggleWishlist(
+      ToggleWishlistEvent event, Emitter<LibraryState> emit) async {
+    try {
+      if (state.isInWishlist(event.item.id)) {
+        await _libraryRepository.removeItem(event.item.id);
+      } else {
+        await _libraryRepository.saveLibraryItem(
+          LibraryItem(
+            id: event.item.id,
+            title: event.item.title,
+            posterPath: event.item.posterPath,
+            backdropPath: event.item.backdropPath,
+            type: event.item.type,
+            category: LibraryCategory.wishlist,
+            updatedAt: DateTime.now(),
+          ),
+        );
+      }
+      add(LoadLibraryEvent());
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Failed to update wishlist: $e'));
     }
   }
 

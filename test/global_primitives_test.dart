@@ -84,7 +84,7 @@ void main() {
       expect(decoration.color, equals(AppColors.surfaceCard));
       expect(
         decoration.borderRadius,
-        equals(AppTokens.borderRadiusSmall),
+        equals(AppTokens.borderRadiusCard),
       );
     });
   });

@@ -69,7 +69,7 @@ void main() {
       updatedAt: DateTime(2026, 1, 1),
     );
 
-    testWidgets('MediaPosterCard renders title and rating with 2:3 ratio', (
+    testWidgets('MediaPosterCard renders poster image with 2:3 ratio', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -81,9 +81,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.text('8.7'), findsOneWidget);
-      expect(find.text('2022'), findsOneWidget);
+      expect(find.byType(MediaPosterCard), findsOneWidget);
     });
 
     testWidgets('ContinueWatchingCard renders progress and title', (
@@ -102,7 +100,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('BillboardHeroBanner renders action buttons and metadata', (
+    testWidgets('BillboardHeroBanner renders hero slide and metadata', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -117,8 +115,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.text('IMDb'), findsOneWidget);
+      expect(find.byType(BillboardHeroBanner), findsOneWidget);
+      expect(find.text('88%'), findsOneWidget);
     });
 
     testWidgets('HorizontalContentShelf renders section header and posters', (

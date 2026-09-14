@@ -30,4 +30,10 @@ abstract class DownloadRepository {
 
   /// Gets the path to the sandboxed vault directory.
   Future<String> getSandboxedVaultDirectory();
+
+  /// Gets completed download task by mediaId if it exists.
+  Future<DownloadTask?> getCompletedTask(int mediaId);
+
+  /// Automatically deletes an episode's local file if watched >= 80%.
+  Future<void> smartDeleteWatchedEpisode(int mediaId, int season, int episode);
 }

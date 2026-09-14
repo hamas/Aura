@@ -5,6 +5,7 @@ import 'package:aura/features/addons/domain/repositories/addon_repository.dart';
 import 'package:aura/features/addons/presentation/bloc/addon_bloc.dart';
 import 'package:aura/features/catalog/domain/entities/genre.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
+import 'package:aura/features/catalog/domain/entities/person_details.dart';
 import 'package:aura/features/catalog/domain/entities/season_episode.dart';
 import 'package:aura/features/catalog/domain/repositories/catalog_repository.dart';
 import 'package:aura/features/catalog/presentation/bloc/catalog_bloc.dart';
@@ -41,6 +42,15 @@ class FakeCatalogRepository implements CatalogRepository {
   @override
   Future<List<MediaItem>> getPopularSeries({int page = 1}) async => [mediaItem];
   @override
+  Future<List<MediaItem>> getNowPlayingMovies({int page = 1}) async =>
+      [mediaItem];
+  @override
+  Future<List<MediaItem>> getOnTheAirSeries({int page = 1}) async =>
+      [mediaItem];
+  @override
+  Future<List<MediaItem>> getInternationalHits({int page = 1}) async =>
+      [mediaItem];
+  @override
   Future<List<MediaItem>> searchMedia(String query, {int page = 1}) async =>
       [mediaItem];
   @override
@@ -55,6 +65,9 @@ class FakeCatalogRepository implements CatalogRepository {
       [
         {'key': 'mock_key', 'site': 'YouTube', 'type': 'Trailer'}
       ];
+  @override
+  Future<PersonDetails> getPersonDetails(int personId) async =>
+      throw UnimplementedError();
 }
 
 class FakeLibraryRepository implements LibraryRepository {
@@ -141,6 +154,11 @@ class FakeDownloadRepository implements DownloadRepository {
   Future<int> getTotalStorageUsage() async => 0;
   @override
   Future<String> getSandboxedVaultDirectory() async => '/mock/vault';
+  @override
+  Future<DownloadTask?> getCompletedTask(int mediaId) async => null;
+  @override
+  Future<void> smartDeleteWatchedEpisode(
+      int mediaId, int season, int episode) async {}
 }
 
 void main() {

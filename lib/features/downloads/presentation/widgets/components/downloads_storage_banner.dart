@@ -17,7 +17,7 @@ class DownloadsStorageBanner extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Storage Bar
+        // Storage Capacity Bar
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppTokens.spacingMd,
@@ -28,39 +28,125 @@ class DownloadsStorageBanner extends StatelessWidget {
             borderRadius: AppTokens.borderRadiusSmall,
             border: Border.all(color: AppColors.borderSubtle),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AuraIcon(
-                AppIcons.folderSpecial,
-                color: AppColors.accentPink,
-                size: 22,
+              Row(
+                children: [
+                  const AuraIcon(
+                    AppIcons.folderSpecial,
+                    color: AppColors.accentPink,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Private Vault Storage',
+                          style: context.auraText.bodyOverview.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${state.completedTasks.length} offline titles • ${state.formattedTotalStorage}',
+                          style: context.auraText.caption
+                              .copyWith(color: AppColors.textMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const AuraBadge(
+                    label: 'SANDBOXED',
+                    backgroundColor: Color(0x1EB877FF),
+                    borderColor: AppColors.accentPink,
+                    textColor: AppColors.accentPink,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Private Vault Storage',
-                      style: context.auraText.bodyOverview.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
+              const SizedBox(height: 10),
+
+              // Visual Capacity Bar (Aura Media / System / Free)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: SizedBox(
+                  height: 6,
+                  child: Row(
+                    children: [
+                      // Aura Media (accentPink)
+                      Expanded(
+                        flex: state.totalStorageBytes > 0
+                            ? (state.totalStorageBytes / (1024 * 1024 * 1024))
+                                .clamp(1, 100)
+                                .toInt()
+                            : 5,
+                        child: Container(color: AppColors.accentPink),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${state.completedTasks.length} offline titles • ${state.formattedTotalStorage}',
-                      style: context.auraText.caption
-                          .copyWith(color: AppColors.textMuted),
-                    ),
-                  ],
+                      const SizedBox(width: 2),
+                      // System & Other Apps (#444444)
+                      Expanded(
+                        flex: 30,
+                        child: Container(color: const Color(0xFF444444)),
+                      ),
+                      const SizedBox(width: 2),
+                      // Free Space (#222222)
+                      Expanded(
+                        flex: 65,
+                        child: Container(color: const Color(0xFF222222)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const AuraBadge(
-                label: 'SANDBOXED',
-                backgroundColor: Color(0x1EB877FF),
-                borderColor: AppColors.accentPink,
-                textColor: AppColors.accentPink,
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.accentPink,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Aura Vault',
+                        style: context.auraText.caption
+                            .copyWith(color: AppColors.textMuted, fontSize: 10),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF444444),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Other Apps',
+                        style: context.auraText.caption
+                            .copyWith(color: AppColors.textMuted, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Smart Cleanup Active',
+                    style: context.auraText.caption.copyWith(
+                      color: AppColors.accentPink,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -87,7 +173,7 @@ class DownloadsStorageBanner extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Watched episodes deleted • Next 2 episodes queued on Wi-Fi',
+                  'Auto-Delete Watched (>=80%) • Wi-Fi Only Mode Active',
                   style: context.auraText.caption.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -95,7 +181,7 @@ class DownloadsStorageBanner extends StatelessWidget {
                 ),
               ),
               const AuraBadge(
-                label: 'COMMUTER MODE',
+                label: 'AIR-GAP READY',
                 backgroundColor: Color(0x1EA0E1E5),
                 borderColor: AppColors.accentPink,
                 textColor: AppColors.accentPink,

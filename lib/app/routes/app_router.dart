@@ -6,6 +6,7 @@ import '../../core/presentation/primitives/primitives.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
+import '../../features/catalog/presentation/screens/category_screen.dart';
 import '../../features/catalog/presentation/screens/detail_screen.dart';
 import '../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
@@ -16,6 +17,7 @@ import '../../features/player/data/services/media_kit_player_service.dart';
 import '../../features/player/presentation/bloc/player_bloc.dart';
 import '../../features/player/presentation/bloc/player_event.dart';
 import '../../features/player/presentation/widgets/player_view.dart';
+import '../../features/catalog/presentation/screens/person_details_screen.dart';
 import '../../features/profiles/presentation/screens/profile_selection_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
@@ -88,7 +90,18 @@ class AppRouter {
         ],
       ),
 
-      // Profile Selection Screen Route (Full overlay outside navigation shell)
+      // Category Grid Screen Route
+      GoRoute(
+        path: '/category',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final genre = state.uri.queryParameters['genre'] ?? 'Action';
+          return NoTransitionPage(
+            child: CategoryScreen(genreName: genre),
+          );
+        },
+      ),
+
       // Profile Selection Screen Route (Full overlay outside navigation shell)
       GoRoute(
         path: '/profiles',
@@ -96,6 +109,24 @@ class AppRouter {
         pageBuilder: (context, state) => const NoTransitionPage(
           child: ProfileSelectionScreen(),
         ),
+      ),
+
+      // Person Details Screen Route
+      GoRoute(
+        path: '/person/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final idString = state.pathParameters['id'] ?? '0';
+          final id = int.tryParse(idString) ?? 0;
+          final initialName = state.extra as String?;
+
+          return NoTransitionPage(
+            child: PersonDetailsScreen(
+              personId: id,
+              initialName: initialName,
+            ),
+          );
+        },
       ),
 
       // Detail Screen Route
@@ -270,7 +301,7 @@ class MainNavigationScaffold extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            bottom: bottomPadding + 16,
+            bottom: bottomPadding + 8,
             child: Center(
               child: AuraFloatingBottomPill(
                 currentIndex: currentIndex,

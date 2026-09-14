@@ -1,61 +1,137 @@
 import 'dart:ui';
-import 'package:aura/core/presentation/primitives/primitives.dart';
+import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
 import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/core/theme/app_typography.dart';
-import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/clips/domain/entities/clip_item.dart';
 import 'package:aura/features/clips/presentation/bloc/clips_bloc.dart';
 import 'package:aura/features/clips/presentation/bloc/clips_event.dart';
-import 'package:aura/features/library/domain/entities/library_item.dart';
-import 'package:aura/features/library/presentation/bloc/library_bloc.dart';
-import 'package:aura/features/library/presentation/bloc/library_event.dart';
-import 'package:aura/features/library/presentation/bloc/library_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class ClipPageItem extends StatelessWidget {
+class ClipPageItem extends StatefulWidget {
   final ClipItem clip;
   final bool isActive;
+  final bool isPreloadNext;
   final bool isMuted;
   final bool isLiked;
-  final VoidCallback onPlayTap;
   final VoidCallback onShareTap;
 
   const ClipPageItem({
     super.key,
     required this.clip,
     required this.isActive,
+    this.isPreloadNext = false,
     this.isMuted = false,
     this.isLiked = false,
-    required this.onPlayTap,
     required this.onShareTap,
   });
 
   @override
+  State<ClipPageItem> createState() => _ClipPageItemState();
+}
+
+class _ClipPageItemState extends State<ClipPageItem>
+    with SingleTickerProviderStateMixin {
+  double _progress = 0.35;
+  bool _isPlaying = true;
+  BoxFit _fitMode = BoxFit.cover;
+  bool _showHeartAnim = false;
+  late final AnimationController _heartAnimController;
+
+  @override
+  void initState() {
+    super.initState();
+    _heartAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() => _showHeartAnim = false);
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _heartAnimController.dispose();
+    super.dispose();
+  }
+
+  void _triggerDoubleTapLike() {
+    if (!widget.isLiked) {
+      context.read<ClipsBloc>().add(ToggleClipLikeEvent(widget.clip.id));
+    }
+    setState(() => _showHeartAnim = true);
+    _heartAnimController.forward(from: 0.0);
+  }
+
+  void _navigateToDetails() {
+    context.push('/details', extra: widget.clip.mediaItem);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final bottomNavHeight = MediaQuery.of(context).padding.bottom + 64.0;
+    final genresLine = widget.clip.genres.isNotEmpty
+        ? widget.clip.genres.join(' • ')
+        : 'Trailer';
+    final genresAndYear = widget.clip.releaseYear.isNotEmpty
+        ? '$genresLine • ${widget.clip.releaseYear}'
+        : genresLine;
 
     return Stack(
       fit: StackFit.expand,
       children: [
         // 1. Full-Bleed 9:16 Video Canvas / Backdrop
-        clip.backdropPath != null
-            ? CachedNetworkImage(
-                imageUrl: clip.fullBackdropUrl,
-                fit: BoxFit.cover,
-                width: size.width,
-                height: size.height,
-                placeholder: (_, __) =>
-                    Container(color: AppColors.surfaceBackground),
-                errorWidget: (_, __, ___) =>
-                    Container(color: AppColors.surfaceBackground),
-              )
-            : Container(color: AppColors.surfaceBackground),
+        GestureDetector(
+          onTap: () {
+            setState(() => _isPlaying = !_isPlaying);
+          },
+          onDoubleTap: _triggerDoubleTapLike,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (_fitMode == BoxFit.contain &&
+                  widget.clip.backdropPath != null)
+                Positioned.fill(
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.clip.fullBackdropUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              widget.clip.backdropPath != null
+                  ? CachedNetworkImage(
+                      imageUrl: widget.clip.fullBackdropUrl,
+                      fit: _fitMode,
+                      width: size.width,
+                      height: size.height,
+                      placeholder: (_, __) =>
+                          Container(color: AppColors.surfaceBackground),
+                      errorWidget: (_, __, ___) =>
+                          Container(color: AppColors.surfaceBackground),
+                    )
+                  : Container(color: AppColors.surfaceBackground),
+              if (!_isPlaying && widget.isActive)
+                const Center(
+                  child: AuraIcon(
+                    AppIcons.play,
+                    size: 64,
+                    color: Colors.white70,
+                  ),
+                ),
+            ],
+          ),
+        ),
 
-        // 2. High-Performance Dark Scrim Overlays (Top and Bottom)
+        // 2. High-Performance Dark Scrim Overlays (Top & Bottom)
         const Positioned(
           top: 0,
           left: 0,
@@ -66,10 +142,7 @@ class ClipPageItem extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xD9000000),
-                  Colors.transparent,
-                ],
+                colors: [Color(0xD9000000), Colors.transparent],
               ),
             ),
           ),
@@ -78,7 +151,7 @@ class ClipPageItem extends StatelessWidget {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 320,
+          height: 360,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -94,163 +167,139 @@ class ClipPageItem extends StatelessWidget {
           ),
         ),
 
-        // 4. Vertical Interactive Action Rail (Right Side)
+        // 3. Right Action Rail (Like, Share, Fit Toggle, Volume)
         Positioned(
-          right: 14,
-          bottom: 120,
-          child: BlocBuilder<LibraryBloc, LibraryState>(
-            builder: (context, libraryState) {
-              final isInWatchlist = libraryState.watchlist
-                  .any((w) => w.id == clip.mediaId.toString());
-
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Add to My List Toggle (Heart Icon)
-                  _buildRailAction(
-                    icon: AppIcons.favorite,
-                    fill: isInWatchlist ? 1.0 : 0.0,
-                    iconColor:
-                        isInWatchlist ? AppColors.accentPink : Colors.white,
-                    onTap: () {
-                      final libraryItem = LibraryItem(
-                        id: clip.mediaId.toString(),
-                        title: clip.title,
-                        posterPath: clip.posterPath,
-                        backdropPath: clip.backdropPath,
-                        type: clip.mediaType.name,
-                        category: LibraryCategory.watchlist,
-                        updatedAt: DateTime.now(),
-                      );
-                      context
-                          .read<LibraryBloc>()
-                          .add(ToggleWatchlistEvent(libraryItem));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: AppColors.surfaceElevated,
-                          content: Text(
-                            isInWatchlist
-                                ? 'Removed "${clip.title}" from My List'
-                                : 'Added "${clip.title}" to My List',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  // Share Sheet Button (Forward Icon)
-                  _buildRailAction(
-                    icon: AppIcons.forward,
-                    onTap: onShareTap,
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Audio Mute Toggle (Volume Up / Volume Mute Icons)
-                  _buildRailAction(
-                    icon: isMuted ? AppIcons.volumeMute : AppIcons.volumeUp,
-                    onTap: () {
-                      context.read<ClipsBloc>().add(ToggleClipMuteEvent());
-                    },
-                  ),
-                ],
-              );
-            },
+          right: AppTokens.spacingMd,
+          bottom: bottomNavHeight + 110.0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildRailAction(
+                icon: AppIcons.favorite,
+                iconColor: widget.isLiked ? AppColors.accentPink : Colors.white,
+                fill: widget.isLiked ? 1.0 : 0.0,
+                onTap: () {
+                  context
+                      .read<ClipsBloc>()
+                      .add(ToggleClipLikeEvent(widget.clip.id));
+                },
+              ),
+              const SizedBox(height: 14),
+              _buildRailAction(
+                icon: AppIcons.forward,
+                onTap: widget.onShareTap,
+              ),
+              const SizedBox(height: 14),
+              _buildRailAction(
+                icon: _fitMode == BoxFit.cover
+                    ? AppIcons.fullscreen
+                    : AppIcons.fullscreenExit,
+                onTap: () {
+                  setState(() {
+                    _fitMode = _fitMode == BoxFit.cover
+                        ? BoxFit.contain
+                        : BoxFit.cover;
+                  });
+                },
+              ),
+              const SizedBox(height: 14),
+              _buildRailAction(
+                icon: widget.isMuted ? AppIcons.volumeMute : AppIcons.volumeUp,
+                onTap: () {
+                  context.read<ClipsBloc>().add(ToggleClipMuteEvent());
+                },
+              ),
+            ],
           ),
         ),
 
-        // 5. Bottom Info Scrim Overlay
+        // 4. Bottom Metadata Layer & Interactive Scrubbing Slider
         Positioned(
-          left: 18,
-          right: 86, // Leave clearance for right action rail
-          bottom: 24,
+          left: AppTokens.screenEdgeHorizontal,
+          right: AppTokens.screenEdgeHorizontal + 56.0,
+          bottom: bottomNavHeight + 8.0,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Main Media Title
-              Text(
-                clip.title,
-                style: AppTypography.displayHero.copyWith(
-                  fontSize: 22,
-                  height: 1.15,
+              GestureDetector(
+                onTap: _navigateToDetails,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.clip.title,
+                      style: context.auraText.sectionTitle.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      genresAndYear,
+                      style: context.auraText.caption.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    if (widget.clip.overview.isNotEmpty)
+                      Text(
+                        widget.clip.overview,
+                        style: context.auraText.bodyOverview.copyWith(
+                          color: AppColors.textMuted,
+                          fontSize: 13.0,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
 
-              // Metadata Pills Row
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  AuraBadge.rating(clip.formattedRating),
-                  AuraBadge.quality('4K HDR'),
-                  if (clip.releaseYear.isNotEmpty)
-                    AuraBadge(
-                      label: clip.releaseYear,
-                      backgroundColor: AppColors.surfaceElevated,
-                      borderColor: const Color(0x33FFFFFF),
-                      textColor: AppColors.textSecondary,
-                    ),
-                  AuraBadge(
-                    label:
-                        clip.mediaType == MediaType.movie ? 'MOVIE' : 'SERIES',
-                    backgroundColor: AppColors.surfaceElevated,
-                    borderColor: const Color(0x33FFFFFF),
-                    textColor: AppColors.textMuted,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // 2-line Synopsis
-              if (clip.overview.isNotEmpty)
-                Text(
-                  clip.overview,
-                  style: AppTypography.bodyOverview.copyWith(
-                    fontSize: 12.5,
-                    height: 1.35,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              // Real-time Interactive Scrubber
+              SliderTheme(
+                data: const SliderThemeData(
+                  trackHeight: 2.5,
+                  activeTrackColor: AppColors.accentPink,
+                  inactiveTrackColor: Colors.white24,
+                  thumbColor: AppColors.accentPink,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 4.5),
+                  overlayShape: RoundSliderOverlayShape(overlayRadius: 8.0),
                 ),
-              const SizedBox(height: 14),
-
-              // Primary Action: Full Stream Play Button
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentPink,
-                  foregroundColor: const Color(0xFF0E0F12),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppTokens.borderRadiusSmall,
-                  ),
-                  elevation: 4,
-                ),
-                onPressed: onPlayTap,
-                icon: const AuraIcon(
-                  AppIcons.play,
-                  size: 22,
-                  color: Color(0xFF0E0F12),
-                  fill: 1.0,
-                ),
-                label: const Text(
-                  'Play',
-                  style: TextStyle(
-                    color: Color(0xFF0E0F12),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                    letterSpacing: -0.2,
-                  ),
+                child: Slider(
+                  value: _progress,
+                  onChanged: (val) {
+                    setState(() => _progress = val);
+                  },
                 ),
               ),
             ],
           ),
         ),
+
+        // 5. Animated Heart Double-Tap Overlay
+        if (_showHeartAnim)
+          Center(
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: _heartAnimController,
+                curve: Curves.elasticOut,
+              ),
+              child: const AuraIcon(
+                AppIcons.favorite,
+                size: 96,
+                color: AppColors.accentPink,
+                fill: 1.0,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -266,43 +315,22 @@ class ClipPageItem extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24.0),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // 8 Blur Background
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                child: const SizedBox.expand(),
-              ),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceBackground.withValues(alpha: 0.25),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1.0,
             ),
-
-            // 20% Opacity Surface Background Overlay & Border
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceBackground.withValues(alpha: 0.20),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1.0,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.40),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: AuraIcon(
-                icon,
-                color: iconColor,
-                size: 24,
-                fill: fill,
-              ),
-            ),
-          ],
+          ),
+          child: AuraIcon(
+            icon,
+            color: iconColor,
+            size: 22,
+            fill: fill,
+          ),
         ),
       ),
     );

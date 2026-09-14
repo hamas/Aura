@@ -28,7 +28,8 @@ class TopTenShelf extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.screenEdgeHorizontal),
           child: Text(
             title,
             style: context.auraText.sectionTitle
@@ -40,8 +41,8 @@ class TopTenShelf extends StatelessWidget {
           height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppTokens.screenEdgeHorizontal),
             itemCount: displayItems.length,
             itemBuilder: (context, index) {
               final item = displayItems[index];

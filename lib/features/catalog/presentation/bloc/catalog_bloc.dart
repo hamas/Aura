@@ -11,6 +11,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       : _catalogRepository = catalogRepository,
         super(const CatalogState()) {
     on<LoadDiscoveryFeedsEvent>(_onLoadDiscoveryFeeds);
+    on<LoadMoreCatalogEvent>(_onLoadMoreCatalog);
     on<SearchQueryChangedEvent>(_onSearchQueryChanged);
     on<LoadMediaDetailsEvent>(_onLoadMediaDetails);
     on<LoadSeasonDetailsEvent>(_onLoadSeasonDetails);
@@ -26,7 +27,13 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         _catalogRepository.getTrendingSeries(),
         _catalogRepository.getPopularMovies(),
         _catalogRepository.getPopularSeries(),
+        _catalogRepository.getNowPlayingMovies(),
+        _catalogRepository.getOnTheAirSeries(),
+        _catalogRepository.getInternationalHits(),
       ]);
+
+      final initialGrid = <MediaItem>[...results[3], ...results[4]];
+      final uniqueGrid = _deduplicate(initialGrid);
 
       emit(state.copyWith(
         status: CatalogStatus.success,
@@ -35,6 +42,12 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         trendingSeries: results[2],
         popularMovies: results[3],
         popularSeries: results[4],
+        latestMovies: results[5],
+        latestSeries: results[6],
+        internationalHits: results[7],
+        gridItems: uniqueGrid,
+        currentPage: 1,
+        hasReachedMax: false,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -42,6 +55,47 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         errorMessage: 'Failed to load discovery catalog: $e',
       ));
     }
+  }
+
+  Future<void> _onLoadMoreCatalog(
+      LoadMoreCatalogEvent event, Emitter<CatalogState> emit) async {
+    if (state.isLoadingMore || state.hasReachedMax) return;
+
+    emit(state.copyWith(isLoadingMore: true));
+    try {
+      final nextPage = state.currentPage + 1;
+      final results = await Future.wait([
+        _catalogRepository.getPopularMovies(page: nextPage),
+        _catalogRepository.getPopularSeries(page: nextPage),
+      ]);
+
+      final newItems = <MediaItem>[...results[0], ...results[1]];
+      if (newItems.isEmpty) {
+        emit(state.copyWith(isLoadingMore: false, hasReachedMax: true));
+        return;
+      }
+
+      final updatedGrid = _deduplicate([...state.gridItems, ...newItems]);
+      emit(state.copyWith(
+        gridItems: updatedGrid,
+        currentPage: nextPage,
+        isLoadingMore: false,
+      ));
+    } catch (_) {
+      emit(state.copyWith(isLoadingMore: false));
+    }
+  }
+
+  List<MediaItem> _deduplicate(List<MediaItem> items) {
+    final seen = <String>{};
+    final unique = <MediaItem>[];
+    for (final item in items) {
+      final key = '${item.type.name}_${item.id}';
+      if (seen.add(key)) {
+        unique.add(item);
+      }
+    }
+    return unique;
   }
 
   Future<void> _onSearchQueryChanged(
@@ -62,7 +116,11 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
 
   Future<void> _onLoadMediaDetails(
       LoadMediaDetailsEvent event, Emitter<CatalogState> emit) async {
-    emit(state.copyWith(isLoadingDetails: true, currentSeason: null));
+    emit(state.copyWith(
+      isLoadingDetails: true,
+      clearSelectedMedia: true,
+      currentSeason: null,
+    ));
     try {
       final details =
           await _catalogRepository.getMediaDetails(event.id, event.type);

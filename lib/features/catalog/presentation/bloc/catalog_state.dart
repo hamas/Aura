@@ -11,6 +11,13 @@ class CatalogState extends Equatable {
   final List<MediaItem> trendingSeries;
   final List<MediaItem> popularMovies;
   final List<MediaItem> popularSeries;
+  final List<MediaItem> latestMovies;
+  final List<MediaItem> latestSeries;
+  final List<MediaItem> internationalHits;
+  final List<MediaItem> gridItems;
+  final int currentPage;
+  final bool isLoadingMore;
+  final bool hasReachedMax;
   final List<MediaItem> searchResults;
   final bool isSearching;
   final MediaItem? selectedMedia;
@@ -26,6 +33,13 @@ class CatalogState extends Equatable {
     this.trendingSeries = const [],
     this.popularMovies = const [],
     this.popularSeries = const [],
+    this.latestMovies = const [],
+    this.latestSeries = const [],
+    this.internationalHits = const [],
+    this.gridItems = const [],
+    this.currentPage = 1,
+    this.isLoadingMore = false,
+    this.hasReachedMax = false,
     this.searchResults = const [],
     this.isSearching = false,
     this.selectedMedia,
@@ -42,9 +56,17 @@ class CatalogState extends Equatable {
     List<MediaItem>? trendingSeries,
     List<MediaItem>? popularMovies,
     List<MediaItem>? popularSeries,
+    List<MediaItem>? latestMovies,
+    List<MediaItem>? latestSeries,
+    List<MediaItem>? internationalHits,
+    List<MediaItem>? gridItems,
+    int? currentPage,
+    bool? isLoadingMore,
+    bool? hasReachedMax,
     List<MediaItem>? searchResults,
     bool? isSearching,
     MediaItem? selectedMedia,
+    bool clearSelectedMedia = false,
     bool? isLoadingDetails,
     Season? currentSeason,
     bool? isLoadingSeason,
@@ -57,9 +79,17 @@ class CatalogState extends Equatable {
       trendingSeries: trendingSeries ?? this.trendingSeries,
       popularMovies: popularMovies ?? this.popularMovies,
       popularSeries: popularSeries ?? this.popularSeries,
+      latestMovies: latestMovies ?? this.latestMovies,
+      latestSeries: latestSeries ?? this.latestSeries,
+      internationalHits: internationalHits ?? this.internationalHits,
+      gridItems: gridItems ?? this.gridItems,
+      currentPage: currentPage ?? this.currentPage,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       searchResults: searchResults ?? this.searchResults,
       isSearching: isSearching ?? this.isSearching,
-      selectedMedia: selectedMedia ?? this.selectedMedia,
+      selectedMedia:
+          clearSelectedMedia ? null : (selectedMedia ?? this.selectedMedia),
       isLoadingDetails: isLoadingDetails ?? this.isLoadingDetails,
       currentSeason: currentSeason ?? this.currentSeason,
       isLoadingSeason: isLoadingSeason ?? this.isLoadingSeason,
@@ -75,6 +105,13 @@ class CatalogState extends Equatable {
         trendingSeries,
         popularMovies,
         popularSeries,
+        latestMovies,
+        latestSeries,
+        internationalHits,
+        gridItems,
+        currentPage,
+        isLoadingMore,
+        hasReachedMax,
         searchResults,
         isSearching,
         selectedMedia,

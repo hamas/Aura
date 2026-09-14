@@ -6,6 +6,7 @@ enum LibraryStatus { initial, loading, success, failure }
 class LibraryState extends Equatable {
   final LibraryStatus status;
   final List<LibraryItem> watchlist;
+  final List<LibraryItem> wishlist;
   final List<LibraryItem> continueWatching;
   final List<LibraryItem> history;
   final String? errorMessage;
@@ -13,6 +14,7 @@ class LibraryState extends Equatable {
   const LibraryState({
     this.status = LibraryStatus.initial,
     this.watchlist = const [],
+    this.wishlist = const [],
     this.continueWatching = const [],
     this.history = const [],
     this.errorMessage,
@@ -22,9 +24,14 @@ class LibraryState extends Equatable {
     return watchlist.any((i) => i.id == mediaId);
   }
 
+  bool isInWishlist(String mediaId) {
+    return wishlist.any((i) => i.id == mediaId);
+  }
+
   LibraryState copyWith({
     LibraryStatus? status,
     List<LibraryItem>? watchlist,
+    List<LibraryItem>? wishlist,
     List<LibraryItem>? continueWatching,
     List<LibraryItem>? history,
     String? errorMessage,
@@ -32,6 +39,7 @@ class LibraryState extends Equatable {
     return LibraryState(
       status: status ?? this.status,
       watchlist: watchlist ?? this.watchlist,
+      wishlist: wishlist ?? this.wishlist,
       continueWatching: continueWatching ?? this.continueWatching,
       history: history ?? this.history,
       errorMessage: errorMessage,
@@ -40,5 +48,5 @@ class LibraryState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [status, watchlist, continueWatching, history, errorMessage];
+      [status, watchlist, wishlist, continueWatching, history, errorMessage];
 }

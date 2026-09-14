@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
 import '../../../addons/presentation/bloc/addon_bloc.dart';
@@ -347,9 +348,18 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     return AuraScaffold(
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {
-          final item = state.selectedMedia ?? widget.initialItem;
+          final isSelectedMatching = state.selectedMedia != null &&
+              state.selectedMedia!.id == widget.id &&
+              state.selectedMedia!.type == widget.type;
+          final isInitialMatching = widget.initialItem != null &&
+              widget.initialItem!.id == widget.id &&
+              widget.initialItem!.type == widget.type;
 
-          if (item == null && state.isLoadingDetails) {
+          final item = isSelectedMatching
+              ? state.selectedMedia
+              : (isInitialMatching ? widget.initialItem : null);
+
+          if (state.isLoadingDetails && item == null) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.accentPink),
             );
@@ -394,7 +404,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppTokens.screenEdgeHorizontal),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

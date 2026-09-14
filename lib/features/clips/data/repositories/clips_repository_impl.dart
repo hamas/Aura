@@ -1,5 +1,7 @@
+import 'package:aura/features/catalog/domain/entities/genre.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/domain/repositories/catalog_repository.dart';
+import 'package:aura/features/catalog/domain/services/media_content_filter.dart';
 import 'package:aura/features/clips/domain/entities/clip_item.dart';
 import 'package:aura/features/clips/domain/repositories/clips_repository.dart';
 
@@ -9,31 +11,66 @@ class ClipsRepositoryImpl implements ClipsRepository {
   ClipsRepositoryImpl({required CatalogRepository catalogRepository})
       : _catalogRepository = catalogRepository;
 
+  final Map<String, String?> _videoCache = {};
+
   @override
   Future<List<ClipItem>> getTrendingClips() async {
     try {
-      final trending = await _catalogRepository.getTrending();
+      final rawTrending = await _catalogRepository.getTrending();
+      final sanitizedTrending = MediaContentFilter.sanitize(rawTrending);
       final clips = <ClipItem>[];
 
-      for (final media in trending) {
+      for (final media in sanitizedTrending) {
         if (media.backdropPath == null && media.posterPath == null) continue;
 
+        final cacheKey = '${media.type.name}_${media.id}';
         String? videoKey;
-        try {
-          final videos =
-              await _catalogRepository.getVideos(media.id, media.type);
-          final trailer = videos.firstWhere(
-            (Map<String, dynamic> v) =>
-                v['site'] == 'YouTube' &&
-                (v['type'] == 'Trailer' || v['type'] == 'Teaser'),
-            orElse: () =>
-                videos.isNotEmpty ? videos.first : <String, dynamic>{},
-          );
-          if (trailer.containsKey('key')) {
-            videoKey = trailer['key'] as String?;
+
+        if (_videoCache.containsKey(cacheKey)) {
+          videoKey = _videoCache[cacheKey];
+        } else {
+          try {
+            final videos =
+                await _catalogRepository.getVideos(media.id, media.type);
+
+            // Priority 1: Official Trailer on YouTube
+            final officialTrailer = videos.firstWhere(
+              (Map<String, dynamic> v) =>
+                  v['site'] == 'YouTube' &&
+                  v['type'] == 'Trailer' &&
+                  v['official'] == true,
+              orElse: () => <String, dynamic>{},
+            );
+
+            if (officialTrailer.containsKey('key')) {
+              videoKey = officialTrailer['key'] as String?;
+            } else {
+              // Priority 2: Any Trailer on YouTube
+              final anyTrailer = videos.firstWhere(
+                (Map<String, dynamic> v) =>
+                    v['site'] == 'YouTube' && v['type'] == 'Trailer',
+                orElse: () => <String, dynamic>{},
+              );
+
+              if (anyTrailer.containsKey('key')) {
+                videoKey = anyTrailer['key'] as String?;
+              } else {
+                // Priority 3: Teaser on YouTube
+                final teaser = videos.firstWhere(
+                  (Map<String, dynamic> v) =>
+                      v['site'] == 'YouTube' && v['type'] == 'Teaser',
+                  orElse: () =>
+                      videos.isNotEmpty ? videos.first : <String, dynamic>{},
+                );
+                if (teaser.containsKey('key')) {
+                  videoKey = teaser['key'] as String?;
+                }
+              }
+            }
+            _videoCache[cacheKey] = videoKey;
+          } catch (_) {
+            // Continue if video query encounters an isolated network hiccup
           }
-        } catch (_) {
-          // Continue if video query encounters an isolated network hiccup
         }
 
         clips.add(
@@ -48,7 +85,7 @@ class ClipsRepositoryImpl implements ClipsRepository {
             voteAverage: media.voteAverage,
             releaseYear: media.releaseYear,
             mediaType: media.type,
-            genres: media.genres.map((g) => g.name).toList(),
+            genres: media.genres.map((Genre g) => g.name).toList(),
             mediaItem: media,
           ),
         );

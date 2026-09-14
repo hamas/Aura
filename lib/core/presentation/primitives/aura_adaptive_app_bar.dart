@@ -1,25 +1,58 @@
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../constants/app_assets.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_typography.dart';
 import 'aura_icon.dart';
 
-class AuraCategoryPill {
+class AuraCategoryPill extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
 
   const AuraCategoryPill({
+    super.key,
     required this.label,
     this.isSelected = false,
     required this.onTap,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: isSelected ? Colors.white : const Color(0x22FFFFFF),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              label,
+              style: context.auraText.caption.copyWith(
+                color: isSelected ? AppColors.surfaceBackground : Colors.white,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class AuraAdaptiveAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -194,7 +227,12 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
           // Foreground Content
           Container(
             padding: widget.padding ??
-                EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
+                EdgeInsets.fromLTRB(
+                  AppTokens.screenEdgeHorizontal,
+                  topPadding + 4,
+                  AppTokens.screenEdgeHorizontal,
+                  8,
+                ),
             child: Row(
               children: [
                 if (widget.leading != null) ...[
@@ -263,43 +301,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
           children: widget.categories!.map((cat) {
             return Padding(
               padding: const EdgeInsets.only(right: AppTokens.spacingSm),
-              child: GestureDetector(
-                onTap: cat.onTap,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: cat.isSelected
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(
-                          color: cat.isSelected
-                              ? Colors.white
-                              : const Color(0x22FFFFFF),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        cat.label,
-                        style: context.auraText.caption.copyWith(
-                          color: cat.isSelected
-                              ? AppColors.surfaceBackground
-                              : Colors.white,
-                          fontWeight: cat.isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              child: cat,
             );
           }).toList(),
         ),
@@ -329,48 +331,37 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
       ),
       const SizedBox(width: 4),
       GestureDetector(
-        onTap: widget.onProfileTap ?? () => context.push('/profiles'),
-        child: Builder(
-          builder: (context) {
-            final authBloc = _tryGetAuthBloc(context);
-            final photoUrl = authBloc?.state.user?.photoUrl;
-            return Container(
+        onTap: widget.onProfileTap ?? () => context.push('/settings'),
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.transparent,
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              AppAssets.appIcon,
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.accentPink, width: 1.5),
-                color: AppColors.surfaceElevated,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: AppColors.accentPink,
+                child: const Center(
+                  child: Text(
+                    'A',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
-              child: ClipOval(
-                child: photoUrl != null && photoUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: photoUrl,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) => const Icon(
-                          Icons.person,
-                          size: 18,
-                          color: AppColors.textSecondary,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.person,
-                        size: 18,
-                        color: AppColors.textSecondary,
-                      ),
-              ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     ];
-  }
-
-  AuthBloc? _tryGetAuthBloc(BuildContext context) {
-    try {
-      return context.read<AuthBloc>();
-    } catch (_) {
-      return null;
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
 
@@ -11,6 +12,7 @@ class BillboardHeroBanner extends StatefulWidget {
   final void Function(MediaItem item)? onDetailsTap;
   final double? height;
   final bool autoScroll;
+  final int? activeIndex;
 
   const BillboardHeroBanner({
     super.key,
@@ -19,6 +21,7 @@ class BillboardHeroBanner extends StatefulWidget {
     this.onDetailsTap,
     this.height,
     this.autoScroll = false,
+    this.activeIndex,
   });
 
   @override
@@ -36,6 +39,23 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
     _pageController = PageController();
     if (widget.autoScroll && widget.items.length > 1) {
       _startAutoScroll();
+    }
+  }
+
+  @override
+  void didUpdateWidget(BillboardHeroBanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activeIndex != null &&
+        widget.activeIndex != _currentPage &&
+        widget.activeIndex! >= 0 &&
+        widget.activeIndex! < widget.items.length &&
+        _pageController.hasClients) {
+      _currentPage = widget.activeIndex!;
+      _pageController.animateToPage(
+        widget.activeIndex!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
@@ -67,11 +87,10 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
       return const SizedBox.shrink();
     }
 
-    final bannerHeight =
-        widget.height ?? MediaQuery.of(context).size.height * 0.55;
+    final heroHeight = MediaQuery.sizeOf(context).height * 0.55;
 
     return SizedBox(
-      height: bannerHeight,
+      height: heroHeight,
       child: Stack(
         children: [
           PageView.builder(
@@ -82,33 +101,9 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
             },
             itemBuilder: (context, index) {
               final item = widget.items[index];
-              return _buildHeroSlide(context, item, bannerHeight, index);
+              return _buildHeroSlide(context, item, heroHeight, index);
             },
           ),
-          if (widget.items.length > 1)
-            Positioned(
-              bottom: 12,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  widget.items.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _currentPage == index ? 22 : 6,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? AppColors.accentPink
-                          : Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -116,215 +111,206 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
 
   Widget _buildHeroSlide(
       BuildContext context, MediaItem item, double height, int index) {
-    final primaryGenre =
-        item.genres.isNotEmpty ? item.genres.first.name : 'Movie';
+    final genresList = item.genres.isNotEmpty
+        ? item.genres.take(3).map((g) => g.name).toList()
+        : ['Featured'];
     final year = item.releaseYear;
-    final metadataText =
-        year.isNotEmpty ? '$primaryGenre  •  $year' : primaryGenre;
+    final genreYearString = year.isNotEmpty
+        ? '${genresList.join(' • ')} • $year'
+        : genresList.join(' • ');
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        item.backdropPath != null
-            ? CachedNetworkImage(
-                imageUrl: item.fullBackdropUrl,
-                fit: BoxFit.cover,
-                placeholder: (_, __) =>
-                    Container(color: AppColors.surfaceBackground),
-                errorWidget: (_, __, ___) =>
-                    Container(color: AppColors.surfaceBackground),
-              )
-            : Container(color: AppColors.surfaceBackground),
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.0, 0.25, 0.65, 1.0],
-                colors: [
-                  Color(0x66141414),
-                  Colors.transparent,
-                  Color(0x80141414),
-                  AppColors.surfaceBackground,
-                ],
+    return InkWell(
+      onTap: () {
+        if (widget.onDetailsTap != null) {
+          widget.onDetailsTap!(item);
+        } else if (widget.onPlayTap != null) {
+          widget.onPlayTap!(item);
+        }
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // A. Backdrop / Key Art Presentation
+          item.backdropPath != null
+              ? CachedNetworkImage(
+                  imageUrl: item.fullBackdropUrl,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  placeholder: (_, __) =>
+                      Container(color: AppColors.surfaceBackground),
+                  errorWidget: (_, __, ___) =>
+                      Container(color: AppColors.surfaceBackground),
+                )
+              : Container(color: AppColors.surfaceBackground),
+
+          // Top 0.0 - 0.20, Mid 0.20 - 0.50, Bottom 0.50 - 1.0 Vignette Scrim Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.20, 0.50, 1.0],
+                  colors: [
+                    AppColors.surfaceBackground.withValues(alpha: 0.50),
+                    Colors.transparent,
+                    Colors.transparent,
+                    AppColors.surfaceBackground,
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 24,
-          left: 20,
-          right: 20,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // IMDb / Rotten Tomatoes Rating Badge Chip (Transparent, 20% smaller)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // IMDb badge icon
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 3, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5C518),
-                      borderRadius: BorderRadius.circular(2),
+
+          // C. Bottom-Aligned Centered Metadata Stack
+          Positioned(
+            bottom: AppTokens.spacingMd,
+            left: AppTokens.screenEdgeHorizontal,
+            right: AppTokens.screenEdgeHorizontal,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 1. Ratings Row (Tomatometer & Popcorn)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Critics Rating: Fresh (>=60%) tomato / Rotten (<60%) splat
+                    const Text('🍅', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '88%',
+                      style: context.auraText.metadataPill.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    child: const Text(
-                      'IMDb',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 7.2,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
+                    const SizedBox(width: AppTokens.spacingSm),
+                    // Audience Rating: Fresh (>=60%) popcorn bucket
+                    const Text('🍿', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '94%',
+                      style: context.auraText.metadataPill.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTokens.spacingSm),
+
+                // 2. Title Logo (Clearart PNG) or Title Text fallback
+                if (item.logoUrl != null && item.logoUrl!.isNotEmpty)
+                  CachedNetworkImage(
+                    imageUrl: item.logoUrl!,
+                    height: 52.0,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    imageBuilder: (context, imageProvider) => Container(
+                      constraints: const BoxConstraints(maxWidth: 240.0),
+                      decoration: const BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black54,
+                            blurRadius: 12,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Image(
+                        image: imageProvider,
+                        height: 52.0,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                      ),
+                    ),
+                    placeholder: (_, __) => const SizedBox(height: 52.0),
+                    errorWidget: (_, __, ___) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        item.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.auraText.displayHero.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black87,
+                              blurRadius: 10,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      item.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.auraText.displayHero.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black87,
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    item.formattedRating.isNotEmpty
-                        ? item.formattedRating
-                        : '8.5',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9.6,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  // Rotten Tomatoes icon & score
-                  const Icon(
-                    Icons.local_pizza_rounded,
-                    color: Color(0xFFFA320A),
-                    size: 10.4,
-                  ),
-                  const SizedBox(width: 2),
-                  const Text(
-                    '94%',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9.6,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  // Popcorn icon & audience score
-                  const Icon(
-                    Icons.confirmation_number_rounded,
-                    color: Color(0xFFFFC107),
-                    size: 10.4,
-                  ),
-                  const SizedBox(width: 2),
-                  const Text(
-                    '88%',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9.6,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Movie / Show Title Logo Text or Clearart Image
-              if (item.logoUrl != null && item.logoUrl!.isNotEmpty)
-                CachedNetworkImage(
-                  imageUrl: item.logoUrl!,
-                  height: 54.0,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.center,
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: const BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54,
-                          blurRadius: 12,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Image(
-                      image: imageProvider,
-                      height: 54.0,
-                      fit: BoxFit.contain,
-                      alignment: Alignment.center,
-                    ),
-                  ),
-                  placeholder: (_, __) => Text(
-                    item.title,
-                    style: context.auraText.displayHero.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 10.0,
-                          color: Colors.black.withValues(alpha: 0.87),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  errorWidget: (_, __, ___) => Text(
-                    item.title,
-                    style: context.auraText.displayHero.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 10.0,
-                          color: Colors.black.withValues(alpha: 0.87),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              else
+                const SizedBox(height: AppTokens.spacingXs),
+
+                // 3. Genres & Year Line
                 Text(
-                  item.title,
-                  style: context.auraText.displayHero.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        offset: const Offset(0, 2),
-                        blurRadius: 10.0,
-                        color: Colors.black.withValues(alpha: 0.87),
-                      ),
-                    ],
+                  genreYearString,
+                  style: context.auraText.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              const SizedBox(height: 6),
-              // Genre • Year Metadata
-              Text(
-                metadataText,
-                style: context.auraText.caption.copyWith(
-                  color: const Color(0xFFE5E5E5),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+
+                // 20px space between content (genre + year) and slider dots
+                const SizedBox(height: 20.0),
+
+                // 4. White 50% Smaller Slider Dots
+                if (widget.items.length > 1)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      widget.items.length,
+                      (dotIndex) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                        width: _currentPage == dotIndex ? 11.0 : 3.0,
+                        height: 2.0,
+                        decoration: BoxDecoration(
+                          color: _currentPage == dotIndex
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(1.0),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

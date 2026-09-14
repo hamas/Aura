@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/entities/library_item.dart';
 import '../../domain/repositories/library_repository.dart';
+import '../../../downloads/data/repositories/download_repository_impl.dart';
 import '../datasources/cloud_sync_datasource.dart';
 
 class LibraryRepositoryImpl implements LibraryRepository {
@@ -98,6 +99,23 @@ class LibraryRepositoryImpl implements LibraryRepository {
     );
 
     await saveLibraryItem(item);
+
+    // Smart Delete Watched Episode: Trigger automatic background cleanup if progress >= 80%
+    if (progress.percentage >= 0.80 &&
+        seasonNumber != null &&
+        episodeNumber != null) {
+      try {
+        final parsedId = int.tryParse(mediaId);
+        if (parsedId != null) {
+          final downloadRepo = DownloadRepositoryImpl();
+          await downloadRepo.smartDeleteWatchedEpisode(
+            parsedId,
+            seasonNumber,
+            episodeNumber,
+          );
+        }
+      } catch (_) {}
+    }
   }
 
   @override

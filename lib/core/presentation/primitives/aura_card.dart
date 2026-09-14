@@ -49,7 +49,7 @@ class _AuraCardState extends State<AuraCard> {
   @override
   Widget build(BuildContext context) {
     final themeExt = context.auraTheme;
-    final effectiveRadius = widget.borderRadius ?? AppTokens.borderRadiusSmall;
+    final effectiveRadius = widget.borderRadius ?? AppTokens.borderRadiusCard;
     final effectiveColor = widget.color ?? themeExt.cardBackground;
 
     return FocusableActionDetector(

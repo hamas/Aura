@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/presentation/primitives/aura_section_header.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../domain/entities/media_item.dart';
 import 'media_poster_card.dart';
 
@@ -24,9 +25,10 @@ class HorizontalContentShelf<T> extends StatelessWidget {
     this.itemBuilder,
     this.onItemTap,
     this.onHeaderTap,
-    this.height = 230.0,
-    this.itemSpacing = 12.0,
-    this.padding = const EdgeInsets.symmetric(horizontal: 18.0),
+    this.height = AppTokens.posterHeightMobile,
+    this.itemSpacing = AppTokens.shelfCardGap,
+    this.padding =
+        const EdgeInsets.symmetric(horizontal: AppTokens.screenEdgeHorizontal),
   });
 
   /// Factory constructor for standard 2:3 MediaItem poster shelves
@@ -37,9 +39,10 @@ class HorizontalContentShelf<T> extends StatelessWidget {
     required List<MediaItem> items,
     void Function(MediaItem item)? onItemTap,
     VoidCallback? onHeaderTap,
-    double height = 230.0,
-    double itemSpacing = 12.0,
-    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 18.0),
+    double height = AppTokens.posterHeightMobile,
+    double itemSpacing = AppTokens.shelfCardGap,
+    EdgeInsetsGeometry padding =
+        const EdgeInsets.symmetric(horizontal: AppTokens.screenEdgeHorizontal),
   }) {
     return HorizontalContentShelf<MediaItem>(
       key: key,

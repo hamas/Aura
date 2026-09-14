@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
+import '../../theme/app_tokens.dart';
 import 'aura_icon.dart';
 
 /// Floating pill-style toolbar navigation primitive for Aura.
@@ -53,8 +54,8 @@ class AuraFloatingBottomPill extends StatelessWidget {
 
           // Icon-Only Floating Pill Toolbar Items (Home, Clips, Library)
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppTokens.screenEdgeHorizontal, vertical: 10.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

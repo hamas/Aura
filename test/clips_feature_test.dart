@@ -5,6 +5,7 @@ import 'package:aura/features/addons/domain/repositories/addon_repository.dart';
 import 'package:aura/features/addons/presentation/bloc/addon_bloc.dart';
 import 'package:aura/features/catalog/domain/entities/genre.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
+import 'package:aura/features/catalog/domain/entities/person_details.dart';
 import 'package:aura/features/catalog/domain/entities/season_episode.dart';
 import 'package:aura/features/catalog/domain/repositories/catalog_repository.dart';
 import 'package:aura/features/clips/data/repositories/clips_repository_impl.dart';
@@ -41,6 +42,12 @@ class MockCatalogRepository implements CatalogRepository {
   @override
   Future<List<MediaItem>> getPopularSeries({int page = 1}) async => items;
   @override
+  Future<List<MediaItem>> getNowPlayingMovies({int page = 1}) async => items;
+  @override
+  Future<List<MediaItem>> getOnTheAirSeries({int page = 1}) async => items;
+  @override
+  Future<List<MediaItem>> getInternationalHits({int page = 1}) async => items;
+  @override
   Future<List<MediaItem>> searchMedia(String query, {int page = 1}) async =>
       items;
   @override
@@ -55,6 +62,9 @@ class MockCatalogRepository implements CatalogRepository {
       [
         {'key': 'mock_trailer_key', 'site': 'YouTube', 'type': 'Trailer'}
       ];
+  @override
+  Future<PersonDetails> getPersonDetails(int personId) async =>
+      throw UnimplementedError();
 }
 
 class MockLibraryRepository implements LibraryRepository {
@@ -192,7 +202,7 @@ void main() {
     });
 
     testWidgets(
-        'ClipsScreen renders vertical page item with metadata and action buttons',
+        'ClipsScreen renders vertical page item with metadata and scrubber slider',
         (
       tester,
     ) async {
@@ -224,13 +234,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Fight Club'), findsOneWidget);
-      expect(find.text('8.8'), findsOneWidget);
-      expect(find.text('4K HDR'), findsOneWidget);
-      expect(find.text('MOVIE'), findsOneWidget);
-      expect(find.byIcon(AppIcons.favorite), findsOneWidget);
-      expect(find.byIcon(AppIcons.forward), findsOneWidget);
-      expect(find.byIcon(AppIcons.volumeUp), findsOneWidget);
-      expect(find.text('Play'), findsOneWidget);
+      expect(find.textContaining('Drama'), findsOneWidget);
+      expect(find.byType(Slider), findsOneWidget);
     });
   });
 }

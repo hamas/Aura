@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../data/helpers/tmdb_genre_mapper.dart';
 import 'genre.dart';
 import 'season_episode.dart';
 
@@ -50,6 +51,7 @@ class MediaItem extends Equatable {
   final String? backdropPath;
   final String? logoPath;
   final double voteAverage;
+  final int voteCount;
   final String? releaseDate;
   final MediaType type;
   final List<Genre> genres;
@@ -68,6 +70,7 @@ class MediaItem extends Equatable {
     this.backdropPath,
     this.logoPath,
     this.voteAverage = 0.0,
+    this.voteCount = 0,
     this.releaseDate,
     required this.type,
     this.genres = const [],
@@ -88,6 +91,8 @@ class MediaItem extends Equatable {
   String? get logoUrl =>
       logoPath != null ? 'https://image.tmdb.org/t/p/w500$logoPath' : null;
 
+  List<int> get genreIds => genres.map((g) => g.id).toList();
+
   String get releaseYear {
     if (releaseDate != null && releaseDate!.length >= 4) {
       return releaseDate!.substring(0, 4);
@@ -96,6 +101,20 @@ class MediaItem extends Equatable {
   }
 
   String get formattedRating => voteAverage.toStringAsFixed(1);
+
+  /// Returns true if the media item has a release date that is today or in the past.
+  bool get isReleased {
+    if (releaseDate == null || releaseDate!.trim().isEmpty) return true;
+    try {
+      final parsed = DateTime.parse(releaseDate!.trim());
+      final now = DateTime.now();
+      // Compare dates ignoring time
+      final today = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      return !parsed.isAfter(today);
+    } catch (_) {
+      return true;
+    }
+  }
 
   /// Generates the Stremio standardized ID for add-on querying
   String getStremioId({int? season, int? episode}) {
@@ -115,6 +134,7 @@ class MediaItem extends Equatable {
     String? backdropPath,
     String? logoPath,
     double? voteAverage,
+    int? voteCount,
     String? releaseDate,
     MediaType? type,
     List<Genre>? genres,
@@ -132,6 +152,7 @@ class MediaItem extends Equatable {
       backdropPath: backdropPath ?? this.backdropPath,
       logoPath: logoPath ?? this.logoPath,
       voteAverage: voteAverage ?? this.voteAverage,
+      voteCount: voteCount ?? this.voteCount,
       releaseDate: releaseDate ?? this.releaseDate,
       type: type ?? this.type,
       genres: genres ?? this.genres,
@@ -144,15 +165,30 @@ class MediaItem extends Equatable {
 
   factory MediaItem.fromTmdbJson(Map<String, dynamic> json,
       {MediaType? explicitType}) {
-    final isMovie = (explicitType != null && explicitType == MediaType.movie) ||
-        json.containsKey('title') ||
-        json['media_type'] == 'movie';
+    final bool isMovie;
+    if (explicitType != null) {
+      isMovie = explicitType == MediaType.movie;
+    } else if (json['media_type'] != null) {
+      isMovie = json['media_type'] == 'movie';
+    } else {
+      isMovie = json.containsKey('title') || json.containsKey('release_date');
+    }
 
-    final rawGenres = json['genres'] as List<dynamic>? ?? [];
-    final genresList = rawGenres
-        .whereType<Map<String, dynamic>>()
-        .map((g) => Genre.fromJson(g))
+    final rawGenres = json['genres'] as List<dynamic>?;
+    final rawGenreIds = (json['genre_ids'] as List<dynamic>?)
+        ?.map((e) => (e as num).toInt())
         .toList();
+
+    List<Genre> genresList = [];
+    if (rawGenres != null && rawGenres.isNotEmpty) {
+      genresList = rawGenres
+          .whereType<Map<String, dynamic>>()
+          .map((g) => Genre.fromJson(g))
+          .toList();
+    } else if (rawGenreIds != null && rawGenreIds.isNotEmpty) {
+      final names = TmdbGenreMapper.getGenreNames(rawGenreIds);
+      genresList = names.map((name) => Genre(id: 0, name: name)).toList();
+    }
 
     final rawCredits = json['credits'];
     List<CastMember> castList = [];
@@ -196,17 +232,22 @@ class MediaItem extends Equatable {
       }
     }
 
+    final relDate = (json['release_date'] ?? json['first_air_date']) as String?;
+
     return MediaItem(
       id: json['id'] as int? ?? 0,
       imdbId: imdb,
-      title: (isMovie ? json['title'] : json['name']) as String? ?? 'Untitled',
+      title: ((isMovie ? json['title'] : json['name']) ??
+          json['title'] ??
+          json['name'] ??
+          'Untitled') as String,
       overview: json['overview'] as String? ?? '',
       posterPath: json['poster_path'] as String?,
       backdropPath: json['backdrop_path'] as String?,
       logoPath: logo,
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      releaseDate:
-          (isMovie ? json['release_date'] : json['first_air_date']) as String?,
+      voteCount: json['vote_count'] as int? ?? 0,
+      releaseDate: relDate,
       type: isMovie ? MediaType.movie : MediaType.series,
       genres: genresList,
       cast: castList,

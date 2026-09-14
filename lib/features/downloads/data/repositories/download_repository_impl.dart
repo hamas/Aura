@@ -66,8 +66,11 @@ class DownloadRepositoryImpl implements DownloadRepository {
     // Prepare sandboxed path if not already generated
     var effectiveTask = task;
     if (effectiveTask.localFilePath.isEmpty) {
-      final sandboxedPath =
-          await _storageService.generateObfuscatedFilePath(task.id);
+      final sandboxedPath = await _storageService.generateObfuscatedFilePath(
+        task.id,
+        profileId: task.profileId,
+        mediaId: task.mediaId,
+      );
       effectiveTask = effectiveTask.copyWith(localFilePath: sandboxedPath);
     }
 
@@ -191,5 +194,35 @@ class DownloadRepositoryImpl implements DownloadRepository {
   Future<String> getSandboxedVaultDirectory() async {
     final dir = await _storageService.getVaultDirectory();
     return dir.path;
+  }
+
+  @override
+  Future<DownloadTask?> getCompletedTask(int mediaId) async {
+    await _ensureInitialized();
+    try {
+      return _tasksCache.values.firstWhere(
+        (t) => t.mediaId == mediaId && t.status == DownloadStatus.completed,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> smartDeleteWatchedEpisode(
+      int mediaId, int season, int episode) async {
+    await _ensureInitialized();
+    final task = _tasksCache.values.cast<DownloadTask?>().firstWhere(
+          (t) =>
+              t != null &&
+              t.mediaId == mediaId &&
+              t.seasonNumber == season &&
+              t.episodeNumber == episode &&
+              t.status == DownloadStatus.completed,
+          orElse: () => null,
+        );
+    if (task != null) {
+      await deleteDownload(task.id);
+    }
   }
 }

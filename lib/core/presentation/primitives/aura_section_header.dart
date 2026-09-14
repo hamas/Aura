@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
+import '../../theme/app_tokens.dart';
 import '../../theme/app_typography.dart';
 import 'aura_icon.dart';
 
@@ -19,7 +20,8 @@ class AuraSectionHeader extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
-    this.padding = const EdgeInsets.fromLTRB(18, 20, 18, 10),
+    this.padding = const EdgeInsets.fromLTRB(
+        AppTokens.screenEdgeHorizontal, 14, AppTokens.screenEdgeHorizontal, 8),
     this.showChevron = true,
   });
 

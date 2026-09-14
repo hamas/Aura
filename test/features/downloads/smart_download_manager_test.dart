@@ -56,6 +56,27 @@ class FakeDownloadRepository implements DownloadRepository {
 
   @override
   Future<String> getSandboxedVaultDirectory() async => '/fake/vault';
+
+  @override
+  Future<DownloadTask?> getCompletedTask(int mediaId) async {
+    try {
+      return tasks.firstWhere(
+        (t) => t.mediaId == mediaId && t.status == DownloadStatus.completed,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> smartDeleteWatchedEpisode(
+      int mediaId, int season, int episode) async {
+    tasks.removeWhere((t) =>
+        t.mediaId == mediaId &&
+        t.seasonNumber == season &&
+        t.episodeNumber == episode &&
+        t.status == DownloadStatus.completed);
+  }
 }
 
 class FakeSettingsRepository implements SmartDownloadSettingsRepository {

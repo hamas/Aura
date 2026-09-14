@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum LibraryCategory { watchlist, history, continueWatching }
+enum LibraryCategory { watchlist, wishlist, history, continueWatching }
 
 class WatchProgress extends Equatable {
   final int positionSeconds;

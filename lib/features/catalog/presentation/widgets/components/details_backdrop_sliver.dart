@@ -115,32 +115,15 @@ class DetailsBackdropSliver extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (item.logoUrl != null && item.logoUrl!.isNotEmpty)
-                          CachedNetworkImage(
-                            imageUrl: item.logoUrl!,
-                            height: 48.0,
-                            fit: BoxFit.contain,
-                            alignment: Alignment.centerLeft,
-                            errorWidget: (_, __, ___) => Text(
-                              item.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.auraText.displayHero.copyWith(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                        else
-                          Text(
-                            item.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.auraText.displayHero.copyWith(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Text(
+                          item.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.auraText.displayHero.copyWith(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
+                        ),
                         const SizedBox(height: 6),
                         Wrap(
                           spacing: AppTokens.spacingSm,

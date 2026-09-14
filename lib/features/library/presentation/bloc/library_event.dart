@@ -18,6 +18,14 @@ class ToggleWatchlistEvent extends LibraryEvent {
   List<Object?> get props => [item];
 }
 
+class ToggleWishlistEvent extends LibraryEvent {
+  final LibraryItem item;
+  const ToggleWishlistEvent(this.item);
+
+  @override
+  List<Object?> get props => [item];
+}
+
 class UpdateProgressEvent extends LibraryEvent {
   final String mediaId;
   final String title;
