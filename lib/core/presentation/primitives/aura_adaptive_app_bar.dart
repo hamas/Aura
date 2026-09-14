@@ -1,16 +1,15 @@
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../../features/auth/presentation/bloc/auth_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_typography.dart';
 import 'aura_icon.dart';
 
-/// Data model representing a category filter pill in [AuraAdaptiveAppBar].
 class AuraCategoryPill {
   final String label;
   final bool isSelected;
@@ -23,18 +22,6 @@ class AuraCategoryPill {
   });
 }
 
-/// Netflix-style cinematic adaptive header.
-///
-/// Dynamically adapts between:
-/// 1. **Root State (`canPop == false`)**: Displays
-///    category switcher pills ("TV Shows", "Movies", "Categories ▾")
-///    and right-side action buttons (Cast, Search, Profile Avatar).
-/// 2. **Nested / Pushed Route State (`canPop == true`)**:
-///    Displays an authentic Netflix-style header with standard back navigation
-///    back button (`AppIcons.back`), nested view title, and
-///    search/action buttons.
-/// 3. **Scroll Transparency**: Interpolates background from 100% transparent at offset 0.0
-///    to solid `#141414` past offset > 50.0.
 class AuraAdaptiveAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String? title;
   final Widget? titleWidget;
@@ -188,42 +175,59 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     final opacity = _currentOpacity;
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return Container(
-      padding:
-          widget.padding ?? EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceBackground.withAlpha((opacity * 255).round()),
-        boxShadow: opacity > 0.4
-            ? [
-                BoxShadow(
-                  color: Colors.black.withAlpha((0.65 * 255).round()),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        children: [
-          // Leading Section: Back Button (Nested) OR Custom Leading Widget
-          if (widget.leading != null) ...[
-            widget.leading!,
-            const SizedBox(width: 10),
-          ] else if (canPop) ...[
-            _buildBackButton(context),
-            const SizedBox(width: 10),
-          ],
-
-          // Center/Title Section: Category Switcher (Root) OR View Title (Nested)
-          Expanded(
-            child: canPop
-                ? _buildNestedTitle(context)
-                : _buildRootCategories(context),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+        child: Container(
+          padding:
+              widget.padding ?? EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [0.0, 0.4, 1.0],
+              colors: [
+                Color.lerp(
+                  const Color(0x99000000),
+                  AppColors.surfaceBackground,
+                  opacity,
+                )!,
+                Color.lerp(
+                  const Color(0x4D141414),
+                  AppColors.surfaceBackground,
+                  opacity,
+                )!,
+                AppColors.surfaceBackground.withValues(alpha: opacity),
+              ],
+            ),
+            boxShadow: opacity > 0.4
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
-
-          // Actions Section (Right)
-          ..._buildActions(context),
-        ],
+          child: Row(
+            children: [
+              if (widget.leading != null) ...[
+                widget.leading!,
+                const SizedBox(width: 10),
+              ] else if (canPop) ...[
+                _buildBackButton(context),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: canPop
+                    ? _buildNestedTitle(context)
+                    : _buildRootCategories(context),
+              ),
+              ..._buildActions(context),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -233,7 +237,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: Colors.black.withAlpha((0.65 * 255).round()),
+        color: Colors.black.withValues(alpha: 0.65),
         shape: BoxShape.circle,
       ),
       child: IconButton(
@@ -252,81 +256,68 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     if (widget.titleWidget != null) {
       return widget.titleWidget!;
     }
-    if (widget.title != null && widget.title!.isNotEmpty) {
-      return Text(
-        widget.title!,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: context.auraText.sectionTitle.copyWith(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-    }
-    return const SizedBox.shrink();
+    return Text(
+      widget.title ?? '',
+      style:
+          context.auraText.sectionTitle.copyWith(color: AppColors.textPrimary),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   Widget _buildRootCategories(BuildContext context) {
     if (widget.categorySwitcher != null) {
       return widget.categorySwitcher!;
     }
+
     if (widget.categories != null && widget.categories!.isNotEmpty) {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: widget.categories!.map((pill) {
+          children: widget.categories!.map((cat) {
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _buildCategoryPill(pill),
+              padding: const EdgeInsets.only(right: AppTokens.spacingSm),
+              child: GestureDetector(
+                onTap: cat.onTap,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: cat.isSelected
+                        ? AppColors.accentPink
+                        : AppColors.surfaceElevated.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
+                    border: Border.all(
+                      color: cat.isSelected
+                          ? AppColors.accentPink
+                          : const Color(0x33FFFFFF),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    cat.label,
+                    style: context.auraText.caption.copyWith(
+                      color: cat.isSelected
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                      fontWeight:
+                          cat.isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
             );
           }).toList(),
         ),
       );
     }
-    if (widget.titleWidget != null) {
-      return widget.titleWidget!;
-    }
-    if (widget.title != null && widget.title!.isNotEmpty) {
-      return Text(
-        widget.title!,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: context.auraText.sectionTitle,
-      );
-    }
-    return const SizedBox.shrink();
-  }
 
-  Widget _buildCategoryPill(AuraCategoryPill pill) {
-    return GestureDetector(
-      onTap: pill.onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: pill.isSelected
-              ? AppColors.accentPink
-              : AppColors.surfaceElevated.withAlpha(200),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: pill.isSelected
-                ? AppColors.accentPink
-                : Colors.white.withAlpha(30),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          pill.label,
-          style: TextStyle(
-            color: pill.isSelected ? Colors.white : AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: pill.isSelected ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-      ),
+    return Text(
+      widget.title ?? 'AURA',
+      style:
+          context.auraText.sectionTitle.copyWith(color: AppColors.accentPink),
     );
   }
 
@@ -334,92 +325,66 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     if (widget.actions != null) {
       return widget.actions!;
     }
+
     if (!widget.showDefaultActions) {
-      return const [];
+      return [];
     }
 
     return [
-      // Cast Action Icon
       IconButton(
-        padding: const EdgeInsets.all(6),
-        constraints: const BoxConstraints(),
         onPressed: widget.onCastTap ?? () => _showDefaultCastDialog(context),
-        icon: const AuraIcon(
-          AppIcons.cast,
-          color: AppColors.textPrimary,
-          size: 22,
-        ),
-        tooltip: 'Cast screen',
+        icon: const AuraIcon(AppIcons.cast,
+            color: AppColors.textPrimary, size: 20),
+      ),
+      IconButton(
+        onPressed: widget.onSearchTap ?? () => context.push('/search'),
+        icon: const AuraIcon(AppIcons.search,
+            color: AppColors.textPrimary, size: 20),
       ),
       const SizedBox(width: 4),
-
-      // Search Action Icon
-      IconButton(
-        padding: const EdgeInsets.all(6),
-        constraints: const BoxConstraints(),
-        onPressed: widget.onSearchTap ?? () => context.push('/search'),
-        icon: const AuraIcon(
-          AppIcons.search,
-          color: AppColors.textPrimary,
-          size: 23,
+      GestureDetector(
+        onTap: widget.onProfileTap ?? () => context.push('/profiles'),
+        child: Builder(
+          builder: (context) {
+            final authBloc = _tryGetAuthBloc(context);
+            final photoUrl = authBloc?.state.user?.photoUrl;
+            return Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.accentPink, width: 1.5),
+                color: AppColors.surfaceElevated,
+              ),
+              child: ClipOval(
+                child: photoUrl != null && photoUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: photoUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => const Icon(
+                          Icons.person,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+              ),
+            );
+          },
         ),
-        tooltip: 'Search media',
       ),
-      const SizedBox(width: 8),
-
-      // Profile Avatar Action
-      _buildProfileAvatar(context),
     ];
   }
 
-  Widget _buildProfileAvatar(BuildContext context) {
-    AuthState? authState;
+  AuthBloc? _tryGetAuthBloc(BuildContext context) {
     try {
-      authState = context.watch<AuthBloc>().state;
+      return context.read<AuthBloc>();
     } catch (_) {
-      authState = null;
+      return null;
     }
-
-    final user = authState?.user;
-    final isAuthenticated = authState?.isAuthenticated ?? false;
-
-    return GestureDetector(
-      onTap: widget.onProfileTap ?? () => context.push('/settings'),
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: AppTokens.borderRadiusSmall,
-          border: Border.all(
-            color: isAuthenticated
-                ? AppColors.accentPink
-                : const Color(0xFF333333),
-            width: 1.5,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppTokens.radiusSmall - 1),
-          child: user?.photoUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: user!.photoUrl!,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: AppColors.surfaceElevated,
-                  ),
-                  errorWidget: (_, __, ___) => const AuraIcon(
-                    AppIcons.person,
-                    color: AppColors.textSecondary,
-                    size: 16,
-                  ),
-                )
-              : const AuraIcon(
-                  AppIcons.person,
-                  color: AppColors.textSecondary,
-                  size: 16,
-                ),
-        ),
-      ),
-    );
   }
 }
