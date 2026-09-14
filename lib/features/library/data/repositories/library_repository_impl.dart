@@ -20,10 +20,25 @@ class LibraryRepositoryImpl implements LibraryRepository {
         _cloudSync = cloudSync ?? CloudSyncDataSource(),
         _authRepository = authRepository;
 
+  Future<String> _getStorageKey() async {
+    final user = await _authRepository?.getCurrentUser();
+    if (user != null && user.id.isNotEmpty) {
+      return 'aura_user_library_${user.id}';
+    }
+    return _keyLocalLibrary;
+  }
+
   @override
   Future<List<LibraryItem>> getLibraryItems({LibraryCategory? category}) async {
-    final rawList = _prefs.getStringList(_keyLocalLibrary) ?? [];
-    final items = rawList.map((str) {
+    final key = await _getStorageKey();
+    var rawList = _prefs.getStringList(key);
+
+    // If switching to user account for the first time, fallback to guest local library
+    if ((rawList == null || rawList.isEmpty) && key != _keyLocalLibrary) {
+      rawList = _prefs.getStringList(_keyLocalLibrary) ?? [];
+    }
+
+    final items = (rawList ?? []).map((str) {
       return LibraryItem.fromJson(jsonDecode(str) as Map<String, dynamic>);
     }).toList();
 
@@ -35,13 +50,14 @@ class LibraryRepositoryImpl implements LibraryRepository {
 
   @override
   Future<void> saveLibraryItem(LibraryItem item) async {
+    final key = await _getStorageKey();
     final items = await getLibraryItems();
     final updated = List<LibraryItem>.from(items)
       ..removeWhere((i) => i.id == item.id && i.category == item.category)
       ..insert(0, item);
 
     final rawList = updated.map((i) => jsonEncode(i.toJson())).toList();
-    await _prefs.setStringList(_keyLocalLibrary, rawList);
+    await _prefs.setStringList(key, rawList);
 
     await syncWithCloud();
   }
@@ -86,10 +102,11 @@ class LibraryRepositoryImpl implements LibraryRepository {
 
   @override
   Future<void> removeItem(String mediaId) async {
+    final key = await _getStorageKey();
     final items = await getLibraryItems();
     final updated = items.where((i) => i.id != mediaId).toList();
     final rawList = updated.map((i) => jsonEncode(i.toJson())).toList();
-    await _prefs.setStringList(_keyLocalLibrary, rawList);
+    await _prefs.setStringList(key, rawList);
 
     await syncWithCloud();
   }

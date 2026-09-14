@@ -7,15 +7,13 @@ class AuthRepositoryImpl implements AuthRepository {
   final GoogleAuthDataSource _googleAuthDataSource;
   final StreamController<UserProfile?> _authStateController =
       StreamController<UserProfile?>.broadcast();
+  StreamSubscription<UserProfile?>? _authSubscription;
 
   AuthRepositoryImpl({GoogleAuthDataSource? googleAuthDataSource})
       : _googleAuthDataSource = googleAuthDataSource ?? GoogleAuthDataSource() {
-    _initCurrentUser();
-  }
-
-  Future<void> _initCurrentUser() async {
-    final user = await _googleAuthDataSource.getCurrentUser();
-    _authStateController.add(user);
+    _authSubscription = _googleAuthDataSource.authStateChanges.listen((user) {
+      _authStateController.add(user);
+    });
   }
 
   @override
@@ -37,5 +35,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signOut() async {
     await _googleAuthDataSource.signOut();
     _authStateController.add(null);
+  }
+
+  void dispose() {
+    _authSubscription?.cancel();
+    _authStateController.close();
   }
 }
