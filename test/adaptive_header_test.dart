@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AuraAdaptiveAppBar Widget Tests', () {
-    testWidgets('renders Root Mode with A glyph and category pills',
+    testWidgets('renders Root Mode with category pills and action icons',
         (tester) async {
       bool tvShowsTapped = false;
       bool moviesTapped = false;
@@ -64,12 +64,12 @@ void main() {
         ),
       );
 
-      // Verify back button is displayed instead of glyph/categories
-      expect(find.byIcon(AppIcons.arrowBackIosNew), findsOneWidget);
+      // Verify back button is displayed instead of categories
+      expect(find.byIcon(AppIcons.back), findsOneWidget);
       expect(find.text('Stranger Things'), findsOneWidget);
 
       // Tap back button
-      await tester.tap(find.byIcon(AppIcons.arrowBackIosNew));
+      await tester.tap(find.byIcon(AppIcons.back));
       expect(backPressed, isTrue);
     });
 

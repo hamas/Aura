@@ -34,7 +34,8 @@ abstract final class AppIcons {
   static const IconData download = Symbols.download_rounded;
   static const IconData downloadDone = Symbols.download_done_rounded;
   static const IconData downloading = Symbols.downloading_rounded;
-  static const IconData downloadForOffline = Symbols.download_for_offline_rounded;
+  static const IconData downloadForOffline =
+      Symbols.download_for_offline_rounded;
   static const IconData delete = Symbols.delete_rounded;
   static const IconData deleteSweep = Symbols.delete_sweep_rounded;
   static const IconData close = Symbols.close_rounded;

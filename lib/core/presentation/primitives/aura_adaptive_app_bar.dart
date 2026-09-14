@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../features/auth/presentation/bloc/auth_state.dart';
-import '../../constants/app_assets.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
 import '../../theme/app_tokens.dart';
@@ -24,15 +23,15 @@ class AuraCategoryPill {
   });
 }
 
-/// Netflix-style cinematic adaptive header with "A" brand glyph.
+/// Netflix-style cinematic adaptive header.
 ///
 /// Dynamically adapts between:
-/// 1. **Root State (`canPop == false`)**: Displays the 34px "A" brand glyph,
-///    adjacent category switcher pills ("TV Shows", "Movies", "Categories ▾"),
+/// 1. **Root State (`canPop == false`)**: Displays
+///    category switcher pills ("TV Shows", "Movies", "Categories ▾")
 ///    and right-side action buttons (Cast, Search, Profile Avatar).
 /// 2. **Nested / Pushed Route State (`canPop == true`)**:
 ///    Displays an authentic Netflix-style header with standard back navigation
-///    back button (`AppIcons.arrowBackIosNew`), nested view title, and
+///    back button (`AppIcons.back`), nested view title, and
 ///    search/action buttons.
 /// 3. **Scroll Transparency**: Interpolates background from 100% transparent at offset 0.0
 ///    to solid `#141414` past offset > 50.0.
@@ -52,7 +51,6 @@ class AuraAdaptiveAppBar extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onCastTap;
   final VoidCallback? onSearchTap;
   final VoidCallback? onProfileTap;
-  final double glyphHeight;
   final Widget? leading;
   final EdgeInsetsGeometry? padding;
 
@@ -73,7 +71,6 @@ class AuraAdaptiveAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.onCastTap,
     this.onSearchTap,
     this.onProfileTap,
-    this.glyphHeight = 34.0,
     this.leading,
     this.padding,
   });
@@ -208,15 +205,14 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
       ),
       child: Row(
         children: [
-          // Leading Section: Back Button (Nested) OR "A" Brand Glyph (Root)
-          if (widget.leading != null)
-            widget.leading!
-          else if (canPop)
-            _buildBackButton(context)
-          else
-            _buildAuraGlyph(context),
-
-          const SizedBox(width: 10),
+          // Leading Section: Back Button (Nested) OR Custom Leading Widget
+          if (widget.leading != null) ...[
+            widget.leading!,
+            const SizedBox(width: 10),
+          ] else if (canPop) ...[
+            _buildBackButton(context),
+            const SizedBox(width: 10),
+          ],
 
           // Center/Title Section: Category Switcher (Root) OR View Title (Nested)
           Expanded(
@@ -228,31 +224,6 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
           // Actions Section (Right)
           ..._buildActions(context),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAuraGlyph(BuildContext context) {
-    return Image.asset(
-      AppAssets.auraGlyph,
-      height: widget.glyphHeight,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => Container(
-        height: widget.glyphHeight,
-        width: widget.glyphHeight * 0.75,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.accentPink.withAlpha(50),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: const Text(
-          'A',
-          style: TextStyle(
-            color: AppColors.accentPink,
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
       ),
     );
   }
