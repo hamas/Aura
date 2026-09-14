@@ -44,7 +44,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
   void _startHideTimer() {
     _hideTimer?.cancel();
     if (widget.state.isPlaying) {
-      _hideTimer = Timer(const Duration(seconds: 4), () {
+      _hideTimer = Timer(const Duration(seconds: 3), () {
         if (mounted) {
           setState(() => _isVisible = false);
         }
@@ -244,6 +244,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
     final dur = widget.state.duration;
     final maxSec = dur.inSeconds > 0 ? dur.inSeconds.toDouble() : 1.0;
     final curSec = pos.inSeconds.toDouble().clamp(0.0, maxSec);
+    final remaining = dur > pos ? dur - pos : Duration.zero;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -254,7 +255,11 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
             children: [
               Text(
                 Formatters.formatDuration(pos),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Expanded(
                 child: SliderTheme(
@@ -278,8 +283,12 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
                 ),
               ),
               Text(
-                Formatters.formatDuration(dur),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                '-${Formatters.formatDuration(remaining)}',
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

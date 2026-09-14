@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/media_item.dart';
 import '../../domain/repositories/catalog_repository.dart';
 import 'catalog_event.dart';
 import 'catalog_state.dart';
@@ -12,6 +13,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     on<LoadDiscoveryFeedsEvent>(_onLoadDiscoveryFeeds);
     on<SearchQueryChangedEvent>(_onSearchQueryChanged);
     on<LoadMediaDetailsEvent>(_onLoadMediaDetails);
+    on<LoadSeasonDetailsEvent>(_onLoadSeasonDetails);
   }
 
   Future<void> _onLoadDiscoveryFeeds(
@@ -60,12 +62,34 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
 
   Future<void> _onLoadMediaDetails(
       LoadMediaDetailsEvent event, Emitter<CatalogState> emit) async {
-    emit(state.copyWith(isLoadingDetails: true));
+    emit(state.copyWith(isLoadingDetails: true, currentSeason: null));
     try {
       final details = await _catalogRepository.getMediaDetails(event.id, event.type);
       emit(state.copyWith(selectedMedia: details, isLoadingDetails: false));
+
+      if (event.type == MediaType.series && details.seasons.isNotEmpty) {
+        final initialSeasonNumber = details.seasons.first.seasonNumber;
+        add(LoadSeasonDetailsEvent(
+          seriesId: event.id,
+          seasonNumber: initialSeasonNumber,
+        ));
+      }
     } catch (e) {
       emit(state.copyWith(isLoadingDetails: false, errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onLoadSeasonDetails(
+      LoadSeasonDetailsEvent event, Emitter<CatalogState> emit) async {
+    emit(state.copyWith(isLoadingSeason: true));
+    try {
+      final season = await _catalogRepository.getSeasonDetails(
+        event.seriesId,
+        event.seasonNumber,
+      );
+      emit(state.copyWith(currentSeason: season, isLoadingSeason: false));
+    } catch (e) {
+      emit(state.copyWith(isLoadingSeason: false, errorMessage: e.toString()));
     }
   }
 }

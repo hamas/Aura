@@ -26,3 +26,16 @@ class LoadMediaDetailsEvent extends CatalogEvent {
   @override
   List<Object?> get props => [id, type];
 }
+
+class LoadSeasonDetailsEvent extends CatalogEvent {
+  final int seriesId;
+  final int seasonNumber;
+  const LoadSeasonDetailsEvent({
+    required this.seriesId,
+    required this.seasonNumber,
+  });
+
+  @override
+  List<Object?> get props => [seriesId, seasonNumber];
+}
+

@@ -95,6 +95,12 @@ class AppRouter {
           final title = extra['title'] as String?;
           final subtitle = extra['subtitle'] as String?;
           final headers = extra['headers'] as Map<String, String>?;
+          final mediaId = extra['mediaId'] as String?;
+          final posterPath = extra['posterPath'] as String?;
+          final backdropPath = extra['backdropPath'] as String?;
+          final mediaType = extra['type'] as String?;
+          final seasonNumber = extra['seasonNumber'] as int?;
+          final episodeNumber = extra['episodeNumber'] as int?;
 
           final playerService = MediaKitPlayerService();
 
@@ -114,6 +120,12 @@ class AppRouter {
             child: PlayerView(
               playerService: playerService,
               onBack: () => Navigator.of(context).pop(),
+              mediaId: mediaId,
+              posterPath: posterPath,
+              backdropPath: backdropPath,
+              mediaType: mediaType,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
             ),
           );
         },
