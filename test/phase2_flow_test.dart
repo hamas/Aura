@@ -6,7 +6,9 @@ import 'package:aura/features/catalog/domain/entities/season_episode.dart';
 
 void main() {
   group('Phase 2 - Stremio Add-on Protocol & Catalog Entity Tests', () {
-    test('MediaItem generates standardized IMDb Stremio IDs for movies and series', () {
+    test(
+        'MediaItem generates standardized IMDb Stremio IDs for movies and series',
+        () {
       const movie = MediaItem(
         id: 550,
         imdbId: 'tt0137523',
@@ -25,11 +27,15 @@ void main() {
         type: MediaType.series,
       );
 
-      expect(series.getStremioId(season: 1, episode: 1), equals('tt11126994:1:1'));
-      expect(series.getStremioId(season: 2, episode: 6), equals('tt11126994:2:6'));
+      expect(
+          series.getStremioId(season: 1, episode: 1), equals('tt11126994:1:1'));
+      expect(
+          series.getStremioId(season: 2, episode: 6), equals('tt11126994:2:6'));
     });
 
-    test('Stremio AddonManifest parses v3 manifest JSON and validates resources and types', () {
+    test(
+        'Stremio AddonManifest parses v3 manifest JSON and validates resources and types',
+        () {
       final manifestJson = <String, dynamic>{
         'id': 'org.stremio.torrentio',
         'name': 'Torrentio',
@@ -55,7 +61,8 @@ void main() {
     test('AddonStream parses 4K, 1080p, and Torrent infoHash headers', () {
       final streamJson = {
         'name': 'Torrentio 4K',
-        'title': 'Dune.Part.Two.2024.2160p.UHD.BluRay.x265.DTS-HD.MA.7.1-AURA\n💾 14.8 GB',
+        'title':
+            'Dune.Part.Two.2024.2160p.UHD.BluRay.x265.DTS-HD.MA.7.1-AURA\n💾 14.8 GB',
         'infoHash': 'a9b8c7d6e5f41234567890abcdef1234567890ab',
         'fileIdx': 0,
         'behaviorHints': {

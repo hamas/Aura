@@ -15,7 +15,8 @@ class ServerFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure([super.message = 'No internet connection or host unreachable.']);
+  const NetworkFailure(
+      [super.message = 'No internet connection or host unreachable.']);
 }
 
 class CacheFailure extends Failure {

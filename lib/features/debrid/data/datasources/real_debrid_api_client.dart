@@ -8,7 +8,8 @@ class RealDebridApiClient {
   final ApiClient _apiClient;
 
   RealDebridApiClient({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient(baseUrl: ApiConstants.realDebridBaseUrl);
+      : _apiClient =
+            apiClient ?? ApiClient(baseUrl: ApiConstants.realDebridBaseUrl);
 
   Options _authOptions(String token) {
     return Options(
@@ -56,7 +57,8 @@ class RealDebridApiClient {
     }
   }
 
-  Future<void> selectFiles(String token, String torrentId, {String fileIds = 'all'}) async {
+  Future<void> selectFiles(String token, String torrentId,
+      {String fileIds = 'all'}) async {
     try {
       await _apiClient.post<dynamic>(
         '/torrents/selectFiles/$torrentId',
@@ -68,7 +70,8 @@ class RealDebridApiClient {
     }
   }
 
-  Future<Map<String, dynamic>> getTorrentInfo(String token, String torrentId) async {
+  Future<Map<String, dynamic>> getTorrentInfo(
+      String token, String torrentId) async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
         '/torrents/info/$torrentId',

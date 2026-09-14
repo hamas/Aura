@@ -22,7 +22,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         emit(state.copyWith(status: AuthStatus.authenticated, user: user));
       } else {
-        emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
+        emit(state.copyWith(
+            status: AuthStatus.unauthenticated, clearUser: true));
       }
     } catch (e) {
       emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
@@ -49,7 +50,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.signOut();
       emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
     } catch (e) {
-      emit(state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(
+          status: AuthStatus.failure, errorMessage: e.toString()));
     }
   }
 }

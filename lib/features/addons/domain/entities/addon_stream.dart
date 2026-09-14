@@ -24,7 +24,9 @@ class AddonStream extends Equatable {
   /// Extracts resolution (4K, 1080p, 720p, etc.) from title/name
   String get resolution {
     final combined = '${name ?? ''} ${title ?? ''}'.toLowerCase();
-    if (combined.contains('4k') || combined.contains('2160p') || combined.contains('uhd')) {
+    if (combined.contains('4k') ||
+        combined.contains('2160p') ||
+        combined.contains('uhd')) {
       return '4K UHD';
     } else if (combined.contains('1080p') || combined.contains('fhd')) {
       return '1080p';
@@ -40,15 +42,19 @@ class AddonStream extends Equatable {
   bool get isTorrent => infoHash != null && infoHash!.isNotEmpty;
 
   /// Whether this stream is a direct HTTP stream
-  bool get isDirectHttp => url != null && (url!.startsWith('http://') || url!.startsWith('https://'));
+  bool get isDirectHttp =>
+      url != null &&
+      (url!.startsWith('http://') || url!.startsWith('https://'));
 
   factory AddonStream.fromJson(Map<String, dynamic> json, {String? addonName}) {
     Map<String, String>? parsedHeaders;
     final rawBehaviorHints = json['behaviorHints'];
-    if (rawBehaviorHints is Map<String, dynamic> && rawBehaviorHints['proxyHeaders'] is Map) {
+    if (rawBehaviorHints is Map<String, dynamic> &&
+        rawBehaviorHints['proxyHeaders'] is Map) {
       final reqHeaders = rawBehaviorHints['proxyHeaders']['request'] as Map?;
       if (reqHeaders != null) {
-        parsedHeaders = reqHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        parsedHeaders =
+            reqHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
       }
     }
 
@@ -75,5 +81,6 @@ class AddonStream extends Equatable {
       };
 
   @override
-  List<Object?> get props => [name, title, url, infoHash, fileIdx, addonName, headers];
+  List<Object?> get props =>
+      [name, title, url, infoHash, fileIdx, addonName, headers];
 }

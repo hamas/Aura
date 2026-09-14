@@ -7,7 +7,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Phase 3 - Debrid Engine, Add-on Ecosystem & Cloud Sync Tests', () {
-    test('DebridAccount entity correctly deserializes and evaluates premium status', () {
+    test(
+        'DebridAccount entity correctly deserializes and evaluates premium status',
+        () {
       final now = DateTime.now();
       final futureDate = now.add(const Duration(days: 45));
 
@@ -28,7 +30,9 @@ void main() {
       expect(account.premiumDaysLeft, greaterThanOrEqualTo(44));
     });
 
-    test('WatchProgress calculates viewing percentage and completion threshold accurately', () {
+    test(
+        'WatchProgress calculates viewing percentage and completion threshold accurately',
+        () {
       final progressInProgress = WatchProgress(
         positionSeconds: 1200,
         durationSeconds: 3600,
@@ -48,11 +52,15 @@ void main() {
       expect(progressFinished.isFinished, isTrue);
     });
 
-    test('AddonRepositoryImpl provides community default manifests on first launch', () {
+    test(
+        'AddonRepositoryImpl provides community default manifests on first launch',
+        () {
       const defaultManifests = AddonRepositoryImpl.defaultManifestUrls;
 
-      expect(defaultManifests, contains('https://v3-cinemeta.strem.io/manifest.json'));
-      expect(defaultManifests, contains('https://opensubtitles-v3.strem.io/manifest.json'));
+      expect(defaultManifests,
+          contains('https://v3-cinemeta.strem.io/manifest.json'));
+      expect(defaultManifests,
+          contains('https://opensubtitles-v3.strem.io/manifest.json'));
     });
 
     test('LibraryItem serializes and deserializes cleanly with progress', () {

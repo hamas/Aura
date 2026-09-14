@@ -74,8 +74,9 @@ class MediaItem extends Equatable {
   String get fullPosterUrl =>
       posterPath != null ? '${ApiConstants.tmdbPosterW500}$posterPath' : '';
 
-  String get fullBackdropUrl =>
-      backdropPath != null ? '${ApiConstants.tmdbBackdropW1280}$backdropPath' : '';
+  String get fullBackdropUrl => backdropPath != null
+      ? '${ApiConstants.tmdbBackdropW1280}$backdropPath'
+      : '';
 
   String get releaseYear {
     if (releaseDate != null && releaseDate!.length >= 4) {
@@ -129,7 +130,8 @@ class MediaItem extends Equatable {
     );
   }
 
-  factory MediaItem.fromTmdbJson(Map<String, dynamic> json, {MediaType? explicitType}) {
+  factory MediaItem.fromTmdbJson(Map<String, dynamic> json,
+      {MediaType? explicitType}) {
     final isMovie = (explicitType != null && explicitType == MediaType.movie) ||
         json.containsKey('title') ||
         json['media_type'] == 'movie';
@@ -173,7 +175,8 @@ class MediaItem extends Equatable {
       posterPath: json['poster_path'] as String?,
       backdropPath: json['backdrop_path'] as String?,
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      releaseDate: (isMovie ? json['release_date'] : json['first_air_date']) as String?,
+      releaseDate:
+          (isMovie ? json['release_date'] : json['first_air_date']) as String?,
       type: isMovie ? MediaType.movie : MediaType.series,
       genres: genresList,
       cast: castList,

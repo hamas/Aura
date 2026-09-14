@@ -39,5 +39,6 @@ class LibraryState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, watchlist, continueWatching, history, errorMessage];
+  List<Object?> get props =>
+      [status, watchlist, continueWatching, history, errorMessage];
 }

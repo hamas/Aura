@@ -47,13 +47,15 @@ class AuraApp extends StatelessWidget {
               ..add(CheckAuthStatusEvent()),
           ),
           BlocProvider<CatalogBloc>(
-            create: (context) => CatalogBloc(catalogRepository: catalogRepository),
+            create: (context) =>
+                CatalogBloc(catalogRepository: catalogRepository),
           ),
           BlocProvider<AddonBloc>(
             create: (context) => AddonBloc(addonRepository: addonRepository),
           ),
           BlocProvider<LibraryBloc>(
-            create: (context) => LibraryBloc(libraryRepository: libraryRepository),
+            create: (context) =>
+                LibraryBloc(libraryRepository: libraryRepository),
           ),
         ],
         child: MaterialApp.router(

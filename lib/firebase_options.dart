@@ -59,8 +59,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1006842867636',
     projectId: 'aura-508612',
     storageBucket: 'aura-508612.firebasestorage.app',
-    androidClientId: '1006842867636-v2io5qcqsf7srqbobfcea3p97qrjnddg.apps.googleusercontent.com',
-    iosClientId: '1006842867636-ukiq1f0970h94uenmsif48i3n3l9lii4.apps.googleusercontent.com',
+    androidClientId:
+        '1006842867636-v2io5qcqsf7srqbobfcea3p97qrjnddg.apps.googleusercontent.com',
+    iosClientId:
+        '1006842867636-ukiq1f0970h94uenmsif48i3n3l9lii4.apps.googleusercontent.com',
     iosBundleId: 'com.aura.app.aura',
   );
   static const FirebaseOptions macos = FirebaseOptions(
@@ -69,8 +71,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1006842867636',
     projectId: 'aura-508612',
     storageBucket: 'aura-508612.firebasestorage.app',
-    androidClientId: '1006842867636-v2io5qcqsf7srqbobfcea3p97qrjnddg.apps.googleusercontent.com',
-    iosClientId: '1006842867636-ukiq1f0970h94uenmsif48i3n3l9lii4.apps.googleusercontent.com',
+    androidClientId:
+        '1006842867636-v2io5qcqsf7srqbobfcea3p97qrjnddg.apps.googleusercontent.com',
+    iosClientId:
+        '1006842867636-ukiq1f0970h94uenmsif48i3n3l9lii4.apps.googleusercontent.com',
     iosBundleId: 'com.aura.app.aura',
   );
 }

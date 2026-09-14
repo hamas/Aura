@@ -15,7 +15,8 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 class AppRouter {
   AppRouter._();
@@ -147,10 +148,18 @@ class MainNavigationScaffold extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/search')) return 1;
-    if (location.startsWith('/library')) return 2;
-    if (location.startsWith('/addons')) return 3;
-    if (location.startsWith('/settings') || location.startsWith('/profile')) return 4;
+    if (location.startsWith('/search')) {
+      return 1;
+    }
+    if (location.startsWith('/library')) {
+      return 2;
+    }
+    if (location.startsWith('/addons')) {
+      return 3;
+    }
+    if (location.startsWith('/settings') || location.startsWith('/profile')) {
+      return 4;
+    }
     return 0;
   }
 
@@ -200,12 +209,14 @@ class MainNavigationScaffold extends StatelessWidget {
             ),
             NavigationDestination(
               icon: Icon(Icons.video_library_outlined),
-              selectedIcon: Icon(Icons.video_library, color: AppTheme.primaryAccent),
+              selectedIcon:
+                  Icon(Icons.video_library, color: AppTheme.primaryAccent),
               label: 'Library',
             ),
             NavigationDestination(
               icon: Icon(Icons.extension_outlined),
-              selectedIcon: Icon(Icons.extension, color: AppTheme.primaryAccent),
+              selectedIcon:
+                  Icon(Icons.extension, color: AppTheme.primaryAccent),
               label: 'Add-ons',
             ),
             NavigationDestination(

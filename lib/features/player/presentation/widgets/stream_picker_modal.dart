@@ -28,20 +28,28 @@ class StreamPickerModal extends StatelessWidget {
     final tags = <String>[];
     final upper = text.toUpperCase();
 
-    if (upper.contains('DV') || upper.contains('DOVI') || upper.contains('DOLBY VISION')) {
+    if (upper.contains('DV') ||
+        upper.contains('DOVI') ||
+        upper.contains('DOLBY VISION')) {
       tags.add('DV');
     }
-    if (upper.contains('HDR10+') || upper.contains('HDR10') || upper.contains('HDR')) {
+    if (upper.contains('HDR10+') ||
+        upper.contains('HDR10') ||
+        upper.contains('HDR')) {
       tags.add('HDR');
     }
     if (upper.contains('ATMOS')) {
       tags.add('Atmos');
     } else if (upper.contains('DTS-HD') || upper.contains('DTS')) {
       tags.add('DTS');
-    } else if (upper.contains('DDP5.1') || upper.contains('DD5.1') || upper.contains('5.1')) {
+    } else if (upper.contains('DDP5.1') ||
+        upper.contains('DD5.1') ||
+        upper.contains('5.1')) {
       tags.add('5.1 Audio');
     }
-    if (upper.contains('HEVC') || upper.contains('H.265') || upper.contains('X265')) {
+    if (upper.contains('HEVC') ||
+        upper.contains('H.265') ||
+        upper.contains('X265')) {
       tags.add('HEVC');
     } else if (upper.contains('AV1')) {
       tags.add('AV1');
@@ -94,7 +102,8 @@ class StreamPickerModal extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryAccent.withAlpha((0.15 * 255).round()),
+                      color: AppTheme.primaryAccent
+                          .withAlpha((0.15 * 255).round()),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -143,7 +152,8 @@ class StreamPickerModal extends StatelessWidget {
               if (isLoading && streams.isEmpty)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppTheme.surfaceCard.withAlpha((0.5 * 255).round()),
                     borderRadius: BorderRadius.circular(16),
@@ -171,7 +181,8 @@ class StreamPickerModal extends StatelessWidget {
                       SizedBox(height: 4),
                       Text(
                         'Resolving streams via Stremio v3 protocol & Debrid endpoints',
-                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                        style:
+                            TextStyle(color: AppTheme.textMuted, fontSize: 12),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -180,7 +191,8 @@ class StreamPickerModal extends StatelessWidget {
               else if (!isLoading && streams.isEmpty)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppTheme.surfaceCard.withAlpha((0.5 * 255).round()),
                     borderRadius: BorderRadius.circular(16),
@@ -188,7 +200,8 @@ class StreamPickerModal extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.cloud_off_rounded, size: 44, color: AppTheme.textMuted),
+                      const Icon(Icons.cloud_off_rounded,
+                          size: 44, color: AppTheme.textMuted),
                       const SizedBox(height: 12),
                       const Text(
                         'No streams found',
@@ -201,7 +214,10 @@ class StreamPickerModal extends StatelessWidget {
                       const SizedBox(height: 6),
                       const Text(
                         'No active add-ons returned streams for this media. Install additional Stremio add-ons or verify your Debrid token in Settings.',
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.35),
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                            height: 1.35),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -209,7 +225,8 @@ class StreamPickerModal extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryAccent,
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 10),
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
@@ -218,7 +235,8 @@ class StreamPickerModal extends StatelessWidget {
                         icon: const Icon(Icons.extension_rounded, size: 18),
                         label: const Text(
                           'Configure Add-ons',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ),
                     ],
@@ -233,7 +251,8 @@ class StreamPickerModal extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final stream = streams[index];
                       final isTorrent = stream.isTorrent;
-                      final rawTitle = stream.title ?? stream.name ?? 'Stream ${index + 1}';
+                      final rawTitle =
+                          stream.title ?? stream.name ?? 'Stream ${index + 1}';
                       final fileSize = _extractFileSize(rawTitle);
                       final audioAndCodecs = _extractAudioAndCodecs(rawTitle);
                       final is4K = stream.resolution == '4K UHD';
@@ -249,11 +268,13 @@ class StreamPickerModal extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppTheme.surfaceCard.withAlpha((0.85 * 255).round()),
+                              color: AppTheme.surfaceCard
+                                  .withAlpha((0.85 * 255).round()),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: is4K
-                                    ? AppTheme.warningAccent.withAlpha((0.35 * 255).round())
+                                    ? AppTheme.warningAccent
+                                        .withAlpha((0.35 * 255).round())
                                     : const Color(0xFF222B3F),
                                 width: 1,
                               ),
@@ -263,24 +284,31 @@ class StreamPickerModal extends StatelessWidget {
                                 // Quality Badge
                                 Container(
                                   width: 64,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                       colors: is4K
                                           ? [
-                                              const Color(0xFFE5A00D).withAlpha((0.25 * 255).round()),
-                                              const Color(0xFFE5A00D).withAlpha((0.08 * 255).round()),
+                                              const Color(0xFFE5A00D).withAlpha(
+                                                  (0.25 * 255).round()),
+                                              const Color(0xFFE5A00D).withAlpha(
+                                                  (0.08 * 255).round()),
                                             ]
                                           : [
-                                              AppTheme.primaryAccent.withAlpha((0.25 * 255).round()),
-                                              AppTheme.primaryAccent.withAlpha((0.08 * 255).round()),
+                                              AppTheme.primaryAccent.withAlpha(
+                                                  (0.25 * 255).round()),
+                                              AppTheme.primaryAccent.withAlpha(
+                                                  (0.08 * 255).round()),
                                             ],
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: is4K ? AppTheme.warningAccent : AppTheme.primaryAccent,
+                                      color: is4K
+                                          ? AppTheme.warningAccent
+                                          : AppTheme.primaryAccent,
                                       width: 1,
                                     ),
                                   ),
@@ -306,7 +334,8 @@ class StreamPickerModal extends StatelessWidget {
                                 // Stream Details Column
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         rawTitle,
@@ -325,17 +354,20 @@ class StreamPickerModal extends StatelessWidget {
                                       Wrap(
                                         spacing: 6,
                                         runSpacing: 4,
-                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
                                         children: [
                                           if (stream.addonName != null)
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 6,
                                                 vertical: 2,
                                               ),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFF1B2335),
-                                                borderRadius: BorderRadius.circular(4),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               child: Text(
                                                 stream.addonName!,
@@ -348,15 +380,19 @@ class StreamPickerModal extends StatelessWidget {
                                             ),
                                           if (fileSize != null)
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 6,
                                                 vertical: 2,
                                               ),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFF162A24),
-                                                borderRadius: BorderRadius.circular(4),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                                 border: Border.all(
-                                                  color: AppTheme.successAccent.withAlpha((0.3 * 255).round()),
+                                                  color: AppTheme.successAccent
+                                                      .withAlpha(
+                                                          (0.3 * 255).round()),
                                                 ),
                                               ),
                                               child: Text(
@@ -370,13 +406,15 @@ class StreamPickerModal extends StatelessWidget {
                                             ),
                                           for (final tag in audioAndCodecs)
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 5,
                                                 vertical: 1.5,
                                               ),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFF1E283E),
-                                                borderRadius: BorderRadius.circular(4),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               child: Text(
                                                 tag,
@@ -399,7 +437,8 @@ class StreamPickerModal extends StatelessWidget {
                                                 Text(
                                                   'P2P',
                                                   style: TextStyle(
-                                                    color: AppTheme.warningAccent,
+                                                    color:
+                                                        AppTheme.warningAccent,
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.bold,
                                                   ),

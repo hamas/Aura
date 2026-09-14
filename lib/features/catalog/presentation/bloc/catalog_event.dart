@@ -38,4 +38,3 @@ class LoadSeasonDetailsEvent extends CatalogEvent {
   @override
   List<Object?> get props => [seriesId, seasonNumber];
 }
-

@@ -59,7 +59,8 @@ class AddonManifest extends Equatable {
   bool supportsResource(String resource) => resources.contains(resource);
   bool supportsType(String type) => types.contains(type);
 
-  factory AddonManifest.fromJson(Map<String, dynamic> json, {required String transportUrl}) {
+  factory AddonManifest.fromJson(Map<String, dynamic> json,
+      {required String transportUrl}) {
     // Parse resources which can be either list of strings or list of objects in Stremio v3
     final rawResources = json['resources'] as List<dynamic>? ?? [];
     final resourcesList = <String>[];
@@ -84,7 +85,8 @@ class AddonManifest extends Equatable {
       description: json['description'] as String? ?? '',
       transportUrl: transportUrl,
       resources: resourcesList,
-      types: (json['types'] as List<dynamic>? ?? ['movie', 'series']).cast<String>(),
+      types: (json['types'] as List<dynamic>? ?? ['movie', 'series'])
+          .cast<String>(),
       catalogs: catalogsList,
       icon: json['logo'] as String? ?? json['icon'] as String?,
       background: json['background'] as String?,

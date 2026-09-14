@@ -16,13 +16,16 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
     on<FetchStreamsForMediaEvent>(_onFetchStreamsForMedia);
   }
 
-  Future<void> _onLoadAddons(LoadAddonsEvent event, Emitter<AddonState> emit) async {
+  Future<void> _onLoadAddons(
+      LoadAddonsEvent event, Emitter<AddonState> emit) async {
     emit(state.copyWith(status: AddonStatus.loading));
     try {
       final addons = await _addonRepository.getInstalledAddons();
-      emit(state.copyWith(status: AddonStatus.success, installedAddons: addons));
+      emit(
+          state.copyWith(status: AddonStatus.success, installedAddons: addons));
     } catch (e) {
-      emit(state.copyWith(status: AddonStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(
+          status: AddonStatus.failure, errorMessage: e.toString()));
     }
   }
 

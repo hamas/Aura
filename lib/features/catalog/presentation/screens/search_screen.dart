@@ -56,7 +56,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
                 suffixIcon: _controller.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: AppTheme.textMuted),
+                        icon:
+                            const Icon(Icons.clear, color: AppTheme.textMuted),
                         onPressed: () {
                           _controller.clear();
                           _onSearchChanged('');
@@ -73,7 +74,8 @@ class _SearchScreenState extends State<SearchScreen> {
               builder: (context, state) {
                 if (state.isSearching) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primaryAccent),
+                    child: CircularProgressIndicator(
+                        color: AppTheme.primaryAccent),
                   );
                 }
 
@@ -82,11 +84,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.movie_filter_outlined, size: 64, color: AppTheme.textMuted),
+                        Icon(Icons.movie_filter_outlined,
+                            size: 64, color: AppTheme.textMuted),
                         SizedBox(height: 12),
                         Text(
                           'Discover millions of movies & shows',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                          style: TextStyle(
+                              color: AppTheme.textMuted, fontSize: 14),
                         ),
                       ],
                     ),
@@ -127,14 +131,16 @@ class _SearchScreenState extends State<SearchScreen> {
                               ? CachedNetworkImage(
                                   imageUrl: item.fullPosterUrl,
                                   fit: BoxFit.cover,
-                                  placeholder: (_, __) =>
-                                      Container(color: AppTheme.surfaceElevated),
+                                  placeholder: (_, __) => Container(
+                                      color: AppTheme.surfaceElevated),
                                   errorWidget: (_, __, ___) => const Center(
-                                    child: Icon(Icons.movie, color: AppTheme.textMuted),
+                                    child: Icon(Icons.movie,
+                                        color: AppTheme.textMuted),
                                   ),
                                 )
                               : const Center(
-                                  child: Icon(Icons.movie, color: AppTheme.textMuted),
+                                  child: Icon(Icons.movie,
+                                      color: AppTheme.textMuted),
                                 ),
                         ),
                       ),

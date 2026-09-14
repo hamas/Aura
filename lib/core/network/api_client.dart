@@ -46,7 +46,9 @@ class ApiClient {
         return const NetworkException('Connection timeout or network failure.');
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message = error.response?.data?.toString() ?? error.message ?? 'Unknown server error';
+        final message = error.response?.data?.toString() ??
+            error.message ??
+            'Unknown server error';
         return ServerException(message, statusCode: statusCode);
       case DioExceptionType.cancel:
         return const NetworkException('Request was cancelled.');

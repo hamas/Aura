@@ -17,8 +17,9 @@ class WatchProgress extends Equatable {
     required this.lastWatchedAt,
   });
 
-  double get percentage =>
-      durationSeconds > 0 ? (positionSeconds / durationSeconds).clamp(0.0, 1.0) : 0.0;
+  double get percentage => durationSeconds > 0
+      ? (positionSeconds / durationSeconds).clamp(0.0, 1.0)
+      : 0.0;
 
   bool get isFinished => percentage >= 0.90;
 
@@ -105,5 +106,6 @@ class LibraryItem extends Equatable {
       };
 
   @override
-  List<Object?> get props => [id, title, posterPath, type, category, progress, updatedAt];
+  List<Object?> get props =>
+      [id, title, posterPath, type, category, progress, updatedAt];
 }

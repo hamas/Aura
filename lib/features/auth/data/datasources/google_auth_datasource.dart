@@ -62,7 +62,8 @@ class GoogleAuthDataSource {
       final user = userCredential.user;
 
       if (user == null) {
-        throw const ServerException('Firebase authentication returned an empty user profile.');
+        throw const ServerException(
+            'Firebase authentication returned an empty user profile.');
       }
 
       return _mapFirebaseUser(user)!;

@@ -53,7 +53,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                   border: Border(top: BorderSide(color: Color(0xFF222B3F))),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,14 +65,16 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppTheme.textMuted.withAlpha((0.4 * 255).round()),
+                          color:
+                              AppTheme.textMuted.withAlpha((0.4 * 255).round()),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
                     const Row(
                       children: [
-                        Icon(Icons.extension_rounded, color: AppTheme.primaryAccent, size: 22),
+                        Icon(Icons.extension_rounded,
+                            color: AppTheme.primaryAccent, size: 22),
                         SizedBox(width: 8),
                         Text(
                           'Install Stremio Add-on',
@@ -86,7 +89,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     const SizedBox(height: 8),
                     const Text(
                       'Paste an HTTP or HTTPS Stremio v3 manifest URL to verify and install.',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 13),
                     ),
                     const SizedBox(height: 16),
 
@@ -97,11 +101,15 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           child: TextField(
                             controller: _urlController,
                             autofocus: true,
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14),
                             decoration: const InputDecoration(
-                              hintText: 'https://addon-domain.com/manifest.json',
-                              prefixIcon: Icon(Icons.link_rounded, color: AppTheme.primaryAccent, size: 20),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              hintText:
+                                  'https://addon-domain.com/manifest.json',
+                              prefixIcon: Icon(Icons.link_rounded,
+                                  color: AppTheme.primaryAccent, size: 20),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
                             ),
                             onSubmitted: (_) async {
                               final rawUrl = _urlController.text.trim();
@@ -112,7 +120,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                 previewManifest = null;
                               });
                               try {
-                                final manifest = await _addonApi.fetchManifest(rawUrl);
+                                final manifest =
+                                    await _addonApi.fetchManifest(rawUrl);
                                 setModalState(() {
                                   previewManifest = manifest;
                                   isVerifying = false;
@@ -139,14 +148,16 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                     previewManifest = null;
                                   });
                                   try {
-                                    final manifest = await _addonApi.fetchManifest(rawUrl);
+                                    final manifest =
+                                        await _addonApi.fetchManifest(rawUrl);
                                     setModalState(() {
                                       previewManifest = manifest;
                                       isVerifying = false;
                                     });
                                   } catch (e) {
                                     setModalState(() {
-                                      verifyError = 'Invalid Stremio manifest URL.';
+                                      verifyError =
+                                          'Invalid Stremio manifest URL.';
                                       isVerifying = false;
                                     });
                                   }
@@ -155,7 +166,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                               ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white),
                                 )
                               : const Text('Verify'),
                         ),
@@ -167,18 +179,23 @@ class _AddonsScreenState extends State<AddonsScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppTheme.errorAccent.withAlpha((0.15 * 255).round()),
+                          color: AppTheme.errorAccent
+                              .withAlpha((0.15 * 255).round()),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.errorAccent.withAlpha((0.4 * 255).round())),
+                          border: Border.all(
+                              color: AppTheme.errorAccent
+                                  .withAlpha((0.4 * 255).round())),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline_rounded, color: AppTheme.errorAccent, size: 18),
+                            const Icon(Icons.error_outline_rounded,
+                                color: AppTheme.errorAccent, size: 18),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 verifyError!,
-                                style: const TextStyle(color: AppTheme.errorAccent, fontSize: 12),
+                                style: const TextStyle(
+                                    color: AppTheme.errorAccent, fontSize: 12),
                               ),
                             ),
                           ],
@@ -194,7 +211,9 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceCard,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppTheme.successAccent.withAlpha((0.4 * 255).round())),
+                          border: Border.all(
+                              color: AppTheme.successAccent
+                                  .withAlpha((0.4 * 255).round())),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,15 +223,18 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.successAccent.withAlpha((0.15 * 255).round()),
+                                    color: AppTheme.successAccent
+                                        .withAlpha((0.15 * 255).round()),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.check_circle_rounded, color: AppTheme.successAccent, size: 20),
+                                  child: const Icon(Icons.check_circle_rounded,
+                                      color: AppTheme.successAccent, size: 20),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         previewManifest!.name,
@@ -224,7 +246,9 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                       ),
                                       Text(
                                         'Version ${previewManifest!.version}',
-                                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                                        style: const TextStyle(
+                                            color: AppTheme.textMuted,
+                                            fontSize: 11),
                                       ),
                                     ],
                                   ),
@@ -235,7 +259,9 @@ class _AddonsScreenState extends State<AddonsScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 previewManifest!.description,
-                                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                                style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -245,14 +271,18 @@ class _AddonsScreenState extends State<AddonsScreen> {
                               spacing: 6,
                               children: previewManifest!.resources.map((res) {
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: AppTheme.surfaceElevated,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
                                     res.toUpperCase(),
-                                    style: const TextStyle(color: AppTheme.primaryAccent, fontSize: 9.5, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        color: AppTheme.primaryAccent,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 );
                               }).toList(),
@@ -266,7 +296,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () {
                             context.read<AddonBloc>().add(
-                                  InstallAddonFromUrlEvent(_urlController.text.trim()),
+                                  InstallAddonFromUrlEvent(
+                                      _urlController.text.trim()),
                                 );
                             Navigator.pop(sheetContext);
                           },
@@ -295,7 +326,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
         title: const Text('Community Add-ons'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_link_rounded, color: AppTheme.primaryAccent),
+            icon: const Icon(Icons.add_link_rounded,
+                color: AppTheme.primaryAccent),
             tooltip: 'Install via URL',
             onPressed: () => _showInstallDialog(context),
           ),
@@ -305,7 +337,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
         onPressed: () => _showInstallDialog(context),
         backgroundColor: AppTheme.primaryAccent,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Install Addon', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text('Install Addon',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: BlocConsumer<AddonBloc, AddonState>(
         listener: (context, state) {
@@ -326,7 +359,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
           }
         },
         builder: (context, state) {
-          if (state.status == AddonStatus.loading && state.installedAddons.isEmpty) {
+          if (state.status == AddonStatus.loading &&
+              state.installedAddons.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryAccent),
             );
@@ -339,7 +373,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.extension_off_outlined, size: 64, color: AppTheme.textMuted),
+                    const Icon(Icons.extension_off_outlined,
+                        size: 64, color: AppTheme.textMuted),
                     const SizedBox(height: 16),
                     const Text(
                       'No add-ons currently installed',
@@ -352,7 +387,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     const SizedBox(height: 8),
                     const Text(
                       'Aura relies on external Stremio v3 HTTP/JSON manifests for streams and subtitles.',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -402,7 +438,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF26324D)),
                 ),
-                child: const Icon(Icons.extension_rounded, color: AppTheme.primaryAccent, size: 24),
+                child: const Icon(Icons.extension_rounded,
+                    color: AppTheme.primaryAccent, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -425,14 +462,18 @@ class _AddonsScreenState extends State<AddonsScreen> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1.5),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1F293E),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             'v${addon.version}',
-                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                color: AppTheme.textMuted,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -440,7 +481,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     const SizedBox(height: 3),
                     Text(
                       addon.transportUrl,
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                      style: const TextStyle(
+                          color: AppTheme.textMuted, fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -462,7 +504,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
             const SizedBox(height: 10),
             Text(
               addon.description,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12.5, height: 1.35),
+              style: const TextStyle(
+                  color: AppTheme.textSecondary, fontSize: 12.5, height: 1.35),
             ),
           ],
           const SizedBox(height: 12),
@@ -474,27 +517,35 @@ class _AddonsScreenState extends State<AddonsScreen> {
                 children: [
                   ...addon.resources.take(3).map((res) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1B2335),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         res.toUpperCase(),
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9.5, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600),
                       ),
                     );
                   }),
                   ...addon.types.take(2).map((t) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF14241E),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         t.toUpperCase(),
-                        style: const TextStyle(color: AppTheme.successAccent, fontSize: 9.5, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            color: AppTheme.successAccent,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600),
                       ),
                     );
                   }),
@@ -502,7 +553,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorAccent, size: 20),
+                icon: const Icon(Icons.delete_outline_rounded,
+                    color: AppTheme.errorAccent, size: 20),
                 tooltip: 'Uninstall',
                 onPressed: () {
                   context.read<AddonBloc>().add(UninstallAddonEvent(addon.id));

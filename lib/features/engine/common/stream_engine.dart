@@ -26,7 +26,8 @@ class ResolvedStream extends Equatable {
   });
 
   @override
-  List<Object?> get props => [streamUrl, sourceType, httpHeaders, title, quality, isSeekable];
+  List<Object?> get props =>
+      [streamUrl, sourceType, httpHeaders, title, quality, isSeekable];
 }
 
 abstract class StreamEngine {

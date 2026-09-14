@@ -27,7 +27,8 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
     on<SelectSubtitleTrackEvent>(_onSelectSubtitleTrack);
   }
 
-  Future<void> _onPlayStream(PlayStreamEvent event, Emitter<AuraPlayerState> emit) async {
+  Future<void> _onPlayStream(
+      PlayStreamEvent event, Emitter<AuraPlayerState> emit) async {
     await _playerService.openStream(
       url: event.streamUrl,
       title: event.title,

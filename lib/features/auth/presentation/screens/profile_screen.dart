@@ -94,7 +94,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ? NetworkImage(user!.photoUrl!)
                                 : null,
                             child: user?.photoUrl == null
-                                ? const Icon(Icons.person, color: AppTheme.textMuted)
+                                ? const Icon(Icons.person,
+                                    color: AppTheme.textMuted)
                                 : null,
                           ),
                           const SizedBox(width: 14),
@@ -103,7 +104,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  user != null ? user.displayName : 'Guest User',
+                                  user != null
+                                      ? user.displayName
+                                      : 'Guest User',
                                   style: const TextStyle(
                                     color: AppTheme.textPrimary,
                                     fontSize: 16,
@@ -111,7 +114,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 Text(
-                                  user != null ? user.email : 'Sign in to sync library across devices',
+                                  user != null
+                                      ? user.email
+                                      : 'Sign in to sync library across devices',
                                   style: const TextStyle(
                                     color: AppTheme.textMuted,
                                     fontSize: 12,
@@ -129,10 +134,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ? OutlinedButton.icon(
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppTheme.errorAccent,
-                                  side: const BorderSide(color: AppTheme.errorAccent),
+                                  side: const BorderSide(
+                                      color: AppTheme.errorAccent),
                                 ),
-                                onPressed: () =>
-                                    context.read<AuthBloc>().add(SignOutEvent()),
+                                onPressed: () => context
+                                    .read<AuthBloc>()
+                                    .add(SignOutEvent()),
                                 icon: const Icon(Icons.logout, size: 18),
                                 label: const Text('Sign Out'),
                               )
@@ -176,7 +183,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     'Enables unrestricted high-speed HTTPS streaming for torrent & hoster links on Android and iOS.',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                    style:
+                        TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                   ),
                   const SizedBox(height: 14),
                   if (_isLoadingDebrid)
@@ -193,18 +201,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Account:', style: TextStyle(color: AppTheme.textMuted)),
+                              const Text('Account:',
+                                  style: TextStyle(color: AppTheme.textMuted)),
                               Text(_debridAccount!.username,
-                                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Status:', style: TextStyle(color: AppTheme.textMuted)),
+                              const Text('Status:',
+                                  style: TextStyle(color: AppTheme.textMuted)),
                               Text(
-                                _debridAccount!.isPremium ? 'PREMIUM ACTIVE' : 'FREE',
+                                _debridAccount!.isPremium
+                                    ? 'PREMIUM ACTIVE'
+                                    : 'FREE',
                                 style: TextStyle(
                                   color: _debridAccount!.isPremium
                                       ? AppTheme.successAccent
@@ -219,7 +232,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 10),
                     OutlinedButton(
-                      style: OutlinedButton.styleFrom(foregroundColor: AppTheme.errorAccent),
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.errorAccent),
                       onPressed: () async {
                         await _debridRepo.removeToken();
                         setState(() => _debridAccount = null);
@@ -232,12 +246,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         hintText: 'Enter API Key from real-debrid.com/apitoken',
-                        prefixIcon: Icon(Icons.vpn_key, color: AppTheme.warningAccent),
+                        prefixIcon:
+                            Icon(Icons.vpn_key, color: AppTheme.warningAccent),
                       ),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.warningAccent),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.warningAccent),
                       onPressed: _saveDebridKey,
                       child: const Text('Connect Real-Debrid'),
                     ),
@@ -266,14 +282,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 8),
                   Text(
                     'Aura is a modular, high-performance cross-platform media center client built with Flutter, MediaKit libmpv, and the Stremio v3 protocol.',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                    style:
+                        TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                   ),
                   SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Version', style: TextStyle(color: AppTheme.textMuted)),
-                      Text('1.0.0 (Production Build)', style: TextStyle(color: AppTheme.textSecondary)),
+                      Text('Version',
+                          style: TextStyle(color: AppTheme.textMuted)),
+                      Text('1.0.0 (Production Build)',
+                          style: TextStyle(color: AppTheme.textSecondary)),
                     ],
                   ),
                 ],

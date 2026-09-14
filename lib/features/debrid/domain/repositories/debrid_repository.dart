@@ -11,7 +11,8 @@ abstract class DebridRepository {
   Future<DebridAccount> getAccountDetails();
 
   /// Unrestrict a magnet URI, torrent info hash, or hoster link to a direct HTTPS video stream.
-  Future<String> unrestrictMagnetOrHash(String magnetOrInfoHash, {int? fileIndex});
+  Future<String> unrestrictMagnetOrHash(String magnetOrInfoHash,
+      {int? fileIndex});
 
   /// Remove stored API token.
   Future<void> removeToken();

@@ -58,7 +58,8 @@ void main() {
       expect(restored.photoUrl, equals('https://aura.io/avatar.png'));
     });
 
-    test('AuthBloc handles CheckAuthStatus, SignIn, and SignOut events', () async {
+    test('AuthBloc handles CheckAuthStatus, SignIn, and SignOut events',
+        () async {
       final mockRepo = MockAuthRepository();
       final bloc = AuthBloc(authRepository: mockRepo);
 
@@ -84,7 +85,8 @@ void main() {
       await bloc.close();
     });
 
-    test('LibraryRepositoryImpl isolates persistence by authenticated user ID', () async {
+    test('LibraryRepositoryImpl isolates persistence by authenticated user ID',
+        () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final mockAuth = MockAuthRepository();

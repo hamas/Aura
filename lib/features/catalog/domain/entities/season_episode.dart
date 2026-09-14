@@ -46,7 +46,8 @@ class Episode extends Equatable {
       };
 
   @override
-  List<Object?> get props => [id, episodeNumber, seasonNumber, name, stillPath, voteAverage];
+  List<Object?> get props =>
+      [id, episodeNumber, seasonNumber, name, stillPath, voteAverage];
 }
 
 class Season extends Equatable {
@@ -115,5 +116,6 @@ class Season extends Equatable {
       };
 
   @override
-  List<Object?> get props => [id, seasonNumber, name, posterPath, episodeCount, episodes];
+  List<Object?> get props =>
+      [id, seasonNumber, name, posterPath, episodeCount, episodes];
 }

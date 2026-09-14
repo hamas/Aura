@@ -52,7 +52,8 @@ class _DetailScreenState extends State<DetailScreen> {
       _selectedSeasonNumber = seasonNumber;
     });
     context.read<CatalogBloc>().add(
-          LoadSeasonDetailsEvent(seriesId: seriesId, seasonNumber: seasonNumber),
+          LoadSeasonDetailsEvent(
+              seriesId: seriesId, seasonNumber: seasonNumber),
         );
   }
 
@@ -63,8 +64,11 @@ class _DetailScreenState extends State<DetailScreen> {
     int? episodeNumber,
     String? episodeTitle,
   }) {
-    final effectiveSeason = item.type == MediaType.series ? (seasonNumber ?? _selectedSeasonNumber) : null;
-    final effectiveEpisode = item.type == MediaType.series ? (episodeNumber ?? 1) : null;
+    final effectiveSeason = item.type == MediaType.series
+        ? (seasonNumber ?? _selectedSeasonNumber)
+        : null;
+    final effectiveEpisode =
+        item.type == MediaType.series ? (episodeNumber ?? 1) : null;
 
     final stremioId = item.getStremioId(
       season: effectiveSeason,
@@ -140,7 +144,9 @@ class _DetailScreenState extends State<DetailScreen> {
             );
 
         String subtitleText;
-        if (item.type == MediaType.series && seasonNumber != null && episodeNumber != null) {
+        if (item.type == MediaType.series &&
+            seasonNumber != null &&
+            episodeNumber != null) {
           subtitleText = episodeTitle != null && episodeTitle.isNotEmpty
               ? 'S$seasonNumber:E$episodeNumber • $episodeTitle'
               : 'Season $seasonNumber Episode $episodeNumber';
@@ -217,7 +223,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 18),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -290,7 +297,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                     height: 1.2,
                                   ),
                                 ),
-                                if (item.tagline != null && item.tagline!.isNotEmpty) ...[
+                                if (item.tagline != null &&
+                                    item.tagline!.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     item.tagline!,
@@ -313,16 +321,22 @@ class _DetailScreenState extends State<DetailScreen> {
                                   children: [
                                     // Rating
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.warningAccent.withAlpha((0.2 * 255).round()),
+                                        color: AppTheme.warningAccent
+                                            .withAlpha((0.2 * 255).round()),
                                         borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(color: AppTheme.warningAccent, width: 0.8),
+                                        border: Border.all(
+                                            color: AppTheme.warningAccent,
+                                            width: 0.8),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.star_rounded, size: 13, color: AppTheme.warningAccent),
+                                          const Icon(Icons.star_rounded,
+                                              size: 13,
+                                              color: AppTheme.warningAccent),
                                           const SizedBox(width: 3),
                                           Text(
                                             item.formattedRating,
@@ -360,13 +374,16 @@ class _DetailScreenState extends State<DetailScreen> {
 
                                     // Type Badge
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 1.5),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF1E2638),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        item.type == MediaType.movie ? 'Movie' : 'TV Series',
+                                        item.type == MediaType.movie
+                                            ? 'Movie'
+                                            : 'TV Series',
                                         style: const TextStyle(
                                           color: AppTheme.textMuted,
                                           fontSize: 11,
@@ -390,11 +407,13 @@ class _DetailScreenState extends State<DetailScreen> {
                           runSpacing: 6,
                           children: item.genres.map((g) {
                             return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppTheme.surfaceCard,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFF1E283E)),
+                                border:
+                                    Border.all(color: const Color(0xFF1E283E)),
                               ),
                               child: Text(
                                 g.name,
@@ -415,30 +434,43 @@ class _DetailScreenState extends State<DetailScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () => _openStreamPicker(context, item),
-                              icon: const Icon(Icons.play_arrow_rounded, size: 24),
+                              icon: const Icon(Icons.play_arrow_rounded,
+                                  size: 24),
                               label: Text(
-                                item.type == MediaType.series ? 'Play S1:E1' : 'Play / Find Streams',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                item.type == MediaType.series
+                                    ? 'Play S1:E1'
+                                    : 'Play / Find Streams',
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           BlocBuilder<LibraryBloc, LibraryState>(
                             builder: (context, libState) {
-                              final isInWatchlist = libState.isInWatchlist(item.id.toString());
+                              final isInWatchlist =
+                                  libState.isInWatchlist(item.id.toString());
                               return Container(
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceElevated,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: isInWatchlist ? AppTheme.primaryAccent : const Color(0xFF232B3E),
+                                    color: isInWatchlist
+                                        ? AppTheme.primaryAccent
+                                        : const Color(0xFF232B3E),
                                   ),
                                 ),
                                 child: IconButton(
-                                  tooltip: isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist',
+                                  tooltip: isInWatchlist
+                                      ? 'Remove from Watchlist'
+                                      : 'Add to Watchlist',
                                   icon: Icon(
-                                    isInWatchlist ? Icons.bookmark_added_rounded : Icons.bookmark_add_outlined,
-                                    color: isInWatchlist ? AppTheme.primaryAccent : Colors.white,
+                                    isInWatchlist
+                                        ? Icons.bookmark_added_rounded
+                                        : Icons.bookmark_add_outlined,
+                                    color: isInWatchlist
+                                        ? AppTheme.primaryAccent
+                                        : Colors.white,
                                   ),
                                   onPressed: () {
                                     context.read<LibraryBloc>().add(
@@ -449,7 +481,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                               posterPath: item.posterPath,
                                               backdropPath: item.backdropPath,
                                               type: item.type.name,
-                                              category: LibraryCategory.watchlist,
+                                              category:
+                                                  LibraryCategory.watchlist,
                                               updatedAt: DateTime.now(),
                                             ),
                                           ),
@@ -475,7 +508,9 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        item.overview.isNotEmpty ? item.overview : 'No synopsis available.',
+                        item.overview.isNotEmpty
+                            ? item.overview
+                            : 'No synopsis available.',
                         style: const TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 13.5,
@@ -502,7 +537,8 @@ class _DetailScreenState extends State<DetailScreen> {
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             itemCount: item.cast.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 12),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 12),
                             itemBuilder: (context, index) {
                               final member = item.cast[index];
                               return SizedBox(
@@ -512,12 +548,14 @@ class _DetailScreenState extends State<DetailScreen> {
                                     CircleAvatar(
                                       radius: 26,
                                       backgroundColor: AppTheme.surfaceElevated,
-                                      backgroundImage: member.profilePath != null
+                                      backgroundImage: member.profilePath !=
+                                              null
                                           ? CachedNetworkImageProvider(
                                               '${ApiConstants.tmdbPosterW500}${member.profilePath}')
                                           : null,
                                       child: member.profilePath == null
-                                          ? const Icon(Icons.person, color: AppTheme.textMuted)
+                                          ? const Icon(Icons.person,
+                                              color: AppTheme.textMuted)
                                           : null,
                                     ),
                                     const SizedBox(height: 6),
@@ -576,7 +614,9 @@ class _DetailScreenState extends State<DetailScreen> {
   ) {
     final seasons = item.seasons.isNotEmpty
         ? item.seasons
-        : const [Season(id: 1, seasonNumber: 1, name: 'Season 1', overview: '')];
+        : const [
+            Season(id: 1, seasonNumber: 1, name: 'Season 1', overview: '')
+          ];
 
     final currentSeason = state.currentSeason;
     final episodes = currentSeason?.episodes ?? [];
@@ -600,7 +640,8 @@ class _DetailScreenState extends State<DetailScreen> {
               const SizedBox(
                 width: 14,
                 height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryAccent),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: AppTheme.primaryAccent),
               ),
           ],
         ),
@@ -675,7 +716,8 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
-  Widget _buildEpisodeTile(BuildContext context, MediaItem item, Episode episode) {
+  Widget _buildEpisodeTile(
+      BuildContext context, MediaItem item, Episode episode) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -705,7 +747,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     borderRadius: BorderRadius.circular(8),
                     child: episode.stillPath != null
                         ? CachedNetworkImage(
-                            imageUrl: '${ApiConstants.tmdbPosterW500}${episode.stillPath}',
+                            imageUrl:
+                                '${ApiConstants.tmdbPosterW500}${episode.stillPath}',
                             width: 100,
                             height: 64,
                             fit: BoxFit.cover,
@@ -714,7 +757,8 @@ class _DetailScreenState extends State<DetailScreen> {
                             width: 100,
                             height: 64,
                             color: const Color(0xFF1B2335),
-                            child: const Icon(Icons.movie, color: AppTheme.textMuted),
+                            child: const Icon(Icons.movie,
+                                color: AppTheme.textMuted),
                           ),
                   ),
                   Container(
@@ -724,7 +768,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       color: Colors.black.withAlpha((0.6 * 255).round()),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18),
+                    child: const Icon(Icons.play_arrow_rounded,
+                        color: Colors.white, size: 18),
                   ),
                 ],
               ),
@@ -762,7 +807,9 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      episode.overview.isNotEmpty ? episode.overview : 'No description provided.',
+                      episode.overview.isNotEmpty
+                          ? episode.overview
+                          : 'No description provided.',
                       style: const TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 11.5,

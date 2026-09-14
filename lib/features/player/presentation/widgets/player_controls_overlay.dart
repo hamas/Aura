@@ -106,7 +106,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
 
   void _handleDoubleTapRight() {
     final target = widget.state.position + const Duration(seconds: 10);
-    widget.onSeek(target > widget.state.duration ? widget.state.duration : target);
+    widget.onSeek(
+        target > widget.state.duration ? widget.state.duration : target);
 
     setState(() {
       _showRightSeekRipple = true;
@@ -119,9 +120,11 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
     });
   }
 
-  void _onVerticalDragUpdate(DragUpdateDetails details, double screenWidth, double screenHeight) {
+  void _onVerticalDragUpdate(
+      DragUpdateDetails details, double screenWidth, double screenHeight) {
     final isLeft = details.globalPosition.dx < screenWidth / 2;
-    final delta = -details.primaryDelta! / screenHeight; // inverted drag: up = increase
+    final delta =
+        -details.primaryDelta! / screenHeight; // inverted drag: up = increase
 
     if (isLeft) {
       // Left side: Brightness
@@ -164,7 +167,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
     final scrubDeltaSeconds = (details.primaryDelta! / screenWidth) * 90;
     final newOffsetSeconds = _scrubOffset.inSeconds + scrubDeltaSeconds;
 
-    final newTargetSeconds = (widget.state.position.inSeconds + newOffsetSeconds).clamp(
+    final newTargetSeconds =
+        (widget.state.position.inSeconds + newOffsetSeconds).clamp(
       0.0,
       totalSeconds.toDouble(),
     );
@@ -259,7 +263,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.replay_10_rounded, color: Colors.white, size: 48),
+                    Icon(Icons.replay_10_rounded,
+                        color: Colors.white, size: 48),
                     SizedBox(height: 6),
                     Text(
                       '-10s',
@@ -297,7 +302,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.forward_10_rounded, color: Colors.white, size: 48),
+                    Icon(Icons.forward_10_rounded,
+                        color: Colors.white, size: 48),
                     SizedBox(height: 6),
                     Text(
                       '+10s',
@@ -354,11 +360,14 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           Positioned.fill(
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.black.withAlpha((0.85 * 255).round()),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primaryAccent.withAlpha((0.5 * 255).round())),
+                  border: Border.all(
+                      color: AppTheme.primaryAccent
+                          .withAlpha((0.5 * 255).round())),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha((0.5 * 255).round()),
@@ -473,7 +482,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: LinearProgressIndicator(
                   value: percent.clamp(0.0, 1.0),
                   backgroundColor: Colors.white24,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryAccent),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppTheme.primaryAccent),
                 ),
               ),
             ),
@@ -532,7 +542,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
           // Picture-in-Picture (PiP) Button
           IconButton(
-            icon: const Icon(Icons.picture_in_picture_alt_rounded, color: Colors.white),
+            icon: const Icon(Icons.picture_in_picture_alt_rounded,
+                color: Colors.white),
             tooltip: 'Picture-in-Picture',
             onPressed: () {
               if (widget.onPictureInPicture != null) {
@@ -630,7 +641,9 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           icon: const Icon(Icons.forward_10, color: Colors.white),
           onPressed: () {
             final target = widget.state.position + const Duration(seconds: 10);
-            widget.onSeek(target > widget.state.duration ? widget.state.duration : target);
+            widget.onSeek(target > widget.state.duration
+                ? widget.state.duration
+                : target);
             _startHideTimer();
           },
         ),
@@ -664,8 +677,10 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 12),
                     activeTrackColor: AppTheme.primaryAccent,
                     inactiveTrackColor: Colors.white24,
                     thumbColor: AppTheme.primaryAccent,
@@ -705,7 +720,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           shrinkWrap: true,
           children: [
             const ListTile(
-              title: Text('Subtitles', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text('Subtitles',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ListTile(
               title: const Text('Off'),
@@ -745,7 +761,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           shrinkWrap: true,
           children: [
             const ListTile(
-              title: Text('Audio Tracks', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text('Audio Tracks',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ...widget.state.audioTracks.map((a) {
               final isSelected = widget.state.selectedAudioTrack?.id == a.id;

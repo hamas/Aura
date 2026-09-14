@@ -7,7 +7,8 @@ import '../../domain/entities/addon_stream.dart';
 class StremioAddonApi {
   final ApiClient _apiClient;
 
-  StremioAddonApi({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  StremioAddonApi({ApiClient? apiClient})
+      : _apiClient = apiClient ?? ApiClient();
 
   /// Fetches and parses a Stremio v3 manifest from URL.
   Future<AddonManifest> fetchManifest(String manifestUrl) async {
@@ -28,7 +29,8 @@ class StremioAddonApi {
       );
 
       if (response.data != null) {
-        return AddonManifest.fromJson(response.data!, transportUrl: formattedUrl);
+        return AddonManifest.fromJson(response.data!,
+            transportUrl: formattedUrl);
       }
       throw const AddonProtocolException('Empty manifest received');
     } catch (e) {
@@ -45,7 +47,8 @@ class StremioAddonApi {
     required String type,
     required String id,
   }) async {
-    if (!manifest.supportsResource('stream') && !manifest.supportsResource('streams')) {
+    if (!manifest.supportsResource('stream') &&
+        !manifest.supportsResource('streams')) {
       return [];
     }
 
@@ -54,7 +57,8 @@ class StremioAddonApi {
     }
 
     // Strip /manifest.json to obtain base transport URL
-    final baseUrl = manifest.transportUrl.replaceAll(RegExp(r'/manifest\.json$'), '');
+    final baseUrl =
+        manifest.transportUrl.replaceAll(RegExp(r'/manifest\.json$'), '');
     final streamUrl = '$baseUrl/stream/$type/$id.json';
 
     try {

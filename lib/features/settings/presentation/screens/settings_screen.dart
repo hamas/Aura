@@ -51,9 +51,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _hardwareAcceleration = prefs.getBool('pref_hardware_acceleration') ?? true;
-      _defaultAudioLanguage = prefs.getString('pref_default_audio_lang') ?? 'eng';
-      _defaultSubtitleLanguage = prefs.getString('pref_default_sub_lang') ?? 'eng';
+      _hardwareAcceleration =
+          prefs.getBool('pref_hardware_acceleration') ?? true;
+      _defaultAudioLanguage =
+          prefs.getString('pref_default_audio_lang') ?? 'eng';
+      _defaultSubtitleLanguage =
+          prefs.getString('pref_default_sub_lang') ?? 'eng';
     });
   }
 
@@ -120,13 +123,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
           // 1. Account Section
-          _buildSectionHeader('Account & Cloud Continuity', Icons.cloud_sync_outlined),
+          _buildSectionHeader(
+              'Account & Cloud Continuity', Icons.cloud_sync_outlined),
           const SizedBox(height: 10),
           _buildAccountCard(),
           const SizedBox(height: 24),
 
           // 2. Streaming & Debrid Engine Section
-          _buildSectionHeader('Debrid Engine & Multi-hoster', Icons.bolt_outlined),
+          _buildSectionHeader(
+              'Debrid Engine & Multi-hoster', Icons.bolt_outlined),
           const SizedBox(height: 10),
           _buildDebridCard(),
           const SizedBox(height: 24),
@@ -185,10 +190,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     CircleAvatar(
                       radius: 26,
                       backgroundColor: AppTheme.surfaceElevated,
-                      backgroundImage:
-                          user?.photoUrl != null ? NetworkImage(user!.photoUrl!) : null,
+                      backgroundImage: user?.photoUrl != null
+                          ? NetworkImage(user!.photoUrl!)
+                          : null,
                       child: user?.photoUrl == null
-                          ? const Icon(Icons.person, color: AppTheme.textMuted, size: 28)
+                          ? const Icon(Icons.person,
+                              color: AppTheme.textMuted, size: 28)
                           : null,
                     ),
                     const SizedBox(width: 14),
@@ -229,7 +236,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             side: const BorderSide(color: AppTheme.errorAccent),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          onPressed: () => context.read<AuthBloc>().add(SignOutEvent()),
+                          onPressed: () =>
+                              context.read<AuthBloc>().add(SignOutEvent()),
                           icon: const Icon(Icons.logout, size: 18),
                           label: const Text('Sign Out of Google'),
                         )
@@ -239,8 +247,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          onPressed: () =>
-                              context.read<AuthBloc>().add(SignInWithGoogleEvent()),
+                          onPressed: () => context
+                              .read<AuthBloc>()
+                              .add(SignInWithGoogleEvent()),
                           icon: const Icon(Icons.login, size: 18),
                           label: const Text('Sign In with Google'),
                         ),
@@ -276,14 +285,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 6),
             const Text(
               'Unrestricts P2P torrents into high-speed HTTPS direct stream links with instant zero-buffering playback.',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4),
+              style: TextStyle(
+                  color: AppTheme.textSecondary, fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 14),
             if (_isLoadingDebrid)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator(color: AppTheme.primaryAccent),
+                  child:
+                      CircularProgressIndicator(color: AppTheme.primaryAccent),
                 ),
               )
             else if (_debridAccount != null) ...[
@@ -303,10 +314,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Username', style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                        const Text('Username',
+                            style: TextStyle(
+                                color: AppTheme.textMuted, fontSize: 13)),
                         Text(
                           _debridAccount!.username,
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
                     ),
@@ -314,13 +328,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Subscription', style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                        const Text('Subscription',
+                            style: TextStyle(
+                                color: AppTheme.textMuted, fontSize: 13)),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: _debridAccount!.isPremium
-                                ? AppTheme.successAccent.withAlpha((0.2 * 255).round())
-                                : AppTheme.warningAccent.withAlpha((0.2 * 255).round()),
+                                ? AppTheme.successAccent
+                                    .withAlpha((0.2 * 255).round())
+                                : AppTheme.warningAccent
+                                    .withAlpha((0.2 * 255).round()),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -365,8 +384,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   filled: true,
                   fillColor: AppTheme.surfaceElevated,
                   hintText: 'Paste API Token from real-debrid.com/apitoken',
-                  hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
-                  prefixIcon: const Icon(Icons.vpn_key_rounded, color: AppTheme.primaryAccent, size: 18),
+                  hintStyle:
+                      const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                  prefixIcon: const Icon(Icons.vpn_key_rounded,
+                      color: AppTheme.primaryAccent, size: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -410,7 +431,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: AppTheme.primaryAccent,
               title: const Text(
                 'Hardware Acceleration',
-                style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
               ),
               subtitle: const Text(
                 'Enable GPU decoding via MediaKit libmpv for fluid 4K HDR playback',
@@ -429,7 +453,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               contentPadding: EdgeInsets.zero,
               title: const Text(
                 'Default Audio Language',
-                style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
               ),
               subtitle: const Text(
                 'Preferred soundtrack stream during playback initiation',
@@ -439,7 +466,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _defaultAudioLanguage,
                 dropdownColor: AppTheme.surfaceElevated,
                 underline: const SizedBox.shrink(),
-                style: const TextStyle(color: AppTheme.primaryAccent, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppTheme.primaryAccent, fontWeight: FontWeight.bold),
                 items: _languageOptions.map((lang) {
                   return DropdownMenuItem<String>(
                     value: lang['code'],
@@ -461,7 +489,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               contentPadding: EdgeInsets.zero,
               title: const Text(
                 'Default Subtitle Language',
-                style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
               ),
               subtitle: const Text(
                 'Auto-selected subtitle track when available',
@@ -471,7 +502,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _defaultSubtitleLanguage,
                 dropdownColor: AppTheme.surfaceElevated,
                 underline: const SizedBox.shrink(),
-                style: const TextStyle(color: AppTheme.primaryAccent, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppTheme.primaryAccent, fontWeight: FontWeight.bold),
                 items: _languageOptions.map((lang) {
                   return DropdownMenuItem<String>(
                     value: lang['code'],
@@ -509,10 +541,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryAccent.withAlpha((0.15 * 255).round()),
+                    color:
+                        AppTheme.primaryAccent.withAlpha((0.15 * 255).round()),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.movie_filter_rounded, color: AppTheme.primaryAccent, size: 24),
+                  child: const Icon(Icons.movie_filter_rounded,
+                      color: AppTheme.primaryAccent, size: 24),
                 ),
                 const SizedBox(width: 12),
                 const Column(
@@ -537,7 +571,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 14),
             const Text(
               'Aura is a modern, modular, cross-platform media center client built with Flutter, MediaKit (libmpv), and the Stremio v3 protocol specification.',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4),
+              style: TextStyle(
+                  color: AppTheme.textSecondary, fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 14),
             const Divider(color: AppTheme.surfaceElevated, height: 1),
@@ -552,7 +587,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.video_library_rounded, color: Color(0xFF01D277), size: 20),
+                  Icon(Icons.video_library_rounded,
+                      color: Color(0xFF01D277), size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -577,8 +613,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Copyright (c) 2026 Hamas Younis\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.',
                     );
                   },
-                  icon: const Icon(Icons.gavel_rounded, size: 14, color: AppTheme.primaryAccent),
-                  label: const Text('License', style: TextStyle(color: AppTheme.primaryAccent, fontSize: 12)),
+                  icon: const Icon(Icons.gavel_rounded,
+                      size: 14, color: AppTheme.primaryAccent),
+                  label: const Text('License',
+                      style: TextStyle(
+                          color: AppTheme.primaryAccent, fontSize: 12)),
                 ),
                 TextButton.icon(
                   onPressed: () {
@@ -588,8 +627,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Aura is a metadata aggregator, media player, and add-on host client. It does not host, upload, archive, or distribute any video or media content itself. All streaming catalogs and links are resolved dynamically through third-party user-installed add-on manifests.',
                     );
                   },
-                  icon: const Icon(Icons.shield_outlined, size: 14, color: AppTheme.primaryAccent),
-                  label: const Text('Disclaimer', style: TextStyle(color: AppTheme.primaryAccent, fontSize: 12)),
+                  icon: const Icon(Icons.shield_outlined,
+                      size: 14, color: AppTheme.primaryAccent),
+                  label: const Text('Disclaimer',
+                      style: TextStyle(
+                          color: AppTheme.primaryAccent, fontSize: 12)),
                 ),
               ],
             ),
@@ -624,7 +666,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 12),
               Text(
                 content,
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
+                style: const TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
               ),
               const SizedBox(height: 20),
               SizedBox(

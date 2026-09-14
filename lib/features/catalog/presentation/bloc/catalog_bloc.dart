@@ -64,7 +64,8 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       LoadMediaDetailsEvent event, Emitter<CatalogState> emit) async {
     emit(state.copyWith(isLoadingDetails: true, currentSeason: null));
     try {
-      final details = await _catalogRepository.getMediaDetails(event.id, event.type);
+      final details =
+          await _catalogRepository.getMediaDetails(event.id, event.type);
       emit(state.copyWith(selectedMedia: details, isLoadingDetails: false));
 
       if (event.type == MediaType.series && details.seasons.isNotEmpty) {

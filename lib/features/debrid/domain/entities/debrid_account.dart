@@ -36,5 +36,6 @@ class DebridAccount extends Equatable {
   }
 
   @override
-  List<Object?> get props => [username, email, points, type, expirationDate, isPremium];
+  List<Object?> get props =>
+      [username, email, points, type, expirationDate, isPremium];
 }

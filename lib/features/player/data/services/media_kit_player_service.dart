@@ -55,7 +55,9 @@ class MediaKitPlayerService {
           _emit(_currentState.copyWith(status: PlaybackStatus.buffering));
         } else if (_currentState.status == PlaybackStatus.buffering) {
           _emit(_currentState.copyWith(
-            status: player.state.playing ? PlaybackStatus.playing : PlaybackStatus.paused,
+            status: player.state.playing
+                ? PlaybackStatus.playing
+                : PlaybackStatus.paused,
           ));
         }
       }),
@@ -86,7 +88,8 @@ class MediaKitPlayerService {
         }).toList();
 
         final subs = tracks.subtitle.map((s) {
-          return SubtitleTrackInfo(id: s.id, title: s.title, language: s.language);
+          return SubtitleTrackInfo(
+              id: s.id, title: s.title, language: s.language);
         }).toList();
 
         _emit(_currentState.copyWith(

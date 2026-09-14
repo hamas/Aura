@@ -63,7 +63,8 @@ class AddonRepositoryImpl implements AddonRepository {
 
     return rawList.map((str) {
       final map = jsonDecode(str) as Map<String, dynamic>;
-      return AddonManifest.fromJson(map, transportUrl: map['transportUrl'] as String? ?? '');
+      return AddonManifest.fromJson(map,
+          transportUrl: map['transportUrl'] as String? ?? '');
     }).toList();
   }
 

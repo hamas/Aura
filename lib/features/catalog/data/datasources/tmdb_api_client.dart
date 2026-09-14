@@ -26,7 +26,8 @@ class TmdbApiClient {
                   InterceptorsWrapper(
                     onRequest: (options, handler) {
                       // Always attach Bearer token and api_key fallback
-                      options.headers['Authorization'] = 'Bearer ${Env.tmdbReadAccessToken}';
+                      options.headers['Authorization'] =
+                          'Bearer ${Env.tmdbReadAccessToken}';
                       if (!options.queryParameters.containsKey('api_key') &&
                           Env.tmdbApiKey.isNotEmpty) {
                         options.queryParameters['api_key'] = Env.tmdbApiKey;
@@ -164,11 +165,13 @@ class TmdbApiClient {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
         endpoint,
-        queryParameters: _buildParams({'append_to_response': 'credits,external_ids'}),
+        queryParameters:
+            _buildParams({'append_to_response': 'credits,external_ids'}),
       );
 
       if (response.data != null) {
-        var mediaItem = MediaItem.fromTmdbJson(response.data!, explicitType: type);
+        var mediaItem =
+            MediaItem.fromTmdbJson(response.data!, explicitType: type);
 
         // Guarantee IMDb ID mapping by querying dedicated external_ids endpoint if missing
         if (mediaItem.imdbId == null || mediaItem.imdbId!.isEmpty) {
@@ -188,7 +191,9 @@ class TmdbApiClient {
 
   /// Dedicated resolver for /movie/{id}/external_ids and /tv/{id}/external_ids
   Future<String?> fetchExternalImdbId(int id, MediaType type) async {
-    final path = type == MediaType.movie ? '/movie/$id/external_ids' : '/tv/$id/external_ids';
+    final path = type == MediaType.movie
+        ? '/movie/$id/external_ids'
+        : '/tv/$id/external_ids';
     try {
       final res = await _apiClient.get<Map<String, dynamic>>(path);
       return res.data?['imdb_id'] as String?;
@@ -285,11 +290,15 @@ class TmdbApiClient {
   }
 
   List<MediaItem> _getSampleMovies() {
-    return _getSampleTrendingItems().where((m) => m.type == MediaType.movie).toList();
+    return _getSampleTrendingItems()
+        .where((m) => m.type == MediaType.movie)
+        .toList();
   }
 
   List<MediaItem> _getSampleSeries() {
-    return _getSampleTrendingItems().where((m) => m.type == MediaType.series).toList();
+    return _getSampleTrendingItems()
+        .where((m) => m.type == MediaType.series)
+        .toList();
   }
 
   MediaItem _getFallbackDetails(int id, MediaType type) {

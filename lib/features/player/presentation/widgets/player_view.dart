@@ -127,10 +127,14 @@ class _PlayerViewState extends State<PlayerView> {
                 state: state,
                 onPlayPause: () => bloc.add(TogglePlayPauseEvent()),
                 onSeek: (pos) => bloc.add(SeekPositionEvent(pos)),
-                onAspectRatioChange: (fit) => bloc.add(ChangeAspectRatioEvent(fit)),
-                onSpeedChange: (speed) => bloc.add(SetPlaybackSpeedEvent(speed)),
-                onSelectAudioTrack: (track) => bloc.add(SelectAudioTrackEvent(track)),
-                onSelectSubtitleTrack: (track) => bloc.add(SelectSubtitleTrackEvent(track)),
+                onAspectRatioChange: (fit) =>
+                    bloc.add(ChangeAspectRatioEvent(fit)),
+                onSpeedChange: (speed) =>
+                    bloc.add(SetPlaybackSpeedEvent(speed)),
+                onSelectAudioTrack: (track) =>
+                    bloc.add(SelectAudioTrackEvent(track)),
+                onSelectSubtitleTrack: (track) =>
+                    bloc.add(SelectSubtitleTrackEvent(track)),
                 onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
                 onBack: widget.onBack,
               ),

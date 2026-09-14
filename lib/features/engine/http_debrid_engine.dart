@@ -12,7 +12,8 @@ class HttpDebridEngine implements StreamEngine {
   String get engineId => 'http_debrid_engine';
 
   @override
-  bool get isSupported => true; // Supported on all platforms (including iOS App Store)
+  bool get isSupported =>
+      true; // Supported on all platforms (including iOS App Store)
 
   @override
   Future<void> initialize() async {
@@ -29,7 +30,8 @@ class HttpDebridEngine implements StreamEngine {
     final headers = extraParams?['headers'] as Map<String, String>?;
 
     // Check if it's already a direct playable HTTP(S) link
-    if (rawUrlOrInfoHash.startsWith('http://') || rawUrlOrInfoHash.startsWith('https://')) {
+    if (rawUrlOrInfoHash.startsWith('http://') ||
+        rawUrlOrInfoHash.startsWith('https://')) {
       final isHls = rawUrlOrInfoHash.contains('.m3u8');
       final isDash = rawUrlOrInfoHash.contains('.mpd');
 
@@ -62,7 +64,8 @@ class HttpDebridEngine implements StreamEngine {
       );
     }
 
-    throw const DebridException('Unable to resolve stream: Direct HTTP URL or Debrid service required.');
+    throw const DebridException(
+        'Unable to resolve stream: Direct HTTP URL or Debrid service required.');
   }
 
   bool _isHexInfoHash(String str) {

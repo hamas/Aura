@@ -12,7 +12,8 @@ class TorrentEngine implements StreamEngine {
   String get engineId => 'torrent_engine_android';
 
   @override
-  bool get isSupported => Platform.isAndroid || Platform.isLinux || Platform.isWindows;
+  bool get isSupported =>
+      Platform.isAndroid || Platform.isLinux || Platform.isWindows;
 
   @override
   Future<void> initialize() async {
@@ -36,7 +37,8 @@ class TorrentEngine implements StreamEngine {
     final fileIdx = extraParams?['fileIdx'] as int? ?? 0;
 
     // Convert infoHash to local sequential proxy stream
-    final localProxyUrl = 'http://127.0.0.1:$_localPort/stream/$rawUrlOrInfoHash/$fileIdx';
+    final localProxyUrl =
+        'http://127.0.0.1:$_localPort/stream/$rawUrlOrInfoHash/$fileIdx';
 
     return ResolvedStream(
       streamUrl: localProxyUrl,

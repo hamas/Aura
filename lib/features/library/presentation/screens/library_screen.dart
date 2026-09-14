@@ -74,7 +74,8 @@ class _LibraryScreenState extends State<LibraryScreen>
     );
   }
 
-  Widget _buildContinueWatchingList(BuildContext context, List<LibraryItem> items) {
+  Widget _buildContinueWatchingList(
+      BuildContext context, List<LibraryItem> items) {
     if (items.isEmpty) {
       return const Center(
         child: Text(
@@ -99,13 +100,15 @@ class _LibraryScreenState extends State<LibraryScreen>
             child: Row(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(12)),
                   child: SizedBox(
                     width: 110,
                     height: 90,
                     child: item.backdropPath != null
                         ? CachedNetworkImage(
-                            imageUrl: '${ApiConstants.tmdbBackdropW1280}${item.backdropPath}',
+                            imageUrl:
+                                '${ApiConstants.tmdbBackdropW1280}${item.backdropPath}',
                             fit: BoxFit.cover,
                           )
                         : Container(color: AppTheme.surfaceElevated),
@@ -113,7 +116,8 @@ class _LibraryScreenState extends State<LibraryScreen>
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -128,10 +132,12 @@ class _LibraryScreenState extends State<LibraryScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        if (progress?.seasonNumber != null && progress?.episodeNumber != null)
+                        if (progress?.seasonNumber != null &&
+                            progress?.episodeNumber != null)
                           Text(
                             'S${progress!.seasonNumber} E${progress.episodeNumber}',
-                            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                            style: const TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 12),
                           ),
                         const SizedBox(height: 8),
                         ClipRRect(
@@ -140,7 +146,8 @@ class _LibraryScreenState extends State<LibraryScreen>
                             value: percentage,
                             minHeight: 4,
                             backgroundColor: Colors.white12,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryAccent),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryAccent),
                           ),
                         ),
                       ],
@@ -148,8 +155,10 @@ class _LibraryScreenState extends State<LibraryScreen>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.play_circle_fill, color: AppTheme.primaryAccent, size: 32),
-                  onPressed: () => context.push('/detail/${item.type}/${item.id}'),
+                  icon: const Icon(Icons.play_circle_fill,
+                      color: AppTheme.primaryAccent, size: 32),
+                  onPressed: () =>
+                      context.push('/detail/${item.type}/${item.id}'),
                 ),
               ],
             ),
@@ -188,10 +197,12 @@ class _LibraryScreenState extends State<LibraryScreen>
               color: AppTheme.surfaceCard,
               child: item.posterPath != null
                   ? CachedNetworkImage(
-                      imageUrl: '${ApiConstants.tmdbPosterW500}${item.posterPath}',
+                      imageUrl:
+                          '${ApiConstants.tmdbPosterW500}${item.posterPath}',
                       fit: BoxFit.cover,
                     )
-                  : const Center(child: Icon(Icons.movie, color: AppTheme.textMuted)),
+                  : const Center(
+                      child: Icon(Icons.movie, color: AppTheme.textMuted)),
             ),
           ),
         );
@@ -217,7 +228,8 @@ class _LibraryScreenState extends State<LibraryScreen>
         final item = items[index];
         return ListTile(
           onTap: () => context.push('/detail/${item.type}/${item.id}'),
-          title: Text(item.title, style: const TextStyle(color: AppTheme.textPrimary)),
+          title: Text(item.title,
+              style: const TextStyle(color: AppTheme.textPrimary)),
           subtitle: Text(
             item.type.toUpperCase(),
             style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),

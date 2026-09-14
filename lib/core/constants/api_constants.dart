@@ -9,13 +9,17 @@ class ApiConstants {
 
   // Stremio v3 Constants
   static const String stremioProtocolVersion = '1.0.0';
-  static const String defaultCinemetaUrl = 'https://v3-cinemeta.strem.io/manifest.json';
-  static const String defaultTorrentioUrl = 'https://torrentio.strem.fun/manifest.json';
+  static const String defaultCinemetaUrl =
+      'https://v3-cinemeta.strem.io/manifest.json';
+  static const String defaultTorrentioUrl =
+      'https://torrentio.strem.fun/manifest.json';
 
   // Real-Debrid API Endpoints
-  static const String realDebridBaseUrl = 'https://api.real-debrid.com/rest/1.0';
+  static const String realDebridBaseUrl =
+      'https://api.real-debrid.com/rest/1.0';
 
   // Supabase (Default Config Placeholders)
-  static const String defaultSupabaseUrl = 'https://aura-media-sync.supabase.co';
+  static const String defaultSupabaseUrl =
+      'https://aura-media-sync.supabase.co';
   static const String defaultSupabaseAnonKey = 'public-anon-key-placeholder';
 }

@@ -35,17 +35,20 @@ class DebridRepositoryImpl implements DebridRepository {
   }
 
   @override
-  Future<String> unrestrictMagnetOrHash(String magnetOrInfoHash, {int? fileIndex}) async {
+  Future<String> unrestrictMagnetOrHash(String magnetOrInfoHash,
+      {int? fileIndex}) async {
     final token = await _secureStorage.getRealDebridApiKey();
     if (token == null) {
-      throw const DebridException('Real-Debrid API token is required to unrestrict streams.');
+      throw const DebridException(
+          'Real-Debrid API token is required to unrestrict streams.');
     }
 
     // 1. Add magnet to Real-Debrid
     final torrentId = await _apiClient.addMagnet(token, magnetOrInfoHash);
 
     // 2. Select file(s)
-    await _apiClient.selectFiles(token, torrentId, fileIds: fileIndex != null ? '$fileIndex' : 'all');
+    await _apiClient.selectFiles(token, torrentId,
+        fileIds: fileIndex != null ? '$fileIndex' : 'all');
 
     // 3. Poll/Get torrent info for links
     final info = await _apiClient.getTorrentInfo(token, torrentId);
@@ -57,7 +60,8 @@ class DebridRepositoryImpl implements DebridRepository {
       return _apiClient.unrestrictLink(token, downloadLink);
     }
 
-    throw const DebridException('Real-Debrid could not resolve instant download links for this torrent.');
+    throw const DebridException(
+        'Real-Debrid could not resolve instant download links for this torrent.');
   }
 
   @override

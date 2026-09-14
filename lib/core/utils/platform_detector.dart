@@ -6,7 +6,8 @@ class PlatformDetector {
 
   static bool get isAndroid => !kIsWeb && Platform.isAndroid;
   static bool get isIOS => !kIsWeb && Platform.isIOS;
-  static bool get isDesktop => !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
+  static bool get isDesktop =>
+      !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
   static bool get isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
   static bool get isWeb => kIsWeb;
 

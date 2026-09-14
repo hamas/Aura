@@ -71,7 +71,8 @@ class AuraPlayerState extends Equatable {
       audioTracks: audioTracks ?? this.audioTracks,
       subtitleTracks: subtitleTracks ?? this.subtitleTracks,
       selectedAudioTrack: selectedAudioTrack ?? this.selectedAudioTrack,
-      selectedSubtitleTrack: selectedSubtitleTrack ?? this.selectedSubtitleTrack,
+      selectedSubtitleTrack:
+          selectedSubtitleTrack ?? this.selectedSubtitleTrack,
       currentStreamUrl: currentStreamUrl ?? this.currentStreamUrl,
       fit: fit ?? this.fit,
       errorMessage: errorMessage,

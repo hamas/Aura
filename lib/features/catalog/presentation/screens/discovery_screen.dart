@@ -68,7 +68,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         backgroundColor: AppTheme.surfaceElevated,
         child: BlocBuilder<CatalogBloc, CatalogState>(
           builder: (context, catalogState) {
-            if (catalogState.status == CatalogStatus.loading && catalogState.trending.isEmpty) {
+            if (catalogState.status == CatalogStatus.loading &&
+                catalogState.trending.isEmpty) {
               return _buildShimmerSkeleton(context);
             }
 
@@ -77,7 +78,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             return BlocBuilder<LibraryBloc, LibraryState>(
               builder: (context, libraryState) {
                 final continueWatchingItems = libraryState.continueWatching
-                    .where((item) => item.progress != null && !item.progress!.isFinished)
+                    .where((item) =>
+                        item.progress != null && !item.progress!.isFinished)
                     .toList();
 
                 return CustomScrollView(
@@ -94,7 +96,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     // Continue Watching Shelf
                     if (continueWatchingItems.isNotEmpty)
                       SliverToBoxAdapter(
-                        child: _buildContinueWatchingSection(context, continueWatchingItems),
+                        child: _buildContinueWatchingSection(
+                            context, continueWatchingItems),
                       ),
 
                     // Trending Combined Shelf
@@ -103,8 +106,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         child: _buildSection(
                           context,
                           title: 'Trending Today',
-                          subtitle: 'Top aggregated movies & series across platforms',
-                          items: catalogState.trending.skip(heroItems.length).toList(),
+                          subtitle:
+                              'Top aggregated movies & series across platforms',
+                          items: catalogState.trending
+                              .skip(heroItems.length)
+                              .toList(),
                         ),
                       ),
 
@@ -176,7 +182,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           padding: EdgeInsets.fromLTRB(20, 24, 20, 10),
           child: Row(
             children: [
-              Icon(Icons.history_rounded, color: AppTheme.primaryAccent, size: 20),
+              Icon(Icons.history_rounded,
+                  color: AppTheme.primaryAccent, size: 20),
               SizedBox(width: 8),
               Text(
                 'Continue Watching',
@@ -235,7 +242,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           type: isTv ? MediaType.series : MediaType.movie,
           voteAverage: 0.0,
         );
-        context.push('/detail/${mediaItem.type.name}/${mediaItem.id}', extra: mediaItem);
+        context.push('/detail/${mediaItem.type.name}/${mediaItem.id}',
+            extra: mediaItem);
       },
       child: SizedBox(
         width: 220,
@@ -254,13 +262,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         ? CachedNetworkImage(
                             imageUrl: mediaUrl,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: AppTheme.surfaceElevated),
+                            placeholder: (_, __) =>
+                                Container(color: AppTheme.surfaceElevated),
                             errorWidget: (_, __, ___) => const Center(
-                              child: Icon(Icons.play_circle_outline, color: AppTheme.textMuted),
+                              child: Icon(Icons.play_circle_outline,
+                                  color: AppTheme.textMuted),
                             ),
                           )
                         : const Center(
-                            child: Icon(Icons.play_circle_outline, color: AppTheme.textMuted),
+                            child: Icon(Icons.play_circle_outline,
+                                color: AppTheme.textMuted),
                           ),
                   ),
                 ),
@@ -294,18 +305,23 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     child: LinearProgressIndicator(
                       value: percent,
                       minHeight: 4,
-                      backgroundColor: Colors.white.withAlpha((0.3 * 255).round()),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryAccent),
+                      backgroundColor:
+                          Colors.white.withAlpha((0.3 * 255).round()),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryAccent),
                     ),
                   ),
                 ),
                 // Episode indicator chip
-                if (isTv && progress?.seasonNumber != null && progress?.episodeNumber != null)
+                if (isTv &&
+                    progress?.seasonNumber != null &&
+                    progress?.episodeNumber != null)
                   Positioned(
                     top: 6,
                     right: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.black.withAlpha((0.75 * 255).round()),
                         borderRadius: BorderRadius.circular(4),
@@ -383,7 +399,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   boxShadow: _currentHeroPage == index
                       ? [
                           BoxShadow(
-                            color: AppTheme.primaryAccent.withAlpha((0.6 * 255).round()),
+                            color: AppTheme.primaryAccent
+                                .withAlpha((0.6 * 255).round()),
                             blurRadius: 6,
                           ),
                         ]
@@ -399,7 +416,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Widget _buildHeroSlide(BuildContext context, MediaItem item, double height) {
     return GestureDetector(
-      onTap: () => context.push('/detail/${item.type.name}/${item.id}', extra: item),
+      onTap: () =>
+          context.push('/detail/${item.type.name}/${item.id}', extra: item),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -409,7 +427,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   imageUrl: item.fullBackdropUrl,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(color: AppTheme.surface),
-                  errorWidget: (_, __, ___) => Container(color: AppTheme.surface),
+                  errorWidget: (_, __, ___) =>
+                      Container(color: AppTheme.surface),
                 )
               : Container(color: AppTheme.surface),
 
@@ -474,15 +493,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppTheme.warningAccent.withAlpha((0.2 * 255).round()),
+                        color: AppTheme.warningAccent
+                            .withAlpha((0.2 * 255).round()),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppTheme.warningAccent, width: 1),
+                        border:
+                            Border.all(color: AppTheme.warningAccent, width: 1),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.star, color: AppTheme.warningAccent, size: 12),
+                          const Icon(Icons.star,
+                              color: AppTheme.warningAccent, size: 12),
                           const SizedBox(width: 4),
                           Text(
                             item.formattedRating,
@@ -499,12 +522,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     if (item.releaseYear.isNotEmpty) ...[
                       Text(
                         item.releaseYear,
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 13),
                       ),
                       const SizedBox(width: 10),
                     ],
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceElevated,
                         borderRadius: BorderRadius.circular(4),
@@ -538,7 +563,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Color(0xFF2E384D)),
-                        backgroundColor: Colors.black.withAlpha((0.3 * 255).round()),
+                        backgroundColor:
+                            Colors.black.withAlpha((0.3 * 255).round()),
                       ),
                       onPressed: () => context.push(
                         '/detail/${item.type.name}/${item.id}',
@@ -614,7 +640,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Widget _buildMediaCard(BuildContext context, MediaItem item) {
     return GestureDetector(
-      onTap: () => context.push('/detail/${item.type.name}/${item.id}', extra: item),
+      onTap: () =>
+          context.push('/detail/${item.type.name}/${item.id}', extra: item),
       child: SizedBox(
         width: 130,
         child: Column(
@@ -630,12 +657,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           imageUrl: item.fullPosterUrl,
                           fit: BoxFit.cover,
                           width: 130,
-                          placeholder: (_, __) => Container(color: AppTheme.surfaceElevated),
+                          placeholder: (_, __) =>
+                              Container(color: AppTheme.surfaceElevated),
                           errorWidget: (_, __, ___) => const Center(
                             child: Icon(Icons.movie, color: AppTheme.textMuted),
                           ),
                         )
-                      : const Center(child: Icon(Icons.movie, color: AppTheme.textMuted)),
+                      : const Center(
+                          child: Icon(Icons.movie, color: AppTheme.textMuted)),
                 ),
               ),
             ),
@@ -656,12 +685,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 const SizedBox(width: 3),
                 Text(
                   item.formattedRating,
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                  style: const TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 11),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   item.releaseYear,
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                  style:
+                      const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                 ),
               ],
             ),
@@ -700,19 +731,24 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        _buildShimmerBox(width: 50, height: 20, borderRadius: 4),
+                        _buildShimmerBox(
+                            width: 50, height: 20, borderRadius: 4),
                         const SizedBox(width: 10),
-                        _buildShimmerBox(width: 40, height: 20, borderRadius: 4),
+                        _buildShimmerBox(
+                            width: 40, height: 20, borderRadius: 4),
                         const SizedBox(width: 10),
-                        _buildShimmerBox(width: 60, height: 20, borderRadius: 4),
+                        _buildShimmerBox(
+                            width: 60, height: 20, borderRadius: 4),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        _buildShimmerBox(width: 120, height: 38, borderRadius: 8),
+                        _buildShimmerBox(
+                            width: 120, height: 38, borderRadius: 8),
                         const SizedBox(width: 12),
-                        _buildShimmerBox(width: 100, height: 38, borderRadius: 8),
+                        _buildShimmerBox(
+                            width: 100, height: 38, borderRadius: 8),
                       ],
                     ),
                   ],
@@ -759,9 +795,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _buildShimmerBox(width: 110, height: 12, borderRadius: 3),
+                        _buildShimmerBox(
+                            width: 110, height: 12, borderRadius: 3),
                         const SizedBox(height: 6),
-                        _buildShimmerBox(width: 70, height: 10, borderRadius: 3),
+                        _buildShimmerBox(
+                            width: 70, height: 10, borderRadius: 3),
                       ],
                     ),
                   );

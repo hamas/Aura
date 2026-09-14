@@ -22,7 +22,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     try {
       final results = await Future.wait([
         _libraryRepository.getLibraryItems(category: LibraryCategory.watchlist),
-        _libraryRepository.getLibraryItems(category: LibraryCategory.continueWatching),
+        _libraryRepository.getLibraryItems(
+            category: LibraryCategory.continueWatching),
         _libraryRepository.getLibraryItems(category: LibraryCategory.history),
       ]);
 
