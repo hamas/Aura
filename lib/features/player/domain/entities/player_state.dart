@@ -17,6 +17,8 @@ class AuraPlayerState extends Equatable {
   final List<SubtitleTrackInfo> subtitleTracks;
   final AudioTrackInfo? selectedAudioTrack;
   final SubtitleTrackInfo? selectedSubtitleTrack;
+  final SubtitleTrackInfo? selectedSecondarySubtitleTrack;
+  final double subtitleOffset;
   final String? currentStreamUrl;
   final BoxFit fit;
   final bool enableAuraGlow;
@@ -35,6 +37,8 @@ class AuraPlayerState extends Equatable {
     this.subtitleTracks = const [],
     this.selectedAudioTrack,
     this.selectedSubtitleTrack,
+    this.selectedSecondarySubtitleTrack,
+    this.subtitleOffset = 0.0,
     this.currentStreamUrl,
     this.fit = BoxFit.contain,
     this.enableAuraGlow = true,
@@ -57,6 +61,9 @@ class AuraPlayerState extends Equatable {
     List<SubtitleTrackInfo>? subtitleTracks,
     AudioTrackInfo? selectedAudioTrack,
     SubtitleTrackInfo? selectedSubtitleTrack,
+    SubtitleTrackInfo? selectedSecondarySubtitleTrack,
+    bool clearSecondarySubtitle = false,
+    double? subtitleOffset,
     String? currentStreamUrl,
     BoxFit? fit,
     bool? enableAuraGlow,
@@ -76,6 +83,11 @@ class AuraPlayerState extends Equatable {
       selectedAudioTrack: selectedAudioTrack ?? this.selectedAudioTrack,
       selectedSubtitleTrack:
           selectedSubtitleTrack ?? this.selectedSubtitleTrack,
+      selectedSecondarySubtitleTrack: clearSecondarySubtitle
+          ? null
+          : (selectedSecondarySubtitleTrack ??
+              this.selectedSecondarySubtitleTrack),
+      subtitleOffset: subtitleOffset ?? this.subtitleOffset,
       currentStreamUrl: currentStreamUrl ?? this.currentStreamUrl,
       fit: fit ?? this.fit,
       enableAuraGlow: enableAuraGlow ?? this.enableAuraGlow,
@@ -97,6 +109,8 @@ class AuraPlayerState extends Equatable {
         subtitleTracks,
         selectedAudioTrack,
         selectedSubtitleTrack,
+        selectedSecondarySubtitleTrack,
+        subtitleOffset,
         currentStreamUrl,
         fit,
         enableAuraGlow,

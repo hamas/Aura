@@ -27,6 +27,9 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
     on<SelectSubtitleTrackEvent>(_onSelectSubtitleTrack);
     on<ToggleAuraGlowEvent>(_onToggleAuraGlow);
     on<SetAuraGlowEvent>(_onSetAuraGlow);
+    on<SelectSecondarySubtitleTrackEvent>(_onSelectSecondarySubtitleTrack);
+    on<SetSubtitleOffsetEvent>(_onSetSubtitleOffset);
+    on<NudgeSubtitleOffsetEvent>(_onNudgeSubtitleOffset);
   }
 
   void _onToggleAuraGlow(
@@ -36,6 +39,28 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
 
   void _onSetAuraGlow(SetAuraGlowEvent event, Emitter<AuraPlayerState> emit) {
     emit(state.copyWith(enableAuraGlow: event.enabled));
+  }
+
+  void _onSelectSecondarySubtitleTrack(
+      SelectSecondarySubtitleTrackEvent event, Emitter<AuraPlayerState> emit) {
+    if (event.track == null) {
+      emit(state.copyWith(clearSecondarySubtitle: true));
+    } else {
+      emit(state.copyWith(selectedSecondarySubtitleTrack: event.track));
+    }
+  }
+
+  void _onSetSubtitleOffset(
+      SetSubtitleOffsetEvent event, Emitter<AuraPlayerState> emit) {
+    final clamped = event.offsetSeconds.clamp(-10.0, 10.0);
+    emit(state.copyWith(subtitleOffset: clamped));
+  }
+
+  void _onNudgeSubtitleOffset(
+      NudgeSubtitleOffsetEvent event, Emitter<AuraPlayerState> emit) {
+    final newOffset =
+        (state.subtitleOffset + event.deltaSeconds).clamp(-10.0, 10.0);
+    emit(state.copyWith(subtitleOffset: newOffset));
   }
 
   Future<void> _onPlayStream(

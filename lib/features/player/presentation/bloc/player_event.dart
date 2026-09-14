@@ -94,3 +94,27 @@ class SetAuraGlowEvent extends PlayerEvent {
   @override
   List<Object?> get props => [enabled];
 }
+
+class SelectSecondarySubtitleTrackEvent extends PlayerEvent {
+  final SubtitleTrackInfo? track;
+  const SelectSecondarySubtitleTrackEvent(this.track);
+
+  @override
+  List<Object?> get props => [track];
+}
+
+class SetSubtitleOffsetEvent extends PlayerEvent {
+  final double offsetSeconds;
+  const SetSubtitleOffsetEvent(this.offsetSeconds);
+
+  @override
+  List<Object?> get props => [offsetSeconds];
+}
+
+class NudgeSubtitleOffsetEvent extends PlayerEvent {
+  final double deltaSeconds;
+  const NudgeSubtitleOffsetEvent(this.deltaSeconds);
+
+  @override
+  List<Object?> get props => [deltaSeconds];
+}

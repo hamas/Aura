@@ -5,6 +5,7 @@ import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/player_state.dart';
 import '../../domain/entities/stream_track.dart';
+import '../subtitles/widgets/subtitle_sync_hud.dart';
 
 class PlayerControlsOverlay extends StatefulWidget {
   final AuraPlayerState state;
@@ -14,6 +15,9 @@ class PlayerControlsOverlay extends StatefulWidget {
   final ValueChanged<double> onSpeedChange;
   final ValueChanged<AudioTrackInfo> onSelectAudioTrack;
   final ValueChanged<SubtitleTrackInfo?> onSelectSubtitleTrack;
+  final ValueChanged<SubtitleTrackInfo?>? onSelectSecondarySubtitleTrack;
+  final ValueChanged<double>? onSubtitleOffsetChanged;
+  final ValueChanged<double>? onNudgeSubtitleOffset;
   final ValueChanged<double>? onVolumeChange;
   final VoidCallback? onPictureInPicture;
   final VoidCallback? onToggleAuraGlow;
@@ -28,6 +32,9 @@ class PlayerControlsOverlay extends StatefulWidget {
     required this.onSpeedChange,
     required this.onSelectAudioTrack,
     required this.onSelectSubtitleTrack,
+    this.onSelectSecondarySubtitleTrack,
+    this.onSubtitleOffsetChanged,
+    this.onNudgeSubtitleOffset,
     this.onVolumeChange,
     this.onPictureInPicture,
     this.onToggleAuraGlow,
@@ -736,40 +743,118 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppTheme.surface,
+      isScrollControlled: true,
       builder: (context) {
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            const ListTile(
-              title: Text('Subtitles',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            ListTile(
-              title: const Text('Off'),
-              trailing: widget.state.selectedSubtitleTrack == null
-                  ? const AuraIcon(AppIcons.check,
-                      color: AppTheme.primaryAccent)
-                  : null,
-              onTap: () {
-                widget.onSelectSubtitleTrack(null);
-                Navigator.pop(context);
-              },
-            ),
-            ...widget.state.subtitleTracks.map((s) {
-              final isSelected = widget.state.selectedSubtitleTrack?.id == s.id;
-              return ListTile(
-                title: Text(s.title ?? s.language ?? 'Track ${s.id}'),
-                trailing: isSelected
-                    ? const AuraIcon(AppIcons.check,
-                        color: AppTheme.primaryAccent)
-                    : null,
-                onTap: () {
-                  widget.onSelectSubtitleTrack(s);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  // Subtitle Sync Offset HUD
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SubtitleSyncHud(
+                      currentOffset: widget.state.subtitleOffset,
+                      onOffsetChanged: (val) {
+                        widget.onSubtitleOffsetChanged?.call(val);
+                        setModalState(() {});
+                      },
+                      onNudgeOffset: (delta) {
+                        widget.onNudgeSubtitleOffset?.call(delta);
+                        setModalState(() {});
+                      },
+                      onReset: () {
+                        widget.onSubtitleOffsetChanged?.call(0.0);
+                        setModalState(() {});
+                      },
+                    ),
+                  ),
+                  const Divider(color: Colors.white12),
+
+                  // Primary Subtitle Selector
+                  const ListTile(
+                    title: Text(
+                      'Primary Subtitle (Bottom)',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Off'),
+                    trailing: widget.state.selectedSubtitleTrack == null
+                        ? const AuraIcon(AppIcons.check,
+                            color: AppTheme.primaryAccent)
+                        : null,
+                    onTap: () {
+                      widget.onSelectSubtitleTrack(null);
+                      setModalState(() {});
+                    },
+                  ),
+                  ...widget.state.subtitleTracks.map((s) {
+                    final isSelected =
+                        widget.state.selectedSubtitleTrack?.id == s.id;
+                    return ListTile(
+                      title: Text(s.title ?? s.language ?? 'Track ${s.id}'),
+                      trailing: isSelected
+                          ? const AuraIcon(AppIcons.check,
+                              color: AppTheme.primaryAccent)
+                          : null,
+                      onTap: () {
+                        widget.onSelectSubtitleTrack(s);
+                        setModalState(() {});
+                      },
+                    );
+                  }),
+
+                  const Divider(color: Colors.white12),
+
+                  // Secondary Subtitle Selector (Dual Track)
+                  const ListTile(
+                    title: Text(
+                      'Secondary Subtitle (Top Accent)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB877FF),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('None'),
+                    trailing:
+                        widget.state.selectedSecondarySubtitleTrack == null
+                            ? const AuraIcon(AppIcons.check,
+                                color: Color(0xFFB877FF))
+                            : null,
+                    onTap: () {
+                      widget.onSelectSecondarySubtitleTrack?.call(null);
+                      setModalState(() {});
+                    },
+                  ),
+                  ...widget.state.subtitleTracks.map((s) {
+                    final isSelected =
+                        widget.state.selectedSecondarySubtitleTrack?.id == s.id;
+                    return ListTile(
+                      title: Text(s.title ?? s.language ?? 'Track ${s.id}'),
+                      trailing: isSelected
+                          ? const AuraIcon(AppIcons.check,
+                              color: Color(0xFFB877FF))
+                          : null,
+                      onTap: () {
+                        widget.onSelectSecondarySubtitleTrack?.call(s);
+                        setModalState(() {});
+                      },
+                    );
+                  }),
+                ],
+              ),
+            );
+          },
         );
       },
     );

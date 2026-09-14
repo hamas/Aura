@@ -144,6 +144,12 @@ class _PlayerViewState extends State<PlayerView> {
                     bloc.add(SelectAudioTrackEvent(track)),
                 onSelectSubtitleTrack: (track) =>
                     bloc.add(SelectSubtitleTrackEvent(track)),
+                onSelectSecondarySubtitleTrack: (track) =>
+                    bloc.add(SelectSecondarySubtitleTrackEvent(track)),
+                onSubtitleOffsetChanged: (val) =>
+                    bloc.add(SetSubtitleOffsetEvent(val)),
+                onNudgeSubtitleOffset: (delta) =>
+                    bloc.add(NudgeSubtitleOffsetEvent(delta)),
                 onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
                 onToggleAuraGlow: () => bloc.add(ToggleAuraGlowEvent()),
                 onBack: widget.onBack,
