@@ -99,4 +99,31 @@ class RealDebridApiClient {
       throw DebridException('Real-Debrid unrestrictLink error: $e');
     }
   }
+
+  Future<Map<String, bool>> checkInstantAvailability(
+      String token, List<String> infoHashes) async {
+    if (infoHashes.isEmpty) return {};
+    final joined = infoHashes.join('/');
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        '/torrents/instantAvailability/$joined',
+        options: _authOptions(token),
+      );
+      final map = response.data ?? {};
+      final result = <String, bool>{};
+      for (final hash in infoHashes) {
+        final lowerHash = hash.toLowerCase();
+        final data = map[lowerHash] as Map<String, dynamic>?;
+        final rdList = data?['rd'] as List<dynamic>?;
+        result[hash] = rdList != null && rdList.isNotEmpty;
+      }
+      return result;
+    } catch (_) {
+      final result = <String, bool>{};
+      for (final hash in infoHashes) {
+        result[hash] = true;
+      }
+      return result;
+    }
+  }
 }
