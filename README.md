@@ -1,46 +1,36 @@
+<div align="center">
+
 # Aura
 
-> A modern, modular, cross-platform media center client built with Flutter.
+### Modern • Modular • Cinematic Media Center
 
-Aura is a high-performance media aggregator and video player engineered for speed, clean typography, and spacious visual aesthetics. Built around a decoupled architecture, Aura combines rich catalog discovery, an extensible server-side JSON add-on protocol, and hardware-accelerated playback across mobile, desktop, and TV platforms.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Flutter](https://img.shields.io/badge/Built%20with-Flutter-02569B?logo=flutter)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Language-Dart%203-0175C2?logo=dart)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows-lightgrey)](#supported-platforms)
 
----
+A high-performance, modular cross-platform media client engineered with Flutter. Built with a clean editorial design aesthetic, decentralized HTTP/JSON add-on protocols, and native hardware-accelerated media rendering.
 
-## Key Features
-
-### 🎬 Discovery & Rich Metadata
-* **Unified Media Catalog:** Real-time trending movies, series, and curated collections powered by The Movie Database (TMDB).
-* **Cinematic Detail Views:** High-resolution backdrops, cast filmographies, seasonal breakdowns, and release metadata.
-* **Universal ID Mapping:** Standardized IMDb/TMDB primary keys to ensure immediate compatibility across decentralized metadata and stream indexes.
-
-### 🔌 Extensible Add-on Architecture
-* **Stremio v3 Protocol Compatible:** Native support for server-side JSON add-on manifests (`/manifest.json`).
-* **Decoupled Stream Resolution:** No hardcoded scrapers or internal stream hosts. Streams are resolved dynamically via user-installed HTTP/JSON add-on microservices.
-* **Custom Add-on Management:** Install, configure, or remove community endpoints with zero app recompilation.
-
-### ⚡ Performance Playback Engine
-* **Native MediaKit Integration:** Hardware-accelerated media rendering powered by native `libmpv` bindings.
-* **Universal Format Support:** Out-of-the-box playback for `.mkv`, `.mp4`, H.265/HEVC, AV1, and multi-channel audio tracks (Dolby Digital, DTS, Atmos).
-* **Advanced Subtitle Styling:** Real-time subtitle synchronization offsets, styled ASS/SSA subtitle rendering, and OpenSubtitles API integration.
-
-### ☁️ Cloud Sync & Continuity
-* **Google Authentication:** Frictionless one-tap sign-in.
-* **Cross-Device State Sync:** Synchronize installed add-ons, personal watchlists, and exact playback progress timestamps across all active devices.
-
-### 🛡️ App Store Safe Architecture
-* **HTTPS/Debrid Native:** First-class support for cloud debrid services (Real-Debrid, TorBox) delivering fast, encrypted direct streams.
-* **Platform-Isolated Engine:** P2P/BitTorrent layers are strictly decoupled and excluded from iOS build targets via conditional compilation, keeping iOS App Store compliant.
+</div>
 
 ---
 
-## Architecture Overview
+## Highlights
 
-Aura follows Clean Architecture principles with a strict feature-first structure:
+* 🎬 **Unified Catalog Discovery**: Powered by The Movie Database (TMDB) API for real-time trending releases, episode guides, high-res backdrops, and metadata lookups.
+* 🔌 **Decoupled Add-on Architecture**: Native compliance with the **Stremio v3 Protocol specification**. Resolves stream manifests dynamically over HTTP/JSON without bundling third-party scrapers or stream hosts.
+* ⚡ **Hardware-Accelerated Playback**: Built on `media_kit` (native `libmpv` bindings) for smooth 4K/HDR rendering, `.mkv`/HEVC/AV1 codec support, and styled ASS/SSA subtitle processing.
+* ☁️ **Cloud Continuity**: Google Sign-In support with cross-platform library synchronization (watch progress timestamps, watchlists, and installed add-on states).
+* 🛡️ **App Store Compliant Footprint**: Native support for high-speed cloud debrid services (Real-Debrid, TorBox). P2P/BitTorrent modules are cleanly decoupled to allow direct iOS/App Store distribution.
+
+---
+
+## System Architecture
 
 ```text
 lib/
-├── app/         # App initialization, GoRouter navigation, theme tokens
-├── core/        # Network (Dio), error abstractions, constants, local storage
+├── app/         # Navigation (GoRouter), Theme tokens, App lifecycle
+├── core/        # Network client (Dio), local storage, protocol constants
 └── features/
     ├── auth/    # Google Sign-In & account profile management
     ├── catalog/ # TMDB integration, media shelves, search, and detail views
@@ -53,41 +43,30 @@ lib/
 
 ---
 
-## Tech Stack
-
-* **Framework:** [Flutter](https://flutter.dev) (Dart 3)
-* **Media Playback:** [`media_kit`](https://github.com/media-kit/media-kit) (C/FFI `libmpv` bindings)
-* **State Management:** `flutter_bloc`
-* **Networking & Serialization:** `dio`, `freezed`, `json_serializable`
-* **Local Persistence:** `flutter_secure_storage`, `shared_preferences`
-* **Backend & Auth:** Google OAuth + Cloud Sync
-
----
-
 ## Getting Started
 
 ### Prerequisites
-* Flutter SDK (3.22.0 or later recommended)
-* Xcode 15+ (for iOS / macOS builds)
-* Android Studio & Android SDK 34+
-* A valid TMDB API Key
+* Flutter SDK (3.22+ recommended)
+* Xcode 15+ (for macOS / iOS compilation)
+* Android SDK 34+
+* TMDB API Key
 
 ### Environment Setup
 Create a `.env` file in the root directory:
 ```env
-TMDB_API_KEY=your_tmdb_api_key_here
+TMDB_API_KEY=your_api_key_here
 TMDB_READ_ACCESS_TOKEN=your_v4_read_access_token_here
 ```
 
-### Installation
+### Installation & Run
 
-Clone the repository:
+Clone repository:
 ```bash
 git clone https://github.com/dumbhamas/Aura.git
 cd Aura
 ```
 
-Install dependencies:
+Fetch packages:
 ```bash
 flutter pub get
 ```
@@ -97,15 +76,14 @@ Run code generation:
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-Launch the application:
+Launch on your platform:
 ```bash
-# For macOS Desktop
+# Desktop
 flutter run -d macos
+flutter run -d windows
 
-# For Android
+# Mobile
 flutter run -d android
-
-# For iOS
 flutter run -d ios
 ```
 
@@ -113,22 +91,17 @@ flutter run -d ios
 
 ## Supported Platforms
 
-| Platform | Status | Playback Engine |
+| Platform | Playback Architecture | Stream Support |
 | :--- | :--- | :--- |
-| **Android** | Supported | `media_kit` (ExoPlayer / mpv) |
-| **iOS** | Supported | `media_kit` (Debrid / HTTPS direct) |
-| **macOS** | Supported | `media_kit` (Native libmpv) |
-| **Windows** | Supported | `media_kit` (Native libmpv) |
-| **Android TV** | Planned | D-Pad remote focus navigation |
+| **Android** | `media_kit` (ExoPlayer / mpv) | Direct HTTPS / Debrid / Local Engine |
+| **iOS** | `media_kit` (Native mpv) | Direct HTTPS / Debrid |
+| **macOS** | `media_kit` (Native mpv) | Direct HTTPS / Debrid / Local Engine |
+| **Windows** | `media_kit` (Native mpv) | Direct HTTPS / Debrid / Local Engine |
+| **Android TV** | `media_kit` (D-Pad remote navigation) | Direct HTTPS / Debrid / Local Engine |
 
 ---
 
-## Disclaimer
+## Legal & Compliance
 
-Aura is a client-side media catalog organizer and video player. It does not host, distribute, or stream any media files or torrents directly. Users are solely responsible for any third-party add-ons installed and the content accessed through them.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+* **Disclaimer:** Aura is an open-source media catalog organizer and playback interface. It does not host, stream, scrape, or distribute copyrighted media files. Please review the full [Legal Disclaimer](DISCLAIMER.md) for details.
+* **License:** Distributed under the terms of the [MIT License](LICENSE).
