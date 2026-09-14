@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../library/domain/entities/library_item.dart';
+import '../../../library/presentation/bloc/library_bloc.dart';
+import '../../../library/presentation/bloc/library_event.dart';
+import '../../../library/presentation/bloc/library_state.dart';
 import '../../domain/entities/media_item.dart';
 import '../bloc/catalog_bloc.dart';
 import '../bloc/catalog_event.dart';
@@ -25,6 +29,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   void initState() {
     super.initState();
     context.read<CatalogBloc>().add(LoadDiscoveryFeedsEvent());
+    context.read<LibraryBloc>().add(LoadLibraryEvent());
     _startHeroAutoScroll();
   }
 
@@ -50,6 +55,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Future<void> _onRefresh() async {
     context.read<CatalogBloc>().add(LoadDiscoveryFeedsEvent());
+    context.read<LibraryBloc>().add(LoadLibraryEvent());
   }
 
   @override
@@ -61,87 +67,275 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         color: AppTheme.primaryAccent,
         backgroundColor: AppTheme.surfaceElevated,
         child: BlocBuilder<CatalogBloc, CatalogState>(
-          builder: (context, state) {
-            if (state.status == CatalogStatus.loading && state.trending.isEmpty) {
+          builder: (context, catalogState) {
+            if (catalogState.status == CatalogStatus.loading && catalogState.trending.isEmpty) {
               return const Center(
                 child: CircularProgressIndicator(color: AppTheme.primaryAccent),
               );
             }
 
-            final heroItems = state.trending.take(5).toList();
+            final heroItems = catalogState.trending.take(5).toList();
 
-            return CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-                // Multi-item Hero Backdrop Carousel
-                if (heroItems.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildHeroCarousel(context, heroItems),
+            return BlocBuilder<LibraryBloc, LibraryState>(
+              builder: (context, libraryState) {
+                final continueWatchingItems = libraryState.continueWatching
+                    .where((item) => item.progress != null && !item.progress!.isFinished)
+                    .toList();
+
+                return CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
                   ),
+                  slivers: [
+                    // Multi-item Hero Backdrop Carousel
+                    if (heroItems.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildHeroCarousel(context, heroItems),
+                      ),
 
-                // Trending Combined Shelf
-                if (state.trending.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSection(
-                      context,
-                      title: 'Trending Today',
-                      subtitle: 'Top aggregated movies & series across platforms',
-                      items: state.trending.skip(heroItems.length).toList(),
+                    // Continue Watching Shelf
+                    if (continueWatchingItems.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildContinueWatchingSection(context, continueWatchingItems),
+                      ),
+
+                    // Trending Combined Shelf
+                    if (catalogState.trending.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildSection(
+                          context,
+                          title: 'Trending Today',
+                          subtitle: 'Top aggregated movies & series across platforms',
+                          items: catalogState.trending.skip(heroItems.length).toList(),
+                        ),
+                      ),
+
+                    // Trending Movies Shelf
+                    if (catalogState.trendingMovies.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildSection(
+                          context,
+                          title: 'Trending Movies',
+                          subtitle: 'Most watched movies today',
+                          items: catalogState.trendingMovies,
+                        ),
+                      ),
+
+                    // Trending TV Shows Shelf
+                    if (catalogState.trendingSeries.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildSection(
+                          context,
+                          title: 'Trending TV Series',
+                          subtitle: 'Binge-worthy shows trending right now',
+                          items: catalogState.trendingSeries,
+                        ),
+                      ),
+
+                    // Popular Blockbusters Shelf
+                    if (catalogState.popularMovies.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildSection(
+                          context,
+                          title: 'Popular Blockbusters',
+                          subtitle: 'All-time audience favorites',
+                          items: catalogState.popularMovies,
+                        ),
+                      ),
+
+                    // Popular Series Shelf
+                    if (catalogState.popularSeries.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildSection(
+                          context,
+                          title: 'Critically Acclaimed TV',
+                          subtitle: 'Top rated series',
+                          items: catalogState.popularSeries,
+                        ),
+                      ),
+
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 36),
                     ),
-                  ),
-
-                // Trending Movies Shelf
-                if (state.trendingMovies.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSection(
-                      context,
-                      title: 'Trending Movies',
-                      subtitle: 'Most watched movies today',
-                      items: state.trendingMovies,
-                    ),
-                  ),
-
-                // Trending TV Shows Shelf
-                if (state.trendingSeries.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSection(
-                      context,
-                      title: 'Trending TV Series',
-                      subtitle: 'Binge-worthy shows trending right now',
-                      items: state.trendingSeries,
-                    ),
-                  ),
-
-                // Popular Blockbusters Shelf
-                if (state.popularMovies.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSection(
-                      context,
-                      title: 'Popular Blockbusters',
-                      subtitle: 'All-time audience favorites',
-                      items: state.popularMovies,
-                    ),
-                  ),
-
-                // Popular Series Shelf
-                if (state.popularSeries.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSection(
-                      context,
-                      title: 'Critically Acclaimed TV',
-                      subtitle: 'Top rated series',
-                      items: state.popularSeries,
-                    ),
-                  ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 36),
-                ),
-              ],
+                  ],
+                );
+              },
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueWatchingSection(
+    BuildContext context,
+    List<LibraryItem> items,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 24, 20, 10),
+          child: Row(
+            children: [
+              Icon(Icons.history_rounded, color: AppTheme.primaryAccent, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Continue Watching',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 145,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return _buildContinueWatchingCard(context, item);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContinueWatchingCard(BuildContext context, LibraryItem item) {
+    final progress = item.progress;
+    final percent = progress?.percentage ?? 0.0;
+    final isTv = item.type == 'series' || item.type == 'tv';
+
+    final mediaUrl = item.backdropPath != null
+        ? (item.backdropPath!.startsWith('http')
+            ? item.backdropPath!
+            : 'https://image.tmdb.org/t/p/w780${item.backdropPath}')
+        : (item.posterPath != null
+            ? (item.posterPath!.startsWith('http')
+                ? item.posterPath!
+                : 'https://image.tmdb.org/t/p/w500${item.posterPath}')
+            : null);
+
+    return GestureDetector(
+      onTap: () {
+        final parsedId = int.tryParse(item.id) ?? 0;
+        final mediaItem = MediaItem(
+          id: parsedId,
+          imdbId: item.id.startsWith('tt') ? item.id : null,
+          title: item.title,
+          overview: '',
+          posterPath: item.posterPath,
+          backdropPath: item.backdropPath,
+          type: isTv ? MediaType.series : MediaType.movie,
+          voteAverage: 0.0,
+        );
+        context.push('/detail/${mediaItem.type.name}/${mediaItem.id}', extra: mediaItem);
+      },
+      child: SizedBox(
+        width: 220,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 110,
+                    width: 220,
+                    color: AppTheme.surfaceCard,
+                    child: mediaUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: mediaUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(color: AppTheme.surfaceElevated),
+                            errorWidget: (_, __, ___) => const Center(
+                              child: Icon(Icons.play_circle_outline, color: AppTheme.textMuted),
+                            ),
+                          )
+                        : const Center(
+                            child: Icon(Icons.play_circle_outline, color: AppTheme.textMuted),
+                          ),
+                  ),
+                ),
+                // Play overlay button
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha((0.6 * 255).round()),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                // Progress Bar at bottom of thumbnail
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    child: LinearProgressIndicator(
+                      value: percent,
+                      minHeight: 4,
+                      backgroundColor: Colors.white.withAlpha((0.3 * 255).round()),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryAccent),
+                    ),
+                  ),
+                ),
+                // Episode indicator chip
+                if (isTv && progress?.seasonNumber != null && progress?.episodeNumber != null)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha((0.75 * 255).round()),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'S${progress!.seasonNumber} E${progress.episodeNumber}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              item.title,
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

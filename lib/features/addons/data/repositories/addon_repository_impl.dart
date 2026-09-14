@@ -11,6 +11,10 @@ class AddonRepositoryImpl implements AddonRepository {
   final SharedPreferences _prefs;
 
   static const String _keyInstalledAddons = 'aura_installed_addons_v1';
+  static const List<String> defaultManifestUrls = [
+    ApiConstants.defaultCinemetaUrl,
+    'https://opensubtitles-v3.strem.io/manifest.json',
+  ];
 
   AddonRepositoryImpl({
     StremioAddonApi? addonApi,
@@ -27,8 +31,8 @@ class AddonRepositoryImpl implements AddonRepository {
   Future<List<AddonManifest>> getInstalledAddons() async {
     final rawList = _prefs.getStringList(_keyInstalledAddons);
     if (rawList == null || rawList.isEmpty) {
-      // Setup default official Cinemeta addon if none installed
-      const defaultAddon = AddonManifest(
+      // Setup default official community add-ons if none installed
+      const defaultCinemeta = AddonManifest(
         id: 'com.linvo.cinemeta',
         name: 'Cinemeta (Official)',
         version: '3.0.12',
@@ -38,8 +42,23 @@ class AddonRepositoryImpl implements AddonRepository {
         types: ['movie', 'series'],
         isEnabled: true,
       );
-      await installAddon(defaultAddon);
-      return [defaultAddon];
+
+      const defaultOpenSubtitles = AddonManifest(
+        id: 'org.stremio.opensubtitles-v3',
+        name: 'OpenSubtitles v3 (Official)',
+        version: '1.0.0',
+        description: 'Official OpenSubtitles v3 community subtitle provider',
+        transportUrl: 'https://opensubtitles-v3.strem.io/manifest.json',
+        resources: ['subtitles'],
+        types: ['movie', 'series'],
+        isEnabled: true,
+      );
+
+      final defaults = [defaultCinemeta, defaultOpenSubtitles];
+      for (final addon in defaults) {
+        await installAddon(addon);
+      }
+      return defaults;
     }
 
     return rawList.map((str) {

@@ -6,7 +6,6 @@ class DebridAccount extends Equatable {
   final int points;
   final String type; // 'premium' or 'free'
   final DateTime? expirationDate;
-  final bool isPremium;
 
   const DebridAccount({
     required this.username,
@@ -14,8 +13,15 @@ class DebridAccount extends Equatable {
     required this.points,
     required this.type,
     this.expirationDate,
-    required this.isPremium,
   });
+
+  bool get isPremium => type == 'premium';
+
+  int get premiumDaysLeft {
+    if (expirationDate == null) return 0;
+    final diff = expirationDate!.difference(DateTime.now()).inDays;
+    return diff > 0 ? diff : 0;
+  }
 
   factory DebridAccount.fromJson(Map<String, dynamic> json) {
     return DebridAccount(
@@ -26,7 +32,6 @@ class DebridAccount extends Equatable {
       expirationDate: json['expiration'] != null
           ? DateTime.tryParse(json['expiration'] as String)
           : null,
-      isPremium: (json['type'] as String? ?? '') == 'premium',
     );
   }
 

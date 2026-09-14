@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
-import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/detail_screen.dart';
 import '../../features/catalog/presentation/screens/discovery_screen.dart';
@@ -12,6 +11,7 @@ import '../../features/player/data/services/media_kit_player_service.dart';
 import '../../features/player/presentation/bloc/player_bloc.dart';
 import '../../features/player/presentation/bloc/player_event.dart';
 import '../../features/player/presentation/widgets/player_view.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,9 +56,15 @@ class AppRouter {
             ),
           ),
           GoRoute(
+            path: '/settings',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: SettingsScreen(),
+            ),
+          ),
+          GoRoute(
             path: '/profile',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfileScreen(),
+              child: SettingsScreen(),
             ),
           ),
         ],
@@ -144,7 +150,7 @@ class MainNavigationScaffold extends StatelessWidget {
     if (location.startsWith('/search')) return 1;
     if (location.startsWith('/library')) return 2;
     if (location.startsWith('/addons')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/settings') || location.startsWith('/profile')) return 4;
     return 0;
   }
 
@@ -163,7 +169,7 @@ class MainNavigationScaffold extends StatelessWidget {
         context.go('/addons');
         break;
       case 4:
-        context.go('/profile');
+        context.go('/settings');
         break;
     }
   }
@@ -203,9 +209,9 @@ class MainNavigationScaffold extends StatelessWidget {
               label: 'Add-ons',
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person, color: AppTheme.primaryAccent),
-              label: 'Account',
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings, color: AppTheme.primaryAccent),
+              label: 'Settings',
             ),
           ],
         ),
