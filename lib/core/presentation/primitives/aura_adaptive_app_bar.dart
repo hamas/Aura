@@ -175,8 +175,8 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     final opacity = _currentOpacity;
     final topPadding = MediaQuery.of(context).padding.top;
 
-    final topAlpha = (0.85 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
-    final midAlpha = (0.35 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
+    final topAlpha = (0.51 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
+    final midAlpha = (0.21 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
     final bottomAlpha = opacity.clamp(0.0, 1.0);
 
     return ClipRect(
