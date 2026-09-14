@@ -174,75 +174,68 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     final canPop = _evaluateCanPop(context);
     final opacity = _currentOpacity;
     final topPadding = MediaQuery.of(context).padding.top;
-    final totalHeaderHeight = topPadding + widget.preferredSize.height;
 
-    final topAlpha = (0.80 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
-    final midAlpha = (0.45 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
+    final topAlpha = (0.85 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
+    final midAlpha = (0.35 * (1.0 - opacity) + opacity).clamp(0.0, 1.0);
     final bottomAlpha = opacity.clamp(0.0, 1.0);
 
     return ClipRect(
       child: Stack(
         children: [
+          // Progressive Blur: Top sigma 16 -> Bottom sigma 0
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-              child: const SizedBox.expand(),
+            child: ShaderMask(
+              blendMode: BlendMode.dstIn,
+              shaderCallback: (Rect bounds) {
+                return const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFFFFFFF),
+                    Color(0x99FFFFFF),
+                    Color(0x00FFFFFF),
+                  ],
+                  stops: [0.0, 0.55, 1.0],
+                ).createShader(bounds);
+              },
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                child: const ColoredBox(color: Colors.black),
+              ),
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: totalHeaderHeight * 0.75,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-              child: const SizedBox.expand(),
+
+          // Scrim Gradient: Dark vignette overlay fading into the hero
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.surfaceBackground.withValues(alpha: topAlpha),
+                    AppColors.surfaceBackground.withValues(alpha: midAlpha),
+                    AppColors.surfaceBackground.withValues(alpha: bottomAlpha),
+                  ],
+                  stops: const [0.0, 0.60, 1.0],
+                ),
+                boxShadow: opacity > 0.4
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: totalHeaderHeight * 0.50,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-              child: const SizedBox.expand(),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: totalHeaderHeight * 0.25,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-              child: const SizedBox.expand(),
-            ),
-          ),
+
+          // Foreground Content
           Container(
             padding: widget.padding ??
                 EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.0, 0.5, 1.0],
-                colors: [
-                  AppColors.surfaceBackground.withValues(alpha: topAlpha),
-                  AppColors.surfaceBackground.withValues(alpha: midAlpha),
-                  AppColors.surfaceBackground.withValues(alpha: bottomAlpha),
-                ],
-              ),
-              boxShadow: opacity > 0.4
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
             child: Row(
               children: [
                 if (widget.leading != null) ...[
