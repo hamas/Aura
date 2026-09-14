@@ -47,7 +47,7 @@ abstract final class AppIcons {
   static const IconData chevronRight = Symbols.chevron_right_rounded;
   static const IconData chevronLeft = Symbols.chevron_left_rounded;
   static const IconData chevronDown = Symbols.keyboard_arrow_down_rounded;
-  static const IconData back = Symbols.arrow_back_ios_new_rounded;
+  static const IconData back = Symbols.arrow_back_rounded;
   static const IconData arrowBackIosNew = Symbols.arrow_back_ios_new_rounded;
   static const IconData refresh = Symbols.refresh_rounded;
   static const IconData check = Symbols.check_rounded;
