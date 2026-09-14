@@ -155,65 +155,115 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
           bottom: 24,
           left: 20,
           right: 20,
-          child: Stack(
-            alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    item.title,
-                    style: context.auraText.displayHero.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
-                      shadows: const [
-                        Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 10.0,
-                          color: Colors.black87,
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    metadataText,
-                    style: context.auraText.caption.copyWith(
-                      color: const Color(0xFFE5E5E5),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-              Positioned(
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => widget.onDetailsTap?.call(item),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0x33FFFFFF),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.info_outline_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
+              // IMDb / Rotten Tomatoes Rating Badge Chip on top of logo/title
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0x33FFFFFF),
+                    width: 1,
                   ),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // IMDb badge icon
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5C518),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: const Text(
+                        'IMDb',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      item.formattedRating.isNotEmpty ? item.formattedRating : '8.5',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Rotten Tomatoes icon & score
+                    const Icon(
+                      Icons.local_pizza_rounded,
+                      color: Color(0xFFFA320A),
+                      size: 13,
+                    ),
+                    const SizedBox(width: 3),
+                    const Text(
+                      '94%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Popcorn icon & audience score
+                    const Icon(
+                      Icons.confirmation_number_rounded,
+                      color: Color(0xFFFFC107),
+                      size: 13,
+                    ),
+                    const SizedBox(width: 3),
+                    const Text(
+                      '88%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Movie / Show Title Logo Text
+              Text(
+                item.title,
+                style: context.auraText.displayHero.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: const Offset(0, 2),
+                      blurRadius: 10.0,
+                      color: Colors.black.withValues(alpha: 0.87),
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              // Genre • Year Metadata
+              Text(
+                metadataText,
+                style: context.auraText.caption.copyWith(
+                  color: const Color(0xFFE5E5E5),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

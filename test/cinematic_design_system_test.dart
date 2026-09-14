@@ -118,7 +118,7 @@ void main() {
       );
 
       expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
+      expect(find.text('IMDb'), findsOneWidget);
     });
 
     testWidgets('HorizontalContentShelf renders section header and posters', (
