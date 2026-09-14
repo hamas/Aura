@@ -20,7 +20,7 @@ A high-performance, modular cross-platform media client engineered with Flutter.
 * 🎬 **Unified Catalog Discovery**: Powered by The Movie Database (TMDB) API for real-time trending releases, episode guides, high-res backdrops, and metadata lookups.
 * 🔌 **Decoupled Add-on Architecture**: Native compliance with the **Stremio v3 Protocol specification**. Resolves stream manifests dynamically over HTTP/JSON without bundling third-party scrapers or stream hosts.
 * ⚡ **Hardware-Accelerated Playback**: Built on `media_kit` (native `libmpv` bindings) for smooth 4K/HDR rendering, `.mkv`/HEVC/AV1 codec support, and styled ASS/SSA subtitle processing.
-* ☁️ **Cloud Continuity**: Google Sign-In support with cross-platform library synchronization (watch progress timestamps, watchlists, and installed add-on states).
+* ☁️ **Cloud Continuity**: Built-in **Firebase Authentication** with **Google Sign-In** and user-scoped state synchronization across devices (watch progress timestamps, continue watching shelf, watchlists, and installed add-on manifests).
 * 🛡️ **App Store Compliant Footprint**: Native support for high-speed cloud debrid services (Real-Debrid, TorBox). P2P/BitTorrent modules are cleanly decoupled to allow direct iOS/App Store distribution.
 
 ---

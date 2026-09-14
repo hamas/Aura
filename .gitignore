@@ -11,8 +11,26 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+
+# Firebase & Auth Credentials
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
+macos/Runner/GoogleService-Info.plist
+macos/firebase_app_id_file.json
+.firebase/
+firebase-debug.log*
+
+# Environment Variables
 .env
 .env.*
+!.env.example
+
+# Keystores & Android local configs
+*.keystore
+*.jks
+android/local.properties
+android/.gradle/
 
 # IntelliJ related
 *.iml
@@ -48,10 +66,3 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
-
-# .gitattributes
-android/** linguist-vendored
-ios/** linguist-vendored
-windows/** linguist-vendored
-macos/** linguist-vendored
-linux/** linguist-vendored
