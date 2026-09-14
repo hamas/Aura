@@ -1,14 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_assets.dart';
+import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
 import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../core/theme/app_typography.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../../library/presentation/bloc/library_event.dart';
@@ -21,7 +17,6 @@ import '../widgets/widgets.dart';
 
 enum MediaCategoryFilter { all, tvShows, movies }
 
-/// Netflix-style cinematic Discovery & Home screen for Aura.
 class DiscoveryScreen extends StatefulWidget {
   const DiscoveryScreen({super.key});
 
@@ -31,7 +26,6 @@ class DiscoveryScreen extends StatefulWidget {
 
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   final ScrollController _scrollController = ScrollController();
-  double _navOpacity = 0.0;
   MediaCategoryFilter _selectedFilter = MediaCategoryFilter.all;
 
   @override
@@ -39,23 +33,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     super.initState();
     context.read<CatalogBloc>().add(LoadDiscoveryFeedsEvent());
     context.read<LibraryBloc>().add(LoadLibraryEvent());
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    final offset =
-        _scrollController.hasClients ? _scrollController.offset : 0.0;
-    final newOpacity = (offset / 140.0).clamp(0.0, 1.0);
-    if ((newOpacity - _navOpacity).abs() > 0.01) {
-      setState(() {
-        _navOpacity = newOpacity;
-      });
-    }
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -355,228 +336,58 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           ),
 
-          // 2. Modern Netflix Top App Bar with Logo, Actions, and Category Subheader
+          // 2. Netflix-Style Adaptive Header with "A" Brand Glyph
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: _buildModernTopNavBar(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernTopNavBar(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, topPadding + 4, 14, 8),
-      decoration: BoxDecoration(
-        color:
-            AppColors.surfaceBackground.withAlpha((_navOpacity * 255).round()),
-        boxShadow: _navOpacity > 0.4
-            ? [
-                BoxShadow(
-                  color: Colors.black.withAlpha((0.7 * 255).round()),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Row 1: Brand Wordmark + Action Icons (Cast, Search, Profile)
-          Row(
-            children: [
-              // Aura Brand Logo Wordmark
-              Image.asset(
-                AppAssets.logoWordmark,
-                height: 26,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Text(
-                  'AURA',
-                  style: context.auraText.displayHero.copyWith(fontSize: 22),
-                ),
-              ),
-              const Spacer(),
-
-              // Cast Screen Action Icon
-              IconButton(
-                onPressed: _showCastDialog,
-                icon: const Icon(
-                  Icons.cast_rounded,
-                  color: AppColors.textPrimary,
-                  size: 22,
-                ),
-                tooltip: 'Cast screen',
-              ),
-
-              // Search Action Icon
-              IconButton(
-                onPressed: () => context.push('/search'),
-                icon: const Icon(
-                  Icons.search_rounded,
-                  color: AppColors.textPrimary,
-                  size: 24,
-                ),
-                tooltip: 'Search media',
-              ),
-
-              // Profile Avatar Action
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  final user = authState.user;
-                  return GestureDetector(
-                    onTap: () => context.push('/settings'),
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      margin: const EdgeInsets.only(left: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceElevated,
-                        borderRadius: AppTokens.borderRadiusSmall,
-                        border: Border.all(
-                          color: authState.isAuthenticated
-                              ? AppColors.accentPink
-                              : const Color(0xFF333333),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(AppTokens.radiusSmall - 1),
-                        child: user?.photoUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: user!.photoUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  color: AppColors.surfaceElevated,
-                                ),
-                                errorWidget: (_, __, ___) => const Icon(
-                                  Icons.person_rounded,
-                                  color: AppColors.textSecondary,
-                                  size: 16,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.person_rounded,
-                                color: AppColors.textSecondary,
-                                size: 16,
-                              ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Row 2: Category Pills (TV Shows, Movies, Categories ▾)
-          Row(
-            children: [
-              _buildCategoryPill(
-                label: 'TV Shows',
-                isSelected: _selectedFilter == MediaCategoryFilter.tvShows,
-                onTap: () {
-                  setState(() {
-                    _selectedFilter =
-                        _selectedFilter == MediaCategoryFilter.tvShows
-                            ? MediaCategoryFilter.all
-                            : MediaCategoryFilter.tvShows;
-                  });
-                },
-              ),
-              const SizedBox(width: 8),
-              _buildCategoryPill(
-                label: 'Movies',
-                isSelected: _selectedFilter == MediaCategoryFilter.movies,
-                onTap: () {
-                  setState(() {
-                    _selectedFilter =
-                        _selectedFilter == MediaCategoryFilter.movies
-                            ? MediaCategoryFilter.all
-                            : MediaCategoryFilter.movies;
-                  });
-                },
-              ),
-              const SizedBox(width: 8),
-              _buildCategoryPill(
-                label: 'Categories ▾',
-                isSelected: false,
-                onTap: _showCategoriesModal,
-              ),
-              if (_selectedFilter != MediaCategoryFilter.all) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
+            child: AuraAdaptiveAppBar(
+              scrollController: _scrollController,
+              onCastTap: _showCastDialog,
+              categories: [
+                AuraCategoryPill(
+                  label: 'TV Shows',
+                  isSelected: _selectedFilter == MediaCategoryFilter.tvShows,
                   onTap: () {
                     setState(() {
-                      _selectedFilter = MediaCategoryFilter.all;
+                      _selectedFilter =
+                          _selectedFilter == MediaCategoryFilter.tvShows
+                              ? MediaCategoryFilter.all
+                              : MediaCategoryFilter.tvShows;
                     });
                   },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white12,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.close_rounded,
-                            size: 13, color: AppColors.textSecondary),
-                        SizedBox(width: 3),
-                        Text(
-                          'Clear',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
+                AuraCategoryPill(
+                  label: 'Movies',
+                  isSelected: _selectedFilter == MediaCategoryFilter.movies,
+                  onTap: () {
+                    setState(() {
+                      _selectedFilter =
+                          _selectedFilter == MediaCategoryFilter.movies
+                              ? MediaCategoryFilter.all
+                              : MediaCategoryFilter.movies;
+                    });
+                  },
+                ),
+                AuraCategoryPill(
+                  label: 'Categories ▾',
+                  isSelected: false,
+                  onTap: _showCategoriesModal,
+                ),
+                if (_selectedFilter != MediaCategoryFilter.all)
+                  AuraCategoryPill(
+                    label: '✕ Clear',
+                    isSelected: false,
+                    onTap: () {
+                      setState(() {
+                        _selectedFilter = MediaCategoryFilter.all;
+                      });
+                    },
+                  ),
               ],
-            ],
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryPill({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.accentPink
-              : Colors.black.withAlpha((0.35 * 255).round()),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppColors.accentPink : const Color(0x33FFFFFF),
-            width: 0.8,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? const Color(0xFF0E0F12) : AppColors.textPrimary,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
       ),
     );
   }
