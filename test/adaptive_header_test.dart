@@ -36,7 +36,6 @@ void main() {
       expect(find.text('TV Shows'), findsOneWidget);
       expect(find.text('Movies'), findsOneWidget);
 
-      expect(find.byIcon(AppIcons.cast), findsOneWidget);
       expect(find.byIcon(AppIcons.search), findsOneWidget);
 
       await tester.tap(find.text('TV Shows'));

@@ -138,38 +138,6 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     return canPopRoute || Navigator.of(context).canPop();
   }
 
-  void _showDefaultCastDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Row(
-          children: [
-            AuraIcon(AppIcons.cast, color: AppColors.accentPink),
-            SizedBox(width: 10),
-            Text(
-              'Connect Device',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Searching for available Chromecast, Android TV, and DLNA display targets on your local network...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Close',
-              style: TextStyle(color: AppColors.accentPink),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final canPop = _evaluateCanPop(context);
@@ -349,11 +317,6 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     }
 
     return [
-      IconButton(
-        onPressed: widget.onCastTap ?? () => _showDefaultCastDialog(context),
-        icon: const AuraIcon(AppIcons.cast,
-            color: AppColors.textPrimary, size: 20),
-      ),
       IconButton(
         onPressed: widget.onSearchTap ?? () => context.push('/search'),
         icon: const AuraIcon(AppIcons.search,
