@@ -162,7 +162,8 @@ void main() {
     // -------------------------------------------------------------------------
     test('does NOT trigger before 90% playback progress', () async {
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.50));
       controller.add(_stateAtProgress(0.89));
@@ -176,7 +177,8 @@ void main() {
     // -------------------------------------------------------------------------
     test('triggers deletion at exactly 90% playback progress', () async {
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.90));
       await Future<void>.delayed(Duration.zero);
@@ -190,7 +192,8 @@ void main() {
       // bufferSize = 2: after ep1 (completed) is watched, the next 2 eligible
       // siblings are ep2 (completed) and ep3 (paused). ep4 is out of the buffer.
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.95));
       await Future<void>.delayed(Duration.zero);
@@ -204,7 +207,8 @@ void main() {
     // -------------------------------------------------------------------------
     test('does NOT double-trigger for the same episode', () async {
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.90));
       controller.add(_stateAtProgress(0.95));
@@ -227,7 +231,8 @@ void main() {
       );
 
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(1.00));
       await Future<void>.delayed(Duration.zero);
@@ -250,7 +255,8 @@ void main() {
       );
 
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.92));
       await Future<void>.delayed(Duration.zero);
@@ -267,7 +273,8 @@ void main() {
       manager.statusStream.listen(messages.add);
 
       final controller = StreamController<AuraPlayerState>();
-      manager.attachPlayerStream(playerStream: controller.stream, taskId: 'ep1');
+      manager.attachPlayerStream(
+          playerStream: controller.stream, taskId: 'ep1');
 
       controller.add(_stateAtProgress(0.91));
       await Future<void>.delayed(Duration.zero);
@@ -278,7 +285,8 @@ void main() {
     });
 
     // -------------------------------------------------------------------------
-    test('handleManualCompletion deletes task and queues next episodes', () async {
+    test('handleManualCompletion deletes task and queues next episodes',
+        () async {
       await manager.handleManualCompletion('ep1');
 
       expect(repo.deletedIds, contains('ep1'));

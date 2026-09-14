@@ -8,7 +8,6 @@ import 'debrid_provider.dart';
 class AllDebridProviderImpl implements DebridProvider {
   final http.Client _client;
   final SecureStorageService _secureStorage;
-  
 
   AllDebridProviderImpl({
     http.Client? client,
@@ -45,8 +44,8 @@ class AllDebridProviderImpl implements DebridProvider {
   Future<DebridAccount> getUserInfo() async {
     final token = await _secureStorage.getAuthToken();
     if (token == null) {
-    throw const DebridException('AllDebrid API key not set.');
-  }
+      throw const DebridException('AllDebrid API key not set.');
+    }
 
     try {
       final res = await _client.get(

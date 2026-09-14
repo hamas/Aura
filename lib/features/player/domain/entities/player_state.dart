@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/painting.dart';
+import 'media_interval.dart';
 import 'stream_track.dart';
 
 enum PlaybackStatus { idle, buffering, playing, paused, completed, error }
@@ -22,6 +23,9 @@ class AuraPlayerState extends Equatable {
   final String? currentStreamUrl;
   final BoxFit fit;
   final bool enableAuraGlow;
+  final bool autoSkipIntros;
+  final List<MediaInterval> intervals;
+  final MediaInterval? activeInterval;
   final String? errorMessage;
 
   const AuraPlayerState({
@@ -42,6 +46,9 @@ class AuraPlayerState extends Equatable {
     this.currentStreamUrl,
     this.fit = BoxFit.contain,
     this.enableAuraGlow = true,
+    this.autoSkipIntros = false,
+    this.intervals = const [],
+    this.activeInterval,
     this.errorMessage,
   });
 
@@ -67,6 +74,10 @@ class AuraPlayerState extends Equatable {
     String? currentStreamUrl,
     BoxFit? fit,
     bool? enableAuraGlow,
+    bool? autoSkipIntros,
+    List<MediaInterval>? intervals,
+    MediaInterval? activeInterval,
+    bool clearActiveInterval = false,
     String? errorMessage,
   }) {
     return AuraPlayerState(
@@ -91,6 +102,10 @@ class AuraPlayerState extends Equatable {
       currentStreamUrl: currentStreamUrl ?? this.currentStreamUrl,
       fit: fit ?? this.fit,
       enableAuraGlow: enableAuraGlow ?? this.enableAuraGlow,
+      autoSkipIntros: autoSkipIntros ?? this.autoSkipIntros,
+      intervals: intervals ?? this.intervals,
+      activeInterval:
+          clearActiveInterval ? null : (activeInterval ?? this.activeInterval),
       errorMessage: errorMessage,
     );
   }
@@ -114,6 +129,9 @@ class AuraPlayerState extends Equatable {
         currentStreamUrl,
         fit,
         enableAuraGlow,
+        autoSkipIntros,
+        intervals,
+        activeInterval,
         errorMessage,
       ];
 }

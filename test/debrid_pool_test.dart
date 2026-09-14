@@ -1,7 +1,6 @@
 import 'package:aura/features/debrid/domain/entities/debrid_account.dart';
 import 'package:aura/features/debrid/domain/providers/debrid_provider.dart';
 import 'package:aura/features/debrid/domain/services/debrid_pool_service.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockDebridProvider implements DebridProvider {

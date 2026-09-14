@@ -50,8 +50,10 @@ class SmartDownloadSettings extends Equatable {
     return SmartDownloadSettings(
       enabled: json['enabled'] as bool? ?? false,
       bufferSize: ((json['bufferSize'] as int?) ?? 2).clamp(1, 3),
-      maxStorageBytes: json['maxStorageBytes'] as int? ?? 15 * 1024 * 1024 * 1024,
-      lowStorageGuardBytes: json['lowStorageGuardBytes'] as int? ?? 2 * 1024 * 1024 * 1024,
+      maxStorageBytes:
+          json['maxStorageBytes'] as int? ?? 15 * 1024 * 1024 * 1024,
+      lowStorageGuardBytes:
+          json['lowStorageGuardBytes'] as int? ?? 2 * 1024 * 1024 * 1024,
     );
   }
 

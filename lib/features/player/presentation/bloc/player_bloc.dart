@@ -1,17 +1,20 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../data/services/media_kit_player_service.dart';
+import '../../domain/entities/media_interval.dart';
 import '../../domain/entities/player_state.dart';
 import 'player_event.dart';
 
 class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
   final MediaKitPlayerService _playerService;
   StreamSubscription<AuraPlayerState>? _stateSubscription;
+  MediaInterval? _lastAutoSkippedInterval;
 
   PlayerBloc({required MediaKitPlayerService playerService})
       : _playerService = playerService,
         super(playerService.state) {
-    on<PlayerStateUpdatedEvent>((event, emit) => emit(event.state));
+    on<PlayerStateUpdatedEvent>(_onPlayerStateUpdated);
 
     _stateSubscription = _playerService.stateStream.listen((state) {
       add(PlayerStateUpdatedEvent(state));
@@ -30,6 +33,73 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
     on<SelectSecondarySubtitleTrackEvent>(_onSelectSecondarySubtitleTrack);
     on<SetSubtitleOffsetEvent>(_onSetSubtitleOffset);
     on<NudgeSubtitleOffsetEvent>(_onNudgeSubtitleOffset);
+    on<SetAutoSkipIntrosEvent>(_onSetAutoSkipIntros);
+    on<SetMediaIntervalsEvent>(_onSetMediaIntervals);
+    on<SkipCurrentIntervalEvent>(_onSkipCurrentInterval);
+  }
+
+  void _onPlayerStateUpdated(
+      PlayerStateUpdatedEvent event, Emitter<AuraPlayerState> emit) {
+    final newState = event.state;
+    final pos = newState.position;
+
+    // Detect active interval at current playback position
+    MediaInterval? currentInterval;
+    for (final interval in state.intervals) {
+      if (interval.contains(pos)) {
+        currentInterval = interval;
+        break;
+      }
+    }
+
+    // Handle Auto-Skip if enabled and interval is intro or recap
+    if (state.autoSkipIntros &&
+        currentInterval != null &&
+        (currentInterval.type == MediaIntervalType.intro ||
+            currentInterval.type == MediaIntervalType.recap) &&
+        _lastAutoSkippedInterval != currentInterval) {
+      _lastAutoSkippedInterval = currentInterval;
+      _playerService.seek(currentInterval.skipTarget);
+      emit(newState.copyWith(
+        activeInterval: currentInterval,
+        position: currentInterval.skipTarget,
+      ));
+      return;
+    }
+
+    if (currentInterval == null) {
+      _lastAutoSkippedInterval = null;
+    }
+
+    emit(newState.copyWith(
+      intervals: state.intervals,
+      autoSkipIntros: state.autoSkipIntros,
+      activeInterval: currentInterval,
+      clearActiveInterval: currentInterval == null,
+    ));
+  }
+
+  void _onSetAutoSkipIntros(
+      SetAutoSkipIntrosEvent event, Emitter<AuraPlayerState> emit) {
+    emit(state.copyWith(autoSkipIntros: event.enabled));
+  }
+
+  void _onSetMediaIntervals(
+      SetMediaIntervalsEvent event, Emitter<AuraPlayerState> emit) {
+    emit(state.copyWith(intervals: event.intervals));
+  }
+
+  Future<void> _onSkipCurrentInterval(
+      SkipCurrentIntervalEvent event, Emitter<AuraPlayerState> emit) async {
+    final active = state.activeInterval;
+    if (active != null) {
+      final target = active.skipTarget;
+      await _playerService.seek(target);
+      emit(state.copyWith(
+        position: target,
+        clearActiveInterval: true,
+      ));
+    }
   }
 
   void _onToggleAuraGlow(
@@ -65,6 +135,10 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
 
   Future<void> _onPlayStream(
       PlayStreamEvent event, Emitter<AuraPlayerState> emit) async {
+    _lastAutoSkippedInterval = null;
+    if (event.intervals != null) {
+      emit(state.copyWith(intervals: event.intervals));
+    }
     await _playerService.openStream(
       url: event.streamUrl,
       title: event.title,

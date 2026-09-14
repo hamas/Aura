@@ -25,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Player preferences
   bool _hardwareAcceleration = true;
   bool _ambientAuraGlow = true;
+  bool _autoSkipIntros = false;
   String _defaultAudioLanguage = 'eng';
   String _defaultSubtitleLanguage = 'eng';
 
@@ -56,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _hardwareAcceleration =
           prefs.getBool('pref_hardware_acceleration') ?? true;
       _ambientAuraGlow = prefs.getBool('pref_ambient_aura_glow') ?? true;
+      _autoSkipIntros = prefs.getBool('pref_auto_skip_intros') ?? false;
       _defaultAudioLanguage =
           prefs.getString('pref_default_audio_lang') ?? 'eng';
       _defaultSubtitleLanguage =
@@ -468,6 +470,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (val) {
                 setState(() => _ambientAuraGlow = val);
                 _savePreferenceBool('pref_ambient_aura_glow', val);
+              },
+            ),
+            const Divider(color: AppTheme.surfaceElevated, height: 1),
+
+            // Auto-Skip Intros & Recaps Toggle
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              activeThumbColor: AppTheme.primaryAccent,
+              title: const Text(
+                'Auto-Skip Intros & Recaps',
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text(
+                'Automatically seek past intro themes and recaps without prompt',
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+              ),
+              value: _autoSkipIntros,
+              onChanged: (val) {
+                setState(() => _autoSkipIntros = val);
+                _savePreferenceBool('pref_auto_skip_intros', val);
               },
             ),
             const Divider(color: AppTheme.surfaceElevated, height: 1),

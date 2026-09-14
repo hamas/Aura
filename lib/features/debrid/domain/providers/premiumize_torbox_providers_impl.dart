@@ -1,4 +1,3 @@
-
 import '../entities/debrid_account.dart';
 import 'debrid_provider.dart';
 

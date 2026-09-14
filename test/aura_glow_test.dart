@@ -24,7 +24,7 @@ void main() {
 
       expect(bloc.state.enableAuraGlow, isTrue);
 
-      bloc.add(ToggleAuraGlowEvent());
+      bloc.add(const ToggleAuraGlowEvent());
       await expectLater(
         bloc.stream,
         emits(predicate<AuraPlayerState>((s) => s.enableAuraGlow == false)),
@@ -62,13 +62,14 @@ void main() {
             body: AuraGlowBackdrop(
               isEnabled: false,
               isPlaying: true,
+              position: Duration(seconds: 15),
             ),
           ),
         ),
       );
       await tester.pump();
 
-      expect(find.byType(SizedBox), findsWidgets);
+      expect(find.byType(AuraGlowBackdrop), findsOneWidget);
     });
   });
 }

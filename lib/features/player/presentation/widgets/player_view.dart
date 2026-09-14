@@ -11,6 +11,8 @@ import '../bloc/player_event.dart';
 import 'aura_glow_backdrop.dart';
 import 'player_controls_overlay.dart';
 
+import '../../data/services/chapter_ingestion_service.dart';
+
 class PlayerView extends StatefulWidget {
   final MediaKitPlayerService playerService;
   final VoidCallback onBack;
@@ -20,6 +22,7 @@ class PlayerView extends StatefulWidget {
   final String? mediaType;
   final int? seasonNumber;
   final int? episodeNumber;
+  final VoidCallback? onNextEpisode;
 
   const PlayerView({
     super.key,
@@ -31,6 +34,7 @@ class PlayerView extends StatefulWidget {
     this.mediaType,
     this.seasonNumber,
     this.episodeNumber,
+    this.onNextEpisode,
   });
 
   @override
@@ -51,6 +55,22 @@ class _PlayerViewState extends State<PlayerView> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     _startProgressSyncTimer();
+    _fetchIntervals();
+  }
+
+  Future<void> _fetchIntervals() async {
+    if (widget.mediaId == null) return;
+    try {
+      final ingestionService = ChapterIngestionService();
+      final intervals = await ingestionService.fetchIntervals(
+        imdbId: widget.mediaId!,
+        season: widget.seasonNumber,
+        episode: widget.episodeNumber,
+      );
+      if (mounted && intervals.isNotEmpty) {
+        context.read<PlayerBloc>().add(SetMediaIntervalsEvent(intervals));
+      }
+    } catch (_) {}
   }
 
   void _startProgressSyncTimer() {
@@ -134,7 +154,7 @@ class _PlayerViewState extends State<PlayerView> {
               // Cinematic Gesture Overlay Controls
               PlayerControlsOverlay(
                 state: state,
-                onPlayPause: () => bloc.add(TogglePlayPauseEvent()),
+                onPlayPause: () => bloc.add(const TogglePlayPauseEvent()),
                 onSeek: (pos) => bloc.add(SeekPositionEvent(pos)),
                 onAspectRatioChange: (fit) =>
                     bloc.add(ChangeAspectRatioEvent(fit)),
@@ -151,7 +171,10 @@ class _PlayerViewState extends State<PlayerView> {
                 onNudgeSubtitleOffset: (delta) =>
                     bloc.add(NudgeSubtitleOffsetEvent(delta)),
                 onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
-                onToggleAuraGlow: () => bloc.add(ToggleAuraGlowEvent()),
+                onToggleAuraGlow: () => bloc.add(const ToggleAuraGlowEvent()),
+                onSkipInterval: () =>
+                    bloc.add(const SkipCurrentIntervalEvent()),
+                onNextEpisode: widget.onNextEpisode,
                 onBack: widget.onBack,
               ),
             ],

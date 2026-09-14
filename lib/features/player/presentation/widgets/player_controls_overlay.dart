@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../domain/entities/media_interval.dart';
 import '../../domain/entities/player_state.dart';
 import '../../domain/entities/stream_track.dart';
 import '../subtitles/widgets/subtitle_sync_hud.dart';
+import 'skip_interval_pill.dart';
 
 class PlayerControlsOverlay extends StatefulWidget {
   final AuraPlayerState state;
@@ -21,6 +23,8 @@ class PlayerControlsOverlay extends StatefulWidget {
   final ValueChanged<double>? onVolumeChange;
   final VoidCallback? onPictureInPicture;
   final VoidCallback? onToggleAuraGlow;
+  final VoidCallback? onSkipInterval;
+  final VoidCallback? onNextEpisode;
   final VoidCallback onBack;
 
   const PlayerControlsOverlay({
@@ -38,6 +42,8 @@ class PlayerControlsOverlay extends StatefulWidget {
     this.onVolumeChange,
     this.onPictureInPicture,
     this.onToggleAuraGlow,
+    this.onSkipInterval,
+    this.onNextEpisode,
     required this.onBack,
   });
 
@@ -421,6 +427,32 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                   ],
                 ),
               ),
+            ),
+          ),
+
+        // Smart Skip Interval Animated Pill Overlay (Bottom Right)
+        if (widget.state.activeInterval != null &&
+            (widget.state.activeInterval!.type == MediaIntervalType.intro ||
+                widget.state.activeInterval!.type == MediaIntervalType.recap))
+          Positioned(
+            right: 24,
+            bottom: 84,
+            child: SkipIntervalPill(
+              interval: widget.state.activeInterval!,
+              onSkip: () => widget.onSkipInterval?.call(),
+            ),
+          ),
+
+        // Next Episode Auto-Trigger Countdown Overlay (Bottom Right during Credits)
+        if (widget.state.activeInterval != null &&
+            widget.state.activeInterval!.type == MediaIntervalType.credits &&
+            widget.onNextEpisode != null)
+          Positioned(
+            right: 24,
+            bottom: 84,
+            child: NextEpisodeCountdownCard(
+              onPlayNext: () => widget.onNextEpisode?.call(),
+              onDismiss: () {},
             ),
           ),
 

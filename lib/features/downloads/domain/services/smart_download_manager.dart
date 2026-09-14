@@ -41,7 +41,8 @@ class SmartDownloadManager {
     SmartDownloadConstraintChecker? constraintChecker,
   })  : _downloadRepository = downloadRepository,
         _settingsRepository = settingsRepository,
-        _constraintChecker = constraintChecker ?? SmartDownloadConstraintChecker();
+        _constraintChecker =
+            constraintChecker ?? SmartDownloadConstraintChecker();
 
   // ---------------------------------------------------------------------------
   // Player stream attachment
@@ -82,7 +83,8 @@ class SmartDownloadManager {
     if (_trackedTaskId == null) return;
     if (state.duration == Duration.zero) return;
 
-    final progress = state.position.inMilliseconds / state.duration.inMilliseconds;
+    final progress =
+        state.position.inMilliseconds / state.duration.inMilliseconds;
     if (progress >= 0.90) {
       _hasTriggeredForCurrentTask = true;
       _handleWatchCompletion(_trackedTaskId!);
@@ -98,7 +100,8 @@ class SmartDownloadManager {
     if (!settings.enabled) return;
 
     final allTasks = await _downloadRepository.getAllDownloads();
-    final completedTask = allTasks.where((t) => t.id == completedTaskId).firstOrNull;
+    final completedTask =
+        allTasks.where((t) => t.id == completedTaskId).firstOrNull;
     if (completedTask == null) return;
 
     // Step 1: Delete the watched episode file to reclaim vault space.

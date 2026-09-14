@@ -129,7 +129,12 @@ class MediaKitPlayerService {
   Future<void> play() => player.play();
   Future<void> pause() => player.pause();
   Future<void> playOrPause() => player.playOrPause();
-  Future<void> seek(Duration position) => player.seek(position);
+  Future<void> seek(Duration position) async {
+    _emit(_currentState.copyWith(position: position));
+    try {
+      await player.seek(position);
+    } catch (_) {}
+  }
 
   Future<void> setVolume(double volume) {
     _emit(_currentState.copyWith(volume: volume));
