@@ -19,6 +19,7 @@ class AuraPlayerState extends Equatable {
   final SubtitleTrackInfo? selectedSubtitleTrack;
   final String? currentStreamUrl;
   final BoxFit fit;
+  final bool enableAuraGlow;
   final String? errorMessage;
 
   const AuraPlayerState({
@@ -36,6 +37,7 @@ class AuraPlayerState extends Equatable {
     this.selectedSubtitleTrack,
     this.currentStreamUrl,
     this.fit = BoxFit.contain,
+    this.enableAuraGlow = true,
     this.errorMessage,
   });
 
@@ -57,6 +59,7 @@ class AuraPlayerState extends Equatable {
     SubtitleTrackInfo? selectedSubtitleTrack,
     String? currentStreamUrl,
     BoxFit? fit,
+    bool? enableAuraGlow,
     String? errorMessage,
   }) {
     return AuraPlayerState(
@@ -75,6 +78,7 @@ class AuraPlayerState extends Equatable {
           selectedSubtitleTrack ?? this.selectedSubtitleTrack,
       currentStreamUrl: currentStreamUrl ?? this.currentStreamUrl,
       fit: fit ?? this.fit,
+      enableAuraGlow: enableAuraGlow ?? this.enableAuraGlow,
       errorMessage: errorMessage,
     );
   }
@@ -95,6 +99,7 @@ class AuraPlayerState extends Equatable {
         selectedSubtitleTrack,
         currentStreamUrl,
         fit,
+        enableAuraGlow,
         errorMessage,
       ];
 }

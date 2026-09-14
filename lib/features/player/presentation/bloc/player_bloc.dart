@@ -25,6 +25,17 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
     on<ChangeAspectRatioEvent>(_onChangeAspectRatio);
     on<SelectAudioTrackEvent>(_onSelectAudioTrack);
     on<SelectSubtitleTrackEvent>(_onSelectSubtitleTrack);
+    on<ToggleAuraGlowEvent>(_onToggleAuraGlow);
+    on<SetAuraGlowEvent>(_onSetAuraGlow);
+  }
+
+  void _onToggleAuraGlow(
+      ToggleAuraGlowEvent event, Emitter<AuraPlayerState> emit) {
+    emit(state.copyWith(enableAuraGlow: !state.enableAuraGlow));
+  }
+
+  void _onSetAuraGlow(SetAuraGlowEvent event, Emitter<AuraPlayerState> emit) {
+    emit(state.copyWith(enableAuraGlow: event.enabled));
   }
 
   Future<void> _onPlayStream(

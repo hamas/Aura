@@ -32,6 +32,10 @@ class MediaKitPlayerService {
     _listenToPlayerEvents();
   }
 
+  MediaKitPlayerService.test(
+      {AuraPlayerState initialState = const AuraPlayerState()})
+      : _currentState = initialState;
+
   Stream<AuraPlayerState> get stateStream => _stateController.stream;
   AuraPlayerState get state => _currentState;
 

@@ -16,6 +16,7 @@ class PlayerControlsOverlay extends StatefulWidget {
   final ValueChanged<SubtitleTrackInfo?> onSelectSubtitleTrack;
   final ValueChanged<double>? onVolumeChange;
   final VoidCallback? onPictureInPicture;
+  final VoidCallback? onToggleAuraGlow;
   final VoidCallback onBack;
 
   const PlayerControlsOverlay({
@@ -29,6 +30,7 @@ class PlayerControlsOverlay extends StatefulWidget {
     required this.onSelectSubtitleTrack,
     this.onVolumeChange,
     this.onPictureInPicture,
+    this.onToggleAuraGlow,
     required this.onBack,
   });
 
@@ -578,6 +580,17 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                       : BoxFit.contain;
               widget.onAspectRatioChange(nextFit);
             },
+          ),
+          // Ambient Aura Glow Toggle Button
+          IconButton(
+            icon: AuraIcon(
+              AppIcons.autoAwesome,
+              color: widget.state.enableAuraGlow
+                  ? AppTheme.primaryAccent
+                  : Colors.white54,
+            ),
+            tooltip: 'Ambient Aura Glow',
+            onPressed: widget.onToggleAuraGlow,
           ),
           // Subtitle Track Selector
           IconButton(

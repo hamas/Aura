@@ -94,6 +94,7 @@ abstract final class AppIcons {
   static const IconData vpnKey = Symbols.vpn_key_rounded;
   static const IconData cloudSync = Symbols.cloud_sync_rounded;
   static const IconData cloudOff = Symbols.cloud_off_rounded;
+  static const IconData autoAwesome = Symbols.auto_awesome_rounded;
   static const IconData gavel = Symbols.gavel_rounded;
   static const IconData shield = Symbols.shield_rounded;
 }

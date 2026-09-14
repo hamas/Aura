@@ -24,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Player preferences
   bool _hardwareAcceleration = true;
+  bool _ambientAuraGlow = true;
   String _defaultAudioLanguage = 'eng';
   String _defaultSubtitleLanguage = 'eng';
 
@@ -54,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _hardwareAcceleration =
           prefs.getBool('pref_hardware_acceleration') ?? true;
+      _ambientAuraGlow = prefs.getBool('pref_ambient_aura_glow') ?? true;
       _defaultAudioLanguage =
           prefs.getString('pref_default_audio_lang') ?? 'eng';
       _defaultSubtitleLanguage =
@@ -443,6 +445,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (val) {
                 setState(() => _hardwareAcceleration = val);
                 _savePreferenceBool('pref_hardware_acceleration', val);
+              },
+            ),
+            const Divider(color: AppTheme.surfaceElevated, height: 1),
+
+            // Ambient Aura Glow Lighting Toggle
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              activeThumbColor: AppTheme.primaryAccent,
+              title: const Text(
+                'Ambient Aura Glow',
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text(
+                'Dynamic backlighting projecting letterbox edge colors behind player',
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+              ),
+              value: _ambientAuraGlow,
+              onChanged: (val) {
+                setState(() => _ambientAuraGlow = val);
+                _savePreferenceBool('pref_ambient_aura_glow', val);
               },
             ),
             const Divider(color: AppTheme.surfaceElevated, height: 1),

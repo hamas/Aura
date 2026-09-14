@@ -712,9 +712,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                   ),
                   elevation: 4,
                 ),
-                onPressed: _isSmartPlayLoading
-                    ? null
-                    : () => _handleSmartPlay(item),
+                onPressed:
+                    _isSmartPlayLoading ? null : () => _handleSmartPlay(item),
                 icon: _isSmartPlayLoading
                     ? const SizedBox(
                         width: 18,

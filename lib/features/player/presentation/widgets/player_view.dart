@@ -8,6 +8,7 @@ import '../../../library/presentation/bloc/library_event.dart';
 import '../../data/services/media_kit_player_service.dart';
 import '../bloc/player_bloc.dart';
 import '../bloc/player_event.dart';
+import 'aura_glow_backdrop.dart';
 import 'player_controls_overlay.dart';
 
 class PlayerView extends StatefulWidget {
@@ -113,6 +114,14 @@ class _PlayerViewState extends State<PlayerView> {
           body: Stack(
             fit: StackFit.expand,
             children: [
+              // Ambient Aura Glow Dynamic Backlight Surface
+              AuraGlowBackdrop(
+                isEnabled: state.enableAuraGlow,
+                isPlaying: state.isPlaying,
+                position: state.position,
+                fit: state.fit,
+              ),
+
               // Hardware-accelerated Video Surface
               Center(
                 child: Video(
@@ -136,6 +145,7 @@ class _PlayerViewState extends State<PlayerView> {
                 onSelectSubtitleTrack: (track) =>
                     bloc.add(SelectSubtitleTrackEvent(track)),
                 onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
+                onToggleAuraGlow: () => bloc.add(ToggleAuraGlowEvent()),
                 onBack: widget.onBack,
               ),
             ],

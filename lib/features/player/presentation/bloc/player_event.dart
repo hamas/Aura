@@ -84,3 +84,13 @@ class SelectSubtitleTrackEvent extends PlayerEvent {
   @override
   List<Object?> get props => [track];
 }
+
+class ToggleAuraGlowEvent extends PlayerEvent {}
+
+class SetAuraGlowEvent extends PlayerEvent {
+  final bool enabled;
+  const SetAuraGlowEvent(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
+}
