@@ -71,7 +71,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     return AuraScaffold(
       body: Stack(
         children: [
-          // 1. Full-Bleed Scrollable Content starting beneath status bar
           RefreshIndicator(
             onRefresh: _onRefresh,
             color: AppColors.accentPink,
@@ -108,7 +107,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           parent: BouncingScrollPhysics(),
                         ),
                         slivers: [
-                          // Billboard Hero Banner
                           if (heroItems.isNotEmpty)
                             SliverToBoxAdapter(
                               child: BillboardHeroBanner(
@@ -118,7 +116,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                               ),
                             ),
 
-                          // Continue Watching Shelf
+                          // Continue Watching Row (16:9 Aspect Ratio)
                           if (continueWatchingItems.isNotEmpty &&
                               _selectedFilter == MediaCategoryFilter.all)
                             SliverToBoxAdapter(
@@ -137,7 +135,18 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                               ),
                             ),
 
-                          // Trending Movies Shelf
+                          // Top 10 Shelf (Numbered Row)
+                          if (catalogState.trending.isNotEmpty &&
+                              _selectedFilter == MediaCategoryFilter.all)
+                            SliverToBoxAdapter(
+                              child: TopTenShelf(
+                                title: 'Top 10 Today',
+                                items: catalogState.trending,
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Standard Cinematic Poster Shelf
                           if (catalogState.trendingMovies.isNotEmpty &&
                               (_selectedFilter == MediaCategoryFilter.all ||
                                   _selectedFilter ==
@@ -151,7 +160,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                               ),
                             ),
 
-                          // Popular TV Shows Shelf
                           if (catalogState.trendingSeries.isNotEmpty &&
                               (_selectedFilter == MediaCategoryFilter.all ||
                                   _selectedFilter ==
@@ -161,46 +169,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                                 title: 'Popular TV Shows',
                                 subtitle: 'Binge-worthy series trending today',
                                 items: catalogState.trendingSeries,
-                                onItemTap: _navigateToDetail,
-                              ),
-                            ),
-
-                          // Community Picks & Trending Combined
-                          if (catalogState.trending.length > 5 &&
-                              _selectedFilter == MediaCategoryFilter.all)
-                            SliverToBoxAdapter(
-                              child: HorizontalContentShelf.media(
-                                title: 'Community Picks & Trending',
-                                subtitle: 'Aggregated community favorites',
-                                items: catalogState.trending.skip(5).toList(),
-                                onItemTap: _navigateToDetail,
-                              ),
-                            ),
-
-                          // Critically Acclaimed Series
-                          if (catalogState.popularSeries.isNotEmpty &&
-                              (_selectedFilter == MediaCategoryFilter.all ||
-                                  _selectedFilter ==
-                                      MediaCategoryFilter.tvShows))
-                            SliverToBoxAdapter(
-                              child: HorizontalContentShelf.media(
-                                title: 'Critically Acclaimed Series',
-                                subtitle: 'Top rated worldwide television',
-                                items: catalogState.popularSeries,
-                                onItemTap: _navigateToDetail,
-                              ),
-                            ),
-
-                          // Blockbuster Cinema
-                          if (catalogState.popularMovies.isNotEmpty &&
-                              (_selectedFilter == MediaCategoryFilter.all ||
-                                  _selectedFilter ==
-                                      MediaCategoryFilter.movies))
-                            SliverToBoxAdapter(
-                              child: HorizontalContentShelf.media(
-                                title: 'Blockbuster Cinema',
-                                subtitle: 'All-time audience blockbusters',
-                                items: catalogState.popularMovies,
                                 onItemTap: _navigateToDetail,
                               ),
                             ),
@@ -217,7 +185,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           ),
 
-          // 2. Netflix-Style Adaptive Header with "A" Brand Glyph
+          // Pinned Persistent Category Filter Header
           Positioned(
             top: 0,
             left: 0,

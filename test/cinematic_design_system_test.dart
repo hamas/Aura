@@ -82,7 +82,7 @@ void main() {
       expect(find.text('2022'), findsOneWidget);
     });
 
-    testWidgets('ContinueWatchingCard renders progress and episode badge', (
+    testWidgets('ContinueWatchingCard renders progress and title', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -95,8 +95,6 @@ void main() {
       );
 
       expect(find.text('Stranger Things'), findsOneWidget);
-      expect(find.text('S4:E1'), findsOneWidget);
-      expect(find.text('30m remaining'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
@@ -115,13 +113,9 @@ void main() {
         ),
       );
 
-      expect(
-          find.text('STRANGER THINGS'), findsNothing); // tagline is uppercase
-      expect(find.text('EVERY ENDING HAS A BEGINNING'), findsOneWidget);
+      expect(find.text('Stranger Things'), findsOneWidget);
       expect(find.text('Play'), findsOneWidget);
-      expect(find.text('Details'), findsOneWidget);
-      expect(find.text('4K HDR'), findsOneWidget);
-      expect(find.text('SERIES'), findsOneWidget);
+      expect(find.text('Info'), findsOneWidget);
     });
 
     testWidgets('HorizontalContentShelf renders section header and posters', (

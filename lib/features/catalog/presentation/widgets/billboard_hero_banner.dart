@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
 
-/// Full-bleed Netflix-style Billboard Hero Banner with dual vignettes and action buttons.
 class BillboardHeroBanner extends StatefulWidget {
   final List<MediaItem> items;
   final void Function(MediaItem item)? onPlayTap;
@@ -33,6 +30,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
   late final PageController _pageController;
   int _currentPage = 0;
   Timer? _autoScrollTimer;
+  double _playScale = 1.0;
+  double _infoScale = 1.0;
 
   @override
   void initState() {
@@ -59,16 +58,6 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
   }
 
   @override
-  void didUpdateWidget(covariant BillboardHeroBanner oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.items.length != oldWidget.items.length) {
-      if (widget.autoScroll && widget.items.length > 1) {
-        _startAutoScroll();
-      }
-    }
-  }
-
-  @override
   void dispose() {
     _autoScrollTimer?.cancel();
     _pageController.dispose();
@@ -88,7 +77,6 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
       height: bannerHeight,
       child: Stack(
         children: [
-          // Page View Carousel
           PageView.builder(
             controller: _pageController,
             itemCount: widget.items.length,
@@ -97,11 +85,9 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
             },
             itemBuilder: (context, index) {
               final item = widget.items[index];
-              return _buildHeroSlide(context, item, bannerHeight);
+              return _buildHeroSlide(context, item, bannerHeight, index);
             },
           ),
-
-          // Carousel Page Indicator Dots
           if (widget.items.length > 1)
             Positioned(
               bottom: 12,
@@ -121,16 +107,6 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                           ? AppColors.accentPink
                           : Colors.white24,
                       borderRadius: BorderRadius.circular(2),
-                      boxShadow: _currentPage == index
-                          ? [
-                              BoxShadow(
-                                color: AppColors.accentPink.withAlpha(
-                                  (0.6 * 255).round(),
-                                ),
-                                blurRadius: 6,
-                              ),
-                            ]
-                          : null,
                     ),
                   ),
                 ),
@@ -141,11 +117,11 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
     );
   }
 
-  Widget _buildHeroSlide(BuildContext context, MediaItem item, double height) {
+  Widget _buildHeroSlide(
+      BuildContext context, MediaItem item, double height, int index) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Backdrop image
         item.backdropPath != null
             ? CachedNetworkImage(
                 imageUrl: item.fullBackdropUrl,
@@ -156,26 +132,23 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                     Container(color: AppColors.surfaceBackground),
               )
             : Container(color: AppColors.surfaceBackground),
-
-        // Top Vignette (Dark gradient for nav and status bar)
-        const Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 120,
-          child: DecoratedBox(
-            decoration: BoxDecoration(gradient: AppColors.heroTopVignette),
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.0, 0.25, 0.65, 1.0],
+                colors: [
+                  Color(0x66141414),
+                  Colors.transparent,
+                  Color(0x80141414),
+                  AppColors.surfaceBackground,
+                ],
+              ),
+            ),
           ),
         ),
-
-        // Bottom Vignette (Seamless blend into shelf canvas)
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(gradient: AppColors.heroBottomVignette),
-          ),
-        ),
-
-        // Hero Content Overlay
         Positioned(
           bottom: 24,
           left: 20,
@@ -184,151 +157,108 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Tagline or Category Pill
-              if (item.tagline != null && item.tagline!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+              if (index < 10) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentPink,
+                    borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
+                  ),
                   child: Text(
-                    item.tagline!.toUpperCase(),
-                    style: AppTypography.metadataPill.copyWith(
-                      color: AppColors.accentPink,
-                      fontSize: 11,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.w800,
+                    'TOP 10',
+                    style: context.auraText.caption.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-
-              // Title
+              ],
               Text(
                 item.title,
-                style: AppTypography.displayHero.copyWith(
-                  fontSize: 28,
-                ),
+                style: context.auraText.displayHero.copyWith(fontSize: 28),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-
-              // Metadata Badges Row
-              Row(
-                children: [
-                  // Star Rating Badge
-                  AuraBadge.rating(item.formattedRating),
-                  const SizedBox(width: 8),
-
-                  // 4K / Ultra HD Badge
-                  AuraBadge.quality('4K HDR'),
-                  const SizedBox(width: 8),
-
-                  // Release Year
-                  if (item.releaseYear.isNotEmpty) ...[
-                    Text(
-                      item.releaseYear,
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Media Type (Movie/Series)
-                  AuraBadge(
-                    label: item.type == MediaType.movie ? 'MOVIE' : 'SERIES',
-                    backgroundColor: AppColors.surfaceElevated,
-                    borderColor: const Color(0x33FFFFFF),
-                    textColor: AppColors.textMuted,
-                  ),
-                ],
-              ),
-
-              // Short Synopsis (2-line clamp)
-              if (item.overview.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  item.overview,
-                  style: AppTypography.bodyOverview.copyWith(
-                    fontSize: 12,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 6),
+              Text(
+                'Gritty • Psychological • Mystery',
+                style: context.auraText.caption.copyWith(
+                  color: const Color(0xFFE5E5E5),
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-              const SizedBox(height: 14),
-
-              // Action Buttons Row
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  // Play Button (High Emphasis Electric Violet/Pink Pill)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentPink,
-                      foregroundColor: const Color(0xFF0E0F12),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 22,
-                        vertical: 11,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppTokens.borderRadiusSmall,
-                      ),
-                      elevation: 4,
-                    ),
-                    onPressed: () {
-                      if (widget.onPlayTap != null) {
-                        widget.onPlayTap!(item);
-                      }
+                  GestureDetector(
+                    onTapDown: (_) => setState(() => _playScale = 0.96),
+                    onTapUp: (_) {
+                      setState(() => _playScale = 1.0);
+                      widget.onPlayTap?.call(item);
                     },
-                    icon: const AuraIcon(
-                      AppIcons.play,
-                      size: 22,
-                      color: Color(0xFF0E0F12),
-                      fill: 1.0,
-                    ),
-                    label: const Text(
-                      'Play',
-                      style: TextStyle(
-                        color: Color(0xFF0E0F12),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: -0.2,
+                    onTapCancel: () => setState(() => _playScale = 1.0),
+                    child: Transform.scale(
+                      scale: _playScale,
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFFFF),
+                          borderRadius:
+                              BorderRadius.circular(AppTokens.radiusSmall),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.play_arrow_rounded,
+                                color: Color(0xFF000000), size: 24),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Play',
+                              style: context.auraText.itemTitle.copyWith(
+                                color: const Color(0xFF000000),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-
-                  // Info / Details Button (Glass Pill)
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textPrimary,
-                      backgroundColor: AppColors.glassWhite,
-                      side: const BorderSide(color: Colors.white24, width: 1),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 11,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppTokens.borderRadiusSmall,
-                      ),
-                    ),
-                    onPressed: () {
-                      if (widget.onDetailsTap != null) {
-                        widget.onDetailsTap!(item);
-                      }
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTapDown: (_) => setState(() => _infoScale = 0.96),
+                    onTapUp: (_) {
+                      setState(() => _infoScale = 1.0);
+                      widget.onDetailsTap?.call(item);
                     },
-                    icon: const AuraIcon(
-                      AppIcons.info,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                    label: const Text(
-                      'Details',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                    onTapCancel: () => setState(() => _infoScale = 1.0),
+                    child: Transform.scale(
+                      scale: _infoScale,
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0x33FFFFFF),
+                          borderRadius:
+                              BorderRadius.circular(AppTokens.radiusSmall),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline_rounded,
+                                color: Color(0xFFFFFFFF), size: 20),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Info',
+                              style: context.auraText.itemTitle.copyWith(
+                                color: const Color(0xFFFFFFFF),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
