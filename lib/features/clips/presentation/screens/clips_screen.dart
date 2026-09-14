@@ -195,7 +195,9 @@ class _ClipsScreenState extends State<ClipsScreen> {
                 physics: const PageScrollPhysics(),
                 itemCount: state.clips.length,
                 onPageChanged: (index) {
-                  context.read<ClipsBloc>().add(ChangeActiveClipIndexEvent(index));
+                  context
+                      .read<ClipsBloc>()
+                      .add(ChangeActiveClipIndexEvent(index));
                 },
                 itemBuilder: (context, index) {
                   final clip = state.clips[index];

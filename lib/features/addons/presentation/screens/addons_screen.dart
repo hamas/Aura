@@ -89,7 +89,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: state.installedAddons.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final addon = state.installedAddons[index];
                               return AddonItemCard(
@@ -120,7 +121,8 @@ class _AddonsScreenState extends State<AddonsScreen> {
               opacity: 1.0,
               actions: [
                 IconButton(
-                  icon: const AuraIcon(AppIcons.add, color: AppColors.accentPink),
+                  icon:
+                      const AuraIcon(AppIcons.add, color: AppColors.accentPink),
                   tooltip: 'Install Add-on Manifest',
                   onPressed: () => _showInstallDialog(context),
                 ),

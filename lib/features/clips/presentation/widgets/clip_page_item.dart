@@ -94,8 +94,6 @@ class ClipPageItem extends StatelessWidget {
           ),
         ),
 
-
-
         // 4. Vertical Interactive Action Rail (Right Side)
         Positioned(
           right: 14,

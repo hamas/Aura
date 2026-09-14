@@ -134,13 +134,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             children: [
               // 1. Account Section
-              _buildSectionHeader('Account & Cloud Continuity', AppIcons.cloudSync),
+              _buildSectionHeader(
+                  'Account & Cloud Continuity', AppIcons.cloudSync),
               const SizedBox(height: 10),
               const SettingsAccountCard(),
               const SizedBox(height: AppTokens.spacingLg),
 
               // 2. Streaming & Debrid Engine Section
-              _buildSectionHeader('Debrid Engine & Multi-hoster', AppIcons.bolt),
+              _buildSectionHeader(
+                  'Debrid Engine & Multi-hoster', AppIcons.bolt),
               const SizedBox(height: 10),
               SettingsDebridCard(
                 isLoadingDebrid: _isLoadingDebrid,

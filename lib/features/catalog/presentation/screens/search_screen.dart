@@ -50,15 +50,16 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 // Search Input Field
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: TextField(
                     controller: _controller,
                     onChanged: _onSearchChanged,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Search movies, series, anime...',
-                      prefixIcon:
-                          const AuraIcon(AppIcons.search, color: AppColors.textMuted),
+                      prefixIcon: const AuraIcon(AppIcons.search,
+                          color: AppColors.textMuted),
                       suffixIcon: _controller.text.isNotEmpty
                           ? IconButton(
                               icon: const AuraIcon(AppIcons.close,
@@ -114,7 +115,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       return GridView.builder(
                         padding: const EdgeInsets.all(16),
                         physics: const BouncingScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           childAspectRatio: 0.65,
                           crossAxisSpacing: 12,
@@ -138,7 +140,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                         fit: BoxFit.cover,
                                         placeholder: (_, __) => Container(
                                             color: AppColors.surfaceElevated),
-                                        errorWidget: (_, __, ___) => const Center(
+                                        errorWidget: (_, __, ___) =>
+                                            const Center(
                                           child: AuraIcon(AppIcons.movie,
                                               color: AppColors.textMuted),
                                         ),

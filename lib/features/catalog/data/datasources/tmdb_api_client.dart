@@ -159,14 +159,16 @@ class TmdbApiClient {
     }
   }
 
-  /// Fetches full media metadata with guaranteed external IDs (IMDb ID mapping)
+  /// Fetches full media metadata with guaranteed external IDs and clearart logo
   Future<MediaItem> getMediaDetails(int tmdbId, MediaType type) async {
     final endpoint = type == MediaType.movie ? '/movie/$tmdbId' : '/tv/$tmdbId';
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
         endpoint,
-        queryParameters:
-            _buildParams({'append_to_response': 'credits,external_ids'}),
+        queryParameters: _buildParams({
+          'append_to_response': 'credits,external_ids,images',
+          'include_image_language': 'en,null',
+        }),
       );
 
       if (response.data != null) {
@@ -181,11 +183,44 @@ class TmdbApiClient {
           }
         }
 
+        // Guarantee clearart logo mapping by querying images endpoint if missing
+        if (mediaItem.logoPath == null || mediaItem.logoPath!.isEmpty) {
+          final logoPath = await fetchLogoPath(tmdbId, type);
+          if (logoPath != null) {
+            mediaItem = mediaItem.copyWith(logoPath: logoPath);
+          }
+        }
+
         return mediaItem;
       }
       throw Exception('Empty detail response');
     } catch (_) {
       return _getFallbackDetails(tmdbId, type);
+    }
+  }
+
+  /// Dedicated resolver for /movie/{id}/images and /tv/{id}/images clearart logos
+  Future<String?> fetchLogoPath(int id, MediaType type) async {
+    final path =
+        type == MediaType.movie ? '/movie/$id/images' : '/tv/$id/images';
+    try {
+      final res = await _apiClient.get<Map<String, dynamic>>(
+        path,
+        queryParameters: _buildParams({'include_image_language': 'en,null'}),
+      );
+      final logos = (res.data?['logos'] as List<dynamic>?)
+          ?.whereType<Map<String, dynamic>>()
+          .toList();
+      if (logos != null && logos.isNotEmpty) {
+        final enLogo = logos.firstWhere(
+          (l) => l['iso_639_1'] == 'en',
+          orElse: () => logos.first,
+        );
+        return enLogo['file_path'] as String?;
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 

@@ -69,14 +69,16 @@ class _LibraryScreenState extends State<LibraryScreen>
                           state.watchlist.isEmpty &&
                           state.continueWatching.isEmpty) {
                         return const Center(
-                          child: CircularProgressIndicator(color: AppColors.accentPink),
+                          child: CircularProgressIndicator(
+                              color: AppColors.accentPink),
                         );
                       }
 
                       return TabBarView(
                         controller: _tabController,
                         children: [
-                          _buildContinueWatchingList(context, state.continueWatching),
+                          _buildContinueWatchingList(
+                              context, state.continueWatching),
                           _buildWatchlistGrid(context, state.watchlist),
                           const DownloadsScreen(),
                           _buildHistoryList(context, state.history),

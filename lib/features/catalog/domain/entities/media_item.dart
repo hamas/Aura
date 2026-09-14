@@ -48,6 +48,7 @@ class MediaItem extends Equatable {
   final String overview;
   final String? posterPath;
   final String? backdropPath;
+  final String? logoPath;
   final double voteAverage;
   final String? releaseDate;
   final MediaType type;
@@ -65,6 +66,7 @@ class MediaItem extends Equatable {
     required this.overview,
     this.posterPath,
     this.backdropPath,
+    this.logoPath,
     this.voteAverage = 0.0,
     this.releaseDate,
     required this.type,
@@ -82,6 +84,9 @@ class MediaItem extends Equatable {
   String get fullBackdropUrl => backdropPath != null
       ? '${ApiConstants.tmdbBackdropW1280}$backdropPath'
       : '';
+
+  String? get logoUrl =>
+      logoPath != null ? 'https://image.tmdb.org/t/p/w500$logoPath' : null;
 
   String get releaseYear {
     if (releaseDate != null && releaseDate!.length >= 4) {
@@ -108,6 +113,7 @@ class MediaItem extends Equatable {
     String? overview,
     String? posterPath,
     String? backdropPath,
+    String? logoPath,
     double? voteAverage,
     String? releaseDate,
     MediaType? type,
@@ -124,6 +130,7 @@ class MediaItem extends Equatable {
       overview: overview ?? this.overview,
       posterPath: posterPath ?? this.posterPath,
       backdropPath: backdropPath ?? this.backdropPath,
+      logoPath: logoPath ?? this.logoPath,
       voteAverage: voteAverage ?? this.voteAverage,
       releaseDate: releaseDate ?? this.releaseDate,
       type: type ?? this.type,
@@ -172,6 +179,23 @@ class MediaItem extends Equatable {
       imdb = json['external_ids']['imdb_id'] as String?;
     }
 
+    // Logo resolution from appended images or direct key
+    String? logo;
+    if (json['logo_path'] != null) {
+      logo = json['logo_path'] as String;
+    } else if (json['images'] is Map && json['images']['logos'] is List) {
+      final logos = (json['images']['logos'] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+      if (logos.isNotEmpty) {
+        final enLogo = logos.firstWhere(
+          (l) => l['iso_639_1'] == 'en',
+          orElse: () => logos.first,
+        );
+        logo = enLogo['file_path'] as String?;
+      }
+    }
+
     return MediaItem(
       id: json['id'] as int? ?? 0,
       imdbId: imdb,
@@ -179,6 +203,7 @@ class MediaItem extends Equatable {
       overview: json['overview'] as String? ?? '',
       posterPath: json['poster_path'] as String?,
       backdropPath: json['backdrop_path'] as String?,
+      logoPath: logo,
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
       releaseDate:
           (isMovie ? json['release_date'] : json['first_air_date']) as String?,
@@ -198,6 +223,7 @@ class MediaItem extends Equatable {
         'overview': overview,
         'poster_path': posterPath,
         'backdrop_path': backdropPath,
+        'logo_path': logoPath,
         'vote_average': voteAverage,
         'release_date': releaseDate,
         'type': type.name,
@@ -216,6 +242,7 @@ class MediaItem extends Equatable {
         overview,
         posterPath,
         backdropPath,
+        logoPath,
         voteAverage,
         releaseDate,
         type,

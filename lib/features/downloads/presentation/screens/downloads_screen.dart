@@ -128,7 +128,8 @@ class DownloadsScreen extends StatelessWidget {
                               separatorBuilder: (_, __) =>
                                   const SizedBox(height: 10),
                               itemBuilder: (context, index) {
-                                final task = state.completedSeriesEpisodes[index];
+                                final task =
+                                    state.completedSeriesEpisodes[index];
                                 return CompletedDownloadTaskCard(
                                   task: task,
                                   onPlay: () => _playOffline(context, task),

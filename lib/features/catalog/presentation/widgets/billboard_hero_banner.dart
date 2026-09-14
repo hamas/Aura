@@ -119,7 +119,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
     final primaryGenre =
         item.genres.isNotEmpty ? item.genres.first.name : 'Movie';
     final year = item.releaseYear;
-    final metadataText = year.isNotEmpty ? '$primaryGenre  •  $year' : primaryGenre;
+    final metadataText =
+        year.isNotEmpty ? '$primaryGenre  •  $year' : primaryGenre;
 
     return Stack(
       fit: StackFit.expand,
@@ -160,7 +161,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
             children: [
               // IMDb / Rotten Tomatoes Rating Badge Chip on top of logo/title
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.65),
                   borderRadius: BorderRadius.circular(16),
@@ -174,7 +176,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                   children: [
                     // IMDb badge icon
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5C518),
                         borderRadius: BorderRadius.circular(3),
@@ -191,7 +194,9 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      item.formattedRating.isNotEmpty ? item.formattedRating : '8.5',
+                      item.formattedRating.isNotEmpty
+                          ? item.formattedRating
+                          : '8.5',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -234,26 +239,89 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                 ),
               ),
               const SizedBox(height: 8),
-              // Movie / Show Title Logo Text
-              Text(
-                item.title,
-                style: context.auraText.displayHero.copyWith(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: const Offset(0, 2),
-                      blurRadius: 10.0,
-                      color: Colors.black.withValues(alpha: 0.87),
+              // Movie / Show Title Logo Text or Clearart Image
+              if (item.logoUrl != null && item.logoUrl!.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: item.logoUrl!,
+                  height: 54.0,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: const BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 12,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Image(
+                      image: imageProvider,
+                      height: 54.0,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                    ),
+                  ),
+                  placeholder: (_, __) => Text(
+                    item.title,
+                    style: context.auraText.displayHero.copyWith(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 10.0,
+                          color: Colors.black.withValues(alpha: 0.87),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  errorWidget: (_, __, ___) => Text(
+                    item.title,
+                    style: context.auraText.displayHero.copyWith(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 10.0,
+                          color: Colors.black.withValues(alpha: 0.87),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              else
+                Text(
+                  item.title,
+                  style: context.auraText.displayHero.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        offset: const Offset(0, 2),
+                        blurRadius: 10.0,
+                        color: Colors.black.withValues(alpha: 0.87),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
               const SizedBox(height: 6),
               // Genre • Year Metadata
               Text(
