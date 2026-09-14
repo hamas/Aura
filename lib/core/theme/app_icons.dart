@@ -10,7 +10,7 @@ import 'package:material_symbols_icons/symbols.dart';
 abstract final class AppIcons {
   // Navigation & Bottom Bar
   static const IconData home = Symbols.home_rounded;
-  static const IconData clips = Symbols.play_circle_rounded;
+  static const IconData clips = Symbols.slow_motion_video_rounded;
   static const IconData search = Symbols.search_rounded;
   static const IconData library = Symbols.video_library_rounded;
   static const IconData downloads = Symbols.download_rounded;
@@ -27,10 +27,14 @@ abstract final class AppIcons {
   static const IconData cast = Symbols.cast_rounded;
   static const IconData info = Symbols.info_rounded;
   static const IconData infoOutline = Symbols.info_rounded;
-  static const IconData share = Symbols.share_rounded;
+  static const IconData share = Symbols.forward_rounded;
+  static const IconData forward = Symbols.forward_rounded;
+  static const IconData favorite = Symbols.favorite_rounded;
+  static const IconData favoriteBorder = Symbols.favorite_rounded;
   static const IconData bookmarkAdd = Symbols.bookmark_add_rounded;
   static const IconData bookmarkAdded = Symbols.bookmark_added_rounded;
   static const IconData bookmark = Symbols.bookmark_rounded;
+  static const IconData volumeMute = Symbols.volume_off_rounded;
   static const IconData download = Symbols.download_rounded;
   static const IconData downloadDone = Symbols.download_done_rounded;
   static const IconData downloading = Symbols.downloading_rounded;

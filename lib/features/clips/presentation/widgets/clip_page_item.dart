@@ -130,11 +130,9 @@ class ClipPageItem extends StatelessWidget {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Add to My List Toggle
+                  // Add to My List Toggle (Heart Icon)
                   _buildRailAction(
-                    icon: isInWatchlist
-                        ? AppIcons.bookmarkAdded
-                        : AppIcons.bookmarkAdd,
+                    icon: AppIcons.favorite,
                     fill: isInWatchlist ? 1.0 : 0.0,
                     iconColor:
                         isInWatchlist ? AppColors.accentPink : Colors.white,
@@ -181,17 +179,17 @@ class ClipPageItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
 
-                  // Share Sheet Button
+                  // Share Sheet Button (Forward Icon)
                   _buildRailAction(
-                    icon: AppIcons.share,
+                    icon: AppIcons.forward,
                     label: 'Share',
                     onTap: onShareTap,
                   ),
                   const SizedBox(height: 18),
 
-                  // Audio Mute Toggle
+                  // Audio Mute Toggle (Volume Up / Volume Mute Icons)
                   _buildRailAction(
-                    icon: isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                    icon: isMuted ? AppIcons.volumeMute : AppIcons.volumeUp,
                     label: isMuted ? 'Muted' : 'Audio',
                     onTap: () {
                       context.read<ClipsBloc>().add(ToggleClipMuteEvent());
