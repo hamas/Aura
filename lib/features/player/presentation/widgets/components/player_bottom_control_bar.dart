@@ -7,8 +7,6 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/player_state.dart';
 
-
-
 class PlayerBottomControlBar extends StatelessWidget {
   final AuraPlayerState state;
   final ValueChanged<Duration> onSeek;

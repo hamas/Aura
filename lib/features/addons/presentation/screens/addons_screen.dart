@@ -39,7 +39,6 @@ class _AddonsScreenState extends State<AddonsScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return AuraScaffold(
@@ -68,11 +67,13 @@ class _AddonsScreenState extends State<AddonsScreen> {
           SliverToBoxAdapter(
             child: BlocBuilder<AddonBloc, AddonState>(
               builder: (context, state) {
-                if (state.status == AddonStatus.loading && state.installedAddons.isEmpty) {
+                if (state.status == AddonStatus.loading &&
+                    state.installedAddons.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(40),
                     child: Center(
-                      child: CircularProgressIndicator(color: AppColors.accentPink),
+                      child: CircularProgressIndicator(
+                          color: AppColors.accentPink),
                     ),
                   );
                 }
@@ -106,7 +107,9 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           return AddonItemCard(
                             addon: addon,
                             onUninstall: () {
-                              context.read<AddonBloc>().add(UninstallAddonEvent(addon.id));
+                              context
+                                  .read<AddonBloc>()
+                                  .add(UninstallAddonEvent(addon.id));
                             },
                           );
                         },

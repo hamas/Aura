@@ -6,8 +6,6 @@ import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../debrid/domain/entities/debrid_account.dart';
 
-
-
 class SettingsDebridCard extends StatelessWidget {
   final bool isLoadingDebrid;
   final DebridAccount? debridAccount;

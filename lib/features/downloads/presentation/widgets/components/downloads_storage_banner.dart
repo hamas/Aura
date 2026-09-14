@@ -7,7 +7,6 @@ import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../bloc/downloads_state.dart';
 
-
 class DownloadsStorageBanner extends StatelessWidget {
   final DownloadsState state;
 

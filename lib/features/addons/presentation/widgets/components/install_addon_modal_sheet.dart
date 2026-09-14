@@ -252,7 +252,6 @@ class _InstallAddonModalSheetState extends State<InstallAddonModalSheet> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-
                     const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity,

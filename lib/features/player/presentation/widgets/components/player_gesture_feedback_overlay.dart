@@ -5,7 +5,6 @@ import '../../../../../core/theme/app_icons.dart';
 import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 
-
 class PlayerGestureFeedbackOverlay extends StatelessWidget {
   final bool showLeftSeekRipple;
   final bool showRightSeekRipple;

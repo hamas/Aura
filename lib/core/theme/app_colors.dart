@@ -28,7 +28,6 @@ class AppColors {
   static const Color statusError = errorAccent;
   static const Color borderSubtle = Color(0x1AFFFFFF);
 
-
   // Dark Neutral & Text Colors
   static const Color textPrimary = Color(0xFFF5F5F7); // 95% opacity white
   static const Color textSecondary = Color(0xFFA1A1AA); // Subtle metallic slate

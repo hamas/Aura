@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_tokens.dart';
 
-
 class DiscoveryShimmerSkeleton extends StatelessWidget {
   const DiscoveryShimmerSkeleton({super.key});
 

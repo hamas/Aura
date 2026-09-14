@@ -8,8 +8,6 @@ import '../../../domain/entities/player_state.dart';
 import '../../../domain/entities/stream_track.dart';
 import '../../subtitles/widgets/subtitle_sync_hud.dart';
 
-
-
 class PlayerTrackPickers {
   static void showSubtitlePicker({
     required BuildContext context,

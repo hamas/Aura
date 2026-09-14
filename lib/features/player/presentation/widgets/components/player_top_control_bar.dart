@@ -6,8 +6,6 @@ import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../domain/entities/player_state.dart';
 
-
-
 class PlayerTopControlBar extends StatelessWidget {
   final AuraPlayerState state;
   final VoidCallback onBack;

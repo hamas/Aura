@@ -14,7 +14,6 @@ import '../../../domain/entities/download_task.dart';
 import '../../bloc/downloads_bloc.dart';
 import '../../bloc/downloads_event.dart';
 
-
 class ActiveDownloadTaskCard extends StatelessWidget {
   final DownloadTask task;
 

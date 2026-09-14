@@ -5,7 +5,6 @@ import '../../../../../core/theme/app_icons.dart';
 import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 
-
 class SettingsPlayerPreferencesCard extends StatelessWidget {
   final bool hardwareAcceleration;
   final ValueChanged<bool> onHardwareAccelerationChanged;
@@ -62,7 +61,8 @@ class SettingsPlayerPreferencesCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Enable GPU decoding via MediaKit libmpv for fluid 4K HDR playback',
-                style: context.auraText.caption.copyWith(color: AppColors.textMuted),
+                style: context.auraText.caption
+                    .copyWith(color: AppColors.textMuted),
               ),
               value: hardwareAcceleration,
               onChanged: onHardwareAccelerationChanged,
@@ -82,7 +82,8 @@ class SettingsPlayerPreferencesCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Dynamic backlighting projecting letterbox edge colors behind player',
-                style: context.auraText.caption.copyWith(color: AppColors.textMuted),
+                style: context.auraText.caption
+                    .copyWith(color: AppColors.textMuted),
               ),
               value: ambientAuraGlow,
               onChanged: onAmbientAuraGlowChanged,
@@ -102,7 +103,8 @@ class SettingsPlayerPreferencesCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Automatically seek past intro themes and recaps without prompt',
-                style: context.auraText.caption.copyWith(color: AppColors.textMuted),
+                style: context.auraText.caption
+                    .copyWith(color: AppColors.textMuted),
               ),
               value: autoSkipIntros,
               onChanged: onAutoSkipIntrosChanged,
@@ -121,7 +123,8 @@ class SettingsPlayerPreferencesCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Preferred soundtrack stream during playback initiation',
-                style: context.auraText.caption.copyWith(color: AppColors.textMuted),
+                style: context.auraText.caption
+                    .copyWith(color: AppColors.textMuted),
               ),
               trailing: DropdownButton<String>(
                 value: defaultAudioLanguage,
@@ -154,7 +157,8 @@ class SettingsPlayerPreferencesCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Auto-selected subtitle track when available',
-                style: context.auraText.caption.copyWith(color: AppColors.textMuted),
+                style: context.auraText.caption
+                    .copyWith(color: AppColors.textMuted),
               ),
               trailing: DropdownButton<String>(
                 value: defaultSubtitleLanguage,

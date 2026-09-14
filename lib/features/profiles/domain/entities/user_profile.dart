@@ -1,96 +1,75 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:equatable/equatable.dart';
 
-enum KidsCertification {
-  g,
-  pg,
-  tvY,
-  tvY7,
-  tvG,
-  tvPg;
-
-  static const List<String> allowedRatings = [
-    'G',
-    'PG',
-    'TV-Y',
-    'TV-Y7',
-    'TV-G',
-    'TV-PG',
-  ];
-
-  static bool isAllowed(String? rating) {
-    if (rating == null || rating.isEmpty) return true;
-    final normalized = rating.trim().toUpperCase();
-    return allowedRatings.contains(normalized);
-  }
-}
-
-class UserProfile {
+class UserProfile extends Equatable {
   final String id;
   final String name;
   final String avatarPath;
-  final bool isKids;
   final String? pinHash;
+  final bool isKids;
+  final String maxAgeRating;
   final DateTime createdAt;
 
   const UserProfile({
     required this.id,
     required this.name,
-    required this.avatarPath,
-    this.isKids = false,
+    this.avatarPath = '',
     this.pinHash,
+    this.isKids = false,
+    this.maxAgeRating = 'NC-17',
     required this.createdAt,
   });
 
   bool get hasPin => pinHash != null && pinHash!.isNotEmpty;
 
   static String hashPin(String pin) {
-    final bytes = utf8.encode(pin);
-    return sha256.convert(bytes).toString();
+    return sha256.convert(utf8.encode(pin)).toString();
   }
 
-  bool verifyPin(String pin) {
-    if (pinHash == null) return true;
-    return pinHash == hashPin(pin);
+  bool verifyPin(String inputPin) {
+    if (!hasPin) return true;
+    return hashPin(inputPin) == pinHash;
   }
+
+  String get avatarUrl => avatarPath;
 
   UserProfile copyWith({
     String? id,
     String? name,
     String? avatarPath,
-    bool? isKids,
     String? pinHash,
+    bool? isKids,
+    String? maxAgeRating,
     DateTime? createdAt,
   }) {
     return UserProfile(
       id: id ?? this.id,
       name: name ?? this.name,
       avatarPath: avatarPath ?? this.avatarPath,
-      isKids: isKids ?? this.isKids,
       pinHash: pinHash ?? this.pinHash,
+      isKids: isKids ?? this.isKids,
+      maxAgeRating: maxAgeRating ?? this.maxAgeRating,
       createdAt: createdAt ?? this.createdAt,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'avatarPath': avatarPath,
-      'isKids': isKids,
-      'pinHash': pinHash,
-      'createdAt': createdAt.toIso8601String(),
-    };
-  }
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        avatarPath,
+        pinHash,
+        isKids,
+        maxAgeRating,
+        createdAt,
+      ];
+}
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      avatarPath: json['avatarPath'] as String,
-      isKids: json['isKids'] as bool? ?? false,
-      pinHash: json['pinHash'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
+class KidsCertification {
+  static const allowedRatings = {'G', 'PG', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'};
+
+  static bool isAllowed(String rating) {
+    return allowedRatings.contains(rating.toUpperCase());
   }
 }

@@ -23,7 +23,8 @@ class AddonItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOfficial = addon.id.contains('official') || addon.id.contains('cinemeta');
+    final isOfficial =
+        addon.id.contains('official') || addon.id.contains('cinemeta');
 
     return AuraCard(
       padding: const EdgeInsets.all(14),

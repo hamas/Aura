@@ -84,4 +84,3 @@ extension TextThemeAuraExtension on TextTheme {
   TextStyle get bodyOverview => AppTypography.bodyOverview;
   TextStyle get caption => AppTypography.caption;
 }
-
