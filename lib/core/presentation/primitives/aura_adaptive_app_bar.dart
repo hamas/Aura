@@ -202,7 +202,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
                   const SizedBox(width: 10),
                 ] else if (canPop) ...[
                   _buildBackButton(context),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 5),
                 ],
                 Expanded(
                   child: canPop
