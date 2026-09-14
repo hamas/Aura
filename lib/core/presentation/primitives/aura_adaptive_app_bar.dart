@@ -265,33 +265,39 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
               padding: const EdgeInsets.only(right: AppTokens.spacingSm),
               child: GestureDetector(
                 onTap: cat.onTap,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: cat.isSelected
-                        ? AppColors.accentPink
-                        : AppColors.surfaceElevated.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
-                    border: Border.all(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
                       color: cat.isSelected
-                          ? AppColors.accentPink
-                          : const Color(0x33FFFFFF),
-                      width: 1,
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: cat.isSelected
+                            ? Colors.white
+                            : const Color(0x22FFFFFF),
+                        width: 1,
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    cat.label,
-                    style: context.auraText.caption.copyWith(
-                      color: cat.isSelected
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontWeight:
-                          cat.isSelected ? FontWeight.w700 : FontWeight.w500,
+                    child: Text(
+                      cat.label,
+                      style: context.auraText.caption.copyWith(
+                        color: cat.isSelected
+                            ? AppColors.surfaceBackground
+                            : Colors.white,
+                        fontWeight:
+                            cat.isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
+              ),
               ),
             );
           }).toList(),

@@ -223,16 +223,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   isSelected: false,
                   onTap: () => DiscoveryDialogs.showCategoriesModal(context),
                 ),
-                if (_selectedFilter != MediaCategoryFilter.all)
-                  AuraCategoryPill(
-                    label: '✕ Clear',
-                    isSelected: false,
-                    onTap: () {
-                      setState(() {
-                        _selectedFilter = MediaCategoryFilter.all;
-                      });
-                    },
-                  ),
               ],
             ),
           ),
