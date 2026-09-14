@@ -18,6 +18,8 @@ class AuraTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: AppTypography.fontFamily,
+      fontFamilyFallback: AppTypography.fontFamilyFallback,
       scaffoldBackgroundColor: AppColors.surfaceBackground,
       canvasColor: AppColors.surfaceBackground,
       textTheme: AppTypography.textTheme,
@@ -44,13 +46,13 @@ class AuraTheme {
         onSurface: AppColors.textPrimary,
         onError: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surfaceBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: AppTypography.sectionTitle,
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: AppColors.textPrimary,
           weight: 600.0,
           fill: 0.0,

@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Centralized typography definitions for Aura's cinematic design system.
+/// Centralized typography definitions for Aura's cinematic design system using Google Sans.
 class AppTypography {
   AppTypography._();
 
+  static const String fontFamily = 'Google Sans';
+  static const List<String> fontFamilyFallback = [
+    'Google Sans Text',
+    'Google Sans Flex',
+    'Roboto',
+    'sans-serif',
+  ];
+
+  static const TextStyle _baseStyle = TextStyle(
+    fontFamily: fontFamily,
+    fontFamilyFallback: fontFamilyFallback,
+  );
+
   /// Billboard hero main titles (28-32sp, heavy off-white)
-  static const TextStyle displayHero = TextStyle(
+  static TextStyle displayHero = _baseStyle.copyWith(
     fontSize: 30,
     fontWeight: FontWeight.w900,
     color: AppColors.textPrimary,
@@ -15,7 +28,7 @@ class AppTypography {
   );
 
   /// Shelf and section category titles (20-22sp, bold off-white)
-  static const TextStyle sectionTitle = TextStyle(
+  static TextStyle sectionTitle = _baseStyle.copyWith(
     fontSize: 20,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
@@ -24,7 +37,7 @@ class AppTypography {
   );
 
   /// Media card and item titles (15-16sp, semi-bold)
-  static const TextStyle itemTitle = TextStyle(
+  static TextStyle itemTitle = _baseStyle.copyWith(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -33,7 +46,7 @@ class AppTypography {
   );
 
   /// Metadata tags, quality pills (11-12sp, bold uppercase)
-  static const TextStyle metadataPill = TextStyle(
+  static TextStyle metadataPill = _baseStyle.copyWith(
     fontSize: 11,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -42,7 +55,7 @@ class AppTypography {
   );
 
   /// Synopsis, overview, and cast descriptions (14sp, slate-metallic)
-  static const TextStyle bodyOverview = TextStyle(
+  static TextStyle bodyOverview = _baseStyle.copyWith(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
@@ -51,7 +64,7 @@ class AppTypography {
   );
 
   /// Captions, timestamps, and subtle hints (12sp, muted slate)
-  static const TextStyle caption = TextStyle(
+  static TextStyle caption = _baseStyle.copyWith(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.textMuted,
@@ -59,15 +72,17 @@ class AppTypography {
     height: 1.2,
   );
 
-  /// Global TextTheme configured for Material 3
-  static TextTheme get textTheme => const TextTheme(
-        displayLarge: displayHero,
-        headlineMedium: sectionTitle,
-        titleMedium: itemTitle,
-        bodyMedium: bodyOverview,
-        bodySmall: caption,
-        labelSmall: metadataPill,
-      );
+  /// Global TextTheme configured for Material 3 using Google Sans
+  static TextTheme get textTheme {
+    return TextTheme(
+      displayLarge: displayHero,
+      headlineMedium: sectionTitle,
+      titleMedium: itemTitle,
+      bodyMedium: bodyOverview,
+      bodySmall: caption,
+      labelSmall: metadataPill,
+    );
+  }
 }
 
 /// Convenience extension on [BuildContext] for Aura typography
