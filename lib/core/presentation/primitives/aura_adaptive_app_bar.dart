@@ -176,71 +176,56 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return ClipRect(
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.0, 0.55, 1.0],
-            colors: [
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-            ],
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-          child: Container(
-            padding: widget.padding ??
-                EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.0, 0.4, 1.0],
-                colors: [
-                  Color.lerp(
-                    const Color(0x99000000),
-                    AppColors.surfaceBackground,
-                    opacity,
-                  )!,
-                  Color.lerp(
-                    const Color(0x4D141414),
-                    AppColors.surfaceBackground,
-                    opacity,
-                  )!,
-                  AppColors.surfaceBackground.withValues(alpha: opacity),
-                ],
-              ),
-              boxShadow: opacity > 0.4
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Row(
-              children: [
-                if (widget.leading != null) ...[
-                  widget.leading!,
-                  const SizedBox(width: 10),
-                ] else if (canPop) ...[
-                  _buildBackButton(context),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  child: canPop
-                      ? _buildNestedTitle(context)
-                      : _buildRootCategories(context),
-                ),
-                ..._buildActions(context),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+        child: Container(
+          padding:
+              widget.padding ?? EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [0.0, 0.45, 1.0],
+              colors: [
+                Color.lerp(
+                  const Color(0xCC000000),
+                  AppColors.surfaceBackground,
+                  opacity,
+                )!,
+                Color.lerp(
+                  const Color(0x66141414),
+                  AppColors.surfaceBackground,
+                  opacity,
+                )!,
+                AppColors.surfaceBackground.withValues(alpha: opacity),
               ],
             ),
+            boxShadow: opacity > 0.4
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              if (widget.leading != null) ...[
+                widget.leading!,
+                const SizedBox(width: 10),
+              ] else if (canPop) ...[
+                _buildBackButton(context),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: canPop
+                    ? _buildNestedTitle(context)
+                    : _buildRootCategories(context),
+              ),
+              ..._buildActions(context),
+            ],
           ),
         ),
       ),
