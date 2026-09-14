@@ -1,0 +1,58 @@
+name: aura
+description: "Aura - Modular, Cross-Platform Media Center Client."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: '>=3.16.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State Management & Architecture
+  flutter_bloc: ^8.1.6
+  hydrated_bloc: ^9.1.5
+  equatable: ^2.0.7
+
+  # Routing
+  go_router: ^14.8.0
+
+  # High-Performance Playback Engine (libmpv wrapper)
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5
+  media_kit_libs_video: ^1.0.5
+
+  # Networking & HTTP
+  dio: ^5.8.0+1
+
+  # JSON Serialization & Functional Models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Auth & Cloud Synchronization
+  google_sign_in: ^6.2.2
+  supabase_flutter: ^2.8.4
+
+  # Local Persistence & Security
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.3.5
+  path_provider: ^2.1.5
+
+  # Utilities & UI
+  uuid: ^4.5.1
+  intl: ^0.20.2
+  cached_network_image: ^3.4.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.14
+  freezed: ^2.5.7
+  json_serializable: ^6.9.4
+
+flutter:
+  uses-material-design: true
