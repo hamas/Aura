@@ -2,8 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../library/domain/entities/library_item.dart';
@@ -81,8 +83,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surfaceBackground,
+    return AuraScaffold(
       body: Stack(
         children: [
           // Main Scrollable Content
@@ -239,15 +240,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       child: Row(
         children: [
           // Aura Brand Wordmark
-          const Row(
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'AURA',
-                style: TextStyle(
+                style: AppTypography.displayHero.copyWith(
                   color: AppColors.accentPink,
                   fontSize: 22,
-                  fontWeight: FontWeight.w900,
                   letterSpacing: 2.0,
                 ),
               ),

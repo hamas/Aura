@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_tokens.dart';
+import 'app_typography.dart';
+import 'aura_theme_extension.dart';
+
+export 'app_colors.dart';
+export 'app_tokens.dart';
+export 'app_typography.dart';
+export 'aura_theme_extension.dart';
 
 /// Aura's Netflix-style cinematic dark theme.
 class AuraTheme {
@@ -12,6 +19,10 @@ class AuraTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.surfaceBackground,
       canvasColor: AppColors.surfaceBackground,
+      textTheme: AppTypography.textTheme,
+      extensions: const [
+        AuraThemeExtension.dark,
+      ],
       colorScheme: const ColorScheme.dark(
         primary: AppColors.accentPink,
         secondary: AppColors.secondaryAccent,
@@ -27,12 +38,7 @@ class AuraTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          letterSpacing: -0.5,
-        ),
+        titleTextStyle: AppTypography.sectionTitle,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -72,7 +78,7 @@ class AuraTheme {
         shadowColor: Colors.black.withAlpha((0.5 * 255).round()),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
-          side: const BorderSide(color: Color(0xFF2A2A2A), width: 1),
+          side: const BorderSide(color: Color(0x0FFFFFFF), width: 1),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

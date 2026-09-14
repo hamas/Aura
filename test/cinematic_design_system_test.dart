@@ -1,5 +1,3 @@
-import 'package:aura/core/theme/app_colors.dart';
-import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/core/theme/aura_theme.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/widgets.dart';

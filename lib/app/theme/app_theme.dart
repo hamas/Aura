@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/aura_theme.dart';
 
 export '../../core/theme/app_colors.dart';
 export '../../core/theme/app_tokens.dart';
+export '../../core/theme/app_typography.dart';
 export '../../core/theme/aura_theme.dart';
+export '../../core/theme/aura_theme_extension.dart';
 
 class AppTheme {
   AppTheme._();

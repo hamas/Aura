@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/presentation/primitives/aura_section_header.dart';
 import '../../domain/entities/media_item.dart';
 import 'media_poster_card.dart';
 
-/// Horizontally scrollable content shelf with Netflix-style typography and chevron.
+/// Horizontally scrollable content shelf built with [AuraSectionHeader] and [MediaPosterCard].
 class HorizontalContentShelf<T> extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -78,55 +78,12 @@ class HorizontalContentShelf<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Shelf Header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 20, 18, 10),
-          child: GestureDetector(
-            onTap: onHeaderTap,
-            behavior: HitTestBehavior.opaque,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.accentPink,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        // Section Header Primitive
+        AuraSectionHeader(
+          title: title,
+          subtitle: subtitle,
+          onTap: onHeaderTap,
+          showChevron: onHeaderTap != null,
         ),
 
         // Scrollable List

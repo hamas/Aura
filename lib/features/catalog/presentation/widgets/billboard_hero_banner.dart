@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/primitives/aura_badge.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/media_item.dart';
 
 /// Full-bleed Netflix-style Billboard Hero Banner with dual vignettes and action buttons.
@@ -187,11 +189,11 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
                     item.tagline!.toUpperCase(),
-                    style: const TextStyle(
+                    style: AppTypography.metadataPill.copyWith(
                       color: AppColors.accentPink,
-                      fontWeight: FontWeight.w800,
                       fontSize: 11,
                       letterSpacing: 1.5,
+                      fontWeight: FontWeight.w800,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -201,12 +203,8 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
               // Title
               Text(
                 item.title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: AppTypography.displayHero.copyWith(
                   fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                  height: 1.1,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -217,92 +215,30 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
               Row(
                 children: [
                   // Star Rating Badge
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.warningAccent.withAlpha(
-                        (0.2 * 255).round(),
-                      ),
-                      borderRadius: AppTokens.borderRadiusSmall,
-                      border: Border.all(
-                        color: AppColors.warningAccent,
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          color: AppColors.warningAccent,
-                          size: 13,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          item.formattedRating,
-                          style: const TextStyle(
-                            color: AppColors.warningAccent,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  AuraBadge.rating(item.formattedRating),
                   const SizedBox(width: 8),
 
                   // 4K / Ultra HD Badge
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white12,
-                      borderRadius: AppTokens.borderRadiusSmall,
-                      border: Border.all(color: Colors.white24, width: 0.8),
-                    ),
-                    child: const Text(
-                      '4K HDR',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
+                  AuraBadge.quality('4K HDR'),
                   const SizedBox(width: 8),
 
                   // Release Year
                   if (item.releaseYear.isNotEmpty) ...[
                     Text(
                       item.releaseYear,
-                      style: const TextStyle(
+                      style: AppTypography.caption.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(width: 8),
                   ],
 
                   // Media Type (Movie/Series)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceElevated,
-                      borderRadius: AppTokens.borderRadiusSmall,
-                    ),
-                    child: Text(
-                      item.type == MediaType.movie ? 'MOVIE' : 'SERIES',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                  AuraBadge(
+                    label: item.type == MediaType.movie ? 'MOVIE' : 'SERIES',
+                    backgroundColor: AppColors.surfaceElevated,
+                    borderColor: const Color(0x33FFFFFF),
+                    textColor: AppColors.textMuted,
                   ),
                 ],
               ),
@@ -312,8 +248,7 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                 const SizedBox(height: 8),
                 Text(
                   item.overview,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: AppTypography.bodyOverview.copyWith(
                     fontSize: 12,
                     height: 1.3,
                   ),
