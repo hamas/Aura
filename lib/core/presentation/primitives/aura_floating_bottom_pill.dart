@@ -22,10 +22,10 @@ class AuraFloatingBottomPill extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 16 Blur Background
+          // 8 Blur Background (50% reduction)
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+              filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
               child: const SizedBox.expand(),
             ),
           ),
