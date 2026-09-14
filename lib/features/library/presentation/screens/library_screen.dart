@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/api_constants.dart';
-import '../../../../core/presentation/primitives/aura_icon.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../domain/entities/library_item.dart';
 import '../bloc/library_bloc.dart';
 import '../bloc/library_event.dart';
@@ -38,45 +38,66 @@ class _LibraryScreenState extends State<LibraryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('My Library'),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppTheme.primaryAccent,
-          labelColor: AppTheme.primaryAccent,
-          unselectedLabelColor: AppTheme.textMuted,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          tabs: const [
-            Tab(text: 'Continue Watching'),
-            Tab(text: 'Watchlist'),
-            Tab(text: 'Downloads'),
-            Tab(text: 'History'),
-          ],
-        ),
-      ),
-      body: BlocBuilder<LibraryBloc, LibraryState>(
-        builder: (context, state) {
-          if (state.status == LibraryStatus.loading &&
-              state.watchlist.isEmpty &&
-              state.continueWatching.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryAccent),
-            );
-          }
+    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
 
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildContinueWatchingList(context, state.continueWatching),
-              _buildWatchlistGrid(context, state.watchlist),
-              const DownloadsScreen(),
-              _buildHistoryList(context, state.history),
-            ],
-          );
-        },
+    return Scaffold(
+      backgroundColor: AppColors.surfaceBackground,
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: topPadding),
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  indicatorColor: AppColors.accentPink,
+                  labelColor: AppColors.accentPink,
+                  unselectedLabelColor: AppColors.textMuted,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  tabs: const [
+                    Tab(text: 'Continue Watching'),
+                    Tab(text: 'Watchlist'),
+                    Tab(text: 'Downloads'),
+                    Tab(text: 'History'),
+                  ],
+                ),
+                Expanded(
+                  child: BlocBuilder<LibraryBloc, LibraryState>(
+                    builder: (context, state) {
+                      if (state.status == LibraryStatus.loading &&
+                          state.watchlist.isEmpty &&
+                          state.continueWatching.isEmpty) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: AppColors.accentPink),
+                        );
+                      }
+
+                      return TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildContinueWatchingList(context, state.continueWatching),
+                          _buildWatchlistGrid(context, state.watchlist),
+                          const DownloadsScreen(),
+                          _buildHistoryList(context, state.history),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AuraAdaptiveAppBar(
+              title: 'My Library',
+              opacity: 1.0,
+            ),
+          ),
+        ],
       ),
     );
   }

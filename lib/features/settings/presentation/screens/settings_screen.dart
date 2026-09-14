@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/presentation/primitives/aura_icon.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -119,86 +119,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
+
     return Scaffold(
       backgroundColor: AppColors.surfaceBackground,
-      appBar: AppBar(
-        title: Text(
-          'Settings & Preferences',
-          style: context.auraText.sectionTitle.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppTokens.spacingMd,
-          vertical: AppTokens.spacingLg,
-        ),
+      body: Stack(
         children: [
-          // 1. Account Section
-          _buildSectionHeader('Account & Cloud Continuity', AppIcons.cloudSync),
-          const SizedBox(height: 10),
-          const SettingsAccountCard(),
-          const SizedBox(height: AppTokens.spacingLg),
+          ListView(
+            padding: EdgeInsets.fromLTRB(
+              AppTokens.spacingMd,
+              topPadding + AppTokens.spacingLg,
+              AppTokens.spacingMd,
+              AppTokens.spacingLg + 100,
+            ),
+            children: [
+              // 1. Account Section
+              _buildSectionHeader('Account & Cloud Continuity', AppIcons.cloudSync),
+              const SizedBox(height: 10),
+              const SettingsAccountCard(),
+              const SizedBox(height: AppTokens.spacingLg),
 
-          // 2. Streaming & Debrid Engine Section
-          _buildSectionHeader('Debrid Engine & Multi-hoster', AppIcons.bolt),
-          const SizedBox(height: 10),
-          SettingsDebridCard(
-            isLoadingDebrid: _isLoadingDebrid,
-            debridAccount: _debridAccount,
-            rdKeyController: _rdKeyController,
-            onSaveDebridKey: _saveDebridKey,
-            onDisconnectDebrid: () async {
-              await _debridRepo.removeToken();
-              setState(() => _debridAccount = null);
-            },
+              // 2. Streaming & Debrid Engine Section
+              _buildSectionHeader('Debrid Engine & Multi-hoster', AppIcons.bolt),
+              const SizedBox(height: 10),
+              SettingsDebridCard(
+                isLoadingDebrid: _isLoadingDebrid,
+                debridAccount: _debridAccount,
+                rdKeyController: _rdKeyController,
+                onSaveDebridKey: _saveDebridKey,
+                onDisconnectDebrid: () async {
+                  await _debridRepo.removeToken();
+                  setState(() => _debridAccount = null);
+                },
+              ),
+              const SizedBox(height: AppTokens.spacingLg),
+
+              // 3. Player Preferences Section
+              _buildSectionHeader('Player Preferences', AppIcons.tune),
+              const SizedBox(height: 10),
+              SettingsPlayerPreferencesCard(
+                hardwareAcceleration: _hardwareAcceleration,
+                onHardwareAccelerationChanged: (val) {
+                  setState(() => _hardwareAcceleration = val);
+                  _savePreferenceBool('pref_hardware_acceleration', val);
+                },
+                ambientAuraGlow: _ambientAuraGlow,
+                onAmbientAuraGlowChanged: (val) {
+                  setState(() => _ambientAuraGlow = val);
+                  _savePreferenceBool('pref_ambient_aura_glow', val);
+                },
+                autoSkipIntros: _autoSkipIntros,
+                onAutoSkipIntrosChanged: (val) {
+                  setState(() => _autoSkipIntros = val);
+                  _savePreferenceBool('pref_auto_skip_intros', val);
+                },
+                defaultAudioLanguage: _defaultAudioLanguage,
+                onDefaultAudioLanguageChanged: (newVal) {
+                  if (newVal != null) {
+                    setState(() => _defaultAudioLanguage = newVal);
+                    _savePreferenceString('pref_default_audio_lang', newVal);
+                  }
+                },
+                defaultSubtitleLanguage: _defaultSubtitleLanguage,
+                onDefaultSubtitleLanguageChanged: (newVal) {
+                  if (newVal != null) {
+                    setState(() => _defaultSubtitleLanguage = newVal);
+                    _savePreferenceString('pref_default_sub_lang', newVal);
+                  }
+                },
+                languageOptions: _languageOptions,
+              ),
+              const SizedBox(height: AppTokens.spacingLg),
+
+              // 4. About & Legal Section
+              _buildSectionHeader('About & Legal', AppIcons.infoOutline),
+              const SizedBox(height: 10),
+              const SettingsAboutAndLegalCard(),
+              const SizedBox(height: 40),
+            ],
           ),
-          const SizedBox(height: AppTokens.spacingLg),
-
-          // 3. Player Preferences Section
-          _buildSectionHeader('Player Preferences', AppIcons.tune),
-          const SizedBox(height: 10),
-          SettingsPlayerPreferencesCard(
-            hardwareAcceleration: _hardwareAcceleration,
-            onHardwareAccelerationChanged: (val) {
-              setState(() => _hardwareAcceleration = val);
-              _savePreferenceBool('pref_hardware_acceleration', val);
-            },
-            ambientAuraGlow: _ambientAuraGlow,
-            onAmbientAuraGlowChanged: (val) {
-              setState(() => _ambientAuraGlow = val);
-              _savePreferenceBool('pref_ambient_aura_glow', val);
-            },
-            autoSkipIntros: _autoSkipIntros,
-            onAutoSkipIntrosChanged: (val) {
-              setState(() => _autoSkipIntros = val);
-              _savePreferenceBool('pref_auto_skip_intros', val);
-            },
-            defaultAudioLanguage: _defaultAudioLanguage,
-            onDefaultAudioLanguageChanged: (newVal) {
-              if (newVal != null) {
-                setState(() => _defaultAudioLanguage = newVal);
-                _savePreferenceString('pref_default_audio_lang', newVal);
-              }
-            },
-            defaultSubtitleLanguage: _defaultSubtitleLanguage,
-            onDefaultSubtitleLanguageChanged: (newVal) {
-              if (newVal != null) {
-                setState(() => _defaultSubtitleLanguage = newVal);
-                _savePreferenceString('pref_default_sub_lang', newVal);
-              }
-            },
-            languageOptions: _languageOptions,
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AuraAdaptiveAppBar(
+              title: 'Settings & Preferences',
+              opacity: 1.0,
+            ),
           ),
-          const SizedBox(height: AppTokens.spacingLg),
-
-          // 4. About & Legal Section
-          _buildSectionHeader('About & Legal', AppIcons.infoOutline),
-          const SizedBox(height: 10),
-          const SettingsAboutAndLegalCard(),
-          const SizedBox(height: 40),
         ],
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/presentation/primitives/aura_icon.dart';
-import '../../../../core/presentation/primitives/aura_page_scaffold.dart';
+import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -41,84 +40,91 @@ class _AddonsScreenState extends State<AddonsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AuraScaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: AppColors.surfaceBackground,
-            title: Text(
-              'Stremio Add-on Engine',
-              style: context.auraText.sectionTitle.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
+    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
+
+    return Scaffold(
+      backgroundColor: AppColors.surfaceBackground,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.only(top: topPadding),
               ),
-            ),
-            actions: [
-              IconButton(
-                icon: const AuraIcon(AppIcons.add, color: AppColors.accentPink),
-                tooltip: 'Install Add-on Manifest',
-                onPressed: () => _showInstallDialog(context),
+              SliverToBoxAdapter(
+                child: BlocBuilder<AddonBloc, AddonState>(
+                  builder: (context, state) {
+                    if (state.status == AddonStatus.loading &&
+                        state.installedAddons.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.accentPink),
+                        ),
+                      );
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTokens.spacingMd,
+                        vertical: AppTokens.spacingSm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Active Add-ons Section Header
+                          Text(
+                            'INSTALLED ADD-ONS (${state.installedAddons.length})',
+                            style: context.auraText.caption.copyWith(
+                              color: AppColors.accentPink,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: AppTokens.spacingSm),
+
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: state.installedAddons.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final addon = state.installedAddons[index];
+                              return AddonItemCard(
+                                addon: addon,
+                                onUninstall: () {
+                                  context
+                                      .read<AddonBloc>()
+                                      .add(UninstallAddonEvent(addon.id));
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
-          SliverToBoxAdapter(
-            child: BlocBuilder<AddonBloc, AddonState>(
-              builder: (context, state) {
-                if (state.status == AddonStatus.loading &&
-                    state.installedAddons.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(40),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.accentPink),
-                    ),
-                  );
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTokens.spacingMd,
-                    vertical: AppTokens.spacingSm,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Active Add-ons Section Header
-                      Text(
-                        'INSTALLED ADD-ONS (${state.installedAddons.length})',
-                        style: context.auraText.caption.copyWith(
-                          color: AppColors.accentPink,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: AppTokens.spacingSm),
-
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: state.installedAddons.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final addon = state.installedAddons[index];
-                          return AddonItemCard(
-                            addon: addon,
-                            onUninstall: () {
-                              context
-                                  .read<AddonBloc>()
-                                  .add(UninstallAddonEvent(addon.id));
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
-                );
-              },
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AuraAdaptiveAppBar(
+              title: 'Add-ons',
+              opacity: 1.0,
+              actions: [
+                IconButton(
+                  icon: const AuraIcon(AppIcons.add, color: AppColors.accentPink),
+                  tooltip: 'Install Add-on Manifest',
+                  onPressed: () => _showInstallDialog(context),
+                ),
+              ],
             ),
           ),
         ],
