@@ -48,3 +48,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# .gitattributes
+android/** linguist-vendored
+ios/** linguist-vendored
+windows/** linguist-vendored
+macos/** linguist-vendored
+linux/** linguist-vendored
