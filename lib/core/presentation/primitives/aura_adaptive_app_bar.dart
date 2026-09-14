@@ -302,7 +302,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     return Text(
       widget.title ?? 'AURA',
       style:
-          context.auraText.sectionTitle.copyWith(color: AppColors.accentPink),
+          context.auraText.sectionTitle.copyWith(color: Colors.white),
     );
   }
 
