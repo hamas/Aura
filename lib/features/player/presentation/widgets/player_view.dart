@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
@@ -41,6 +42,13 @@ class _PlayerViewState extends State<PlayerView> {
   @override
   void initState() {
     super.initState();
+    // Mobile Hardening: Lock to landscape and hide system status/nav bars
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     _startProgressSyncTimer();
   }
 
@@ -80,6 +88,16 @@ class _PlayerViewState extends State<PlayerView> {
   void dispose() {
     _syncProgress(); // Final sync before exiting player
     _progressSyncTimer?.cancel();
+
+    // Mobile Hardening: Restore system orientations and edge-to-edge UI
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     super.dispose();
   }
 
@@ -113,6 +131,7 @@ class _PlayerViewState extends State<PlayerView> {
                 onSpeedChange: (speed) => bloc.add(SetPlaybackSpeedEvent(speed)),
                 onSelectAudioTrack: (track) => bloc.add(SelectAudioTrackEvent(track)),
                 onSelectSubtitleTrack: (track) => bloc.add(SelectSubtitleTrackEvent(track)),
+                onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
                 onBack: widget.onBack,
               ),
             ],

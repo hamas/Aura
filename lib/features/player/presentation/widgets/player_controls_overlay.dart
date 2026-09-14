@@ -13,6 +13,8 @@ class PlayerControlsOverlay extends StatefulWidget {
   final ValueChanged<double> onSpeedChange;
   final ValueChanged<AudioTrackInfo> onSelectAudioTrack;
   final ValueChanged<SubtitleTrackInfo?> onSelectSubtitleTrack;
+  final ValueChanged<double>? onVolumeChange;
+  final VoidCallback? onPictureInPicture;
   final VoidCallback onBack;
 
   const PlayerControlsOverlay({
@@ -24,6 +26,8 @@ class PlayerControlsOverlay extends StatefulWidget {
     required this.onSpeedChange,
     required this.onSelectAudioTrack,
     required this.onSelectSubtitleTrack,
+    this.onVolumeChange,
+    this.onPictureInPicture,
     required this.onBack,
   });
 
@@ -31,20 +35,42 @@ class PlayerControlsOverlay extends StatefulWidget {
   State<PlayerControlsOverlay> createState() => _PlayerControlsOverlayState();
 }
 
-class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
+class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
+    with SingleTickerProviderStateMixin {
   bool _isVisible = true;
   Timer? _hideTimer;
+
+  // Double-tap seek animation states
+  bool _showLeftSeekRipple = false;
+  bool _showRightSeekRipple = false;
+  Timer? _leftSeekTimer;
+  Timer? _rightSeekTimer;
+
+  // Gesture state indicators
+  double _currentBrightness = 0.5;
+  bool _showBrightnessHud = false;
+  Timer? _brightnessHudTimer;
+
+  double _currentVolume = 100.0;
+  bool _showVolumeHud = false;
+  Timer? _volumeHudTimer;
+
+  // Horizontal scrub gesture state
+  bool _isScrubbing = false;
+  Duration _scrubTarget = Duration.zero;
+  Duration _scrubOffset = Duration.zero;
 
   @override
   void initState() {
     super.initState();
+    _currentVolume = widget.state.volume;
     _startHideTimer();
   }
 
   void _startHideTimer() {
     _hideTimer?.cancel();
     if (widget.state.isPlaying) {
-      _hideTimer = Timer(const Duration(seconds: 3), () {
+      _hideTimer = Timer(const Duration(seconds: 4), () {
         if (mounted) {
           setState(() => _isVisible = false);
         }
@@ -63,49 +89,405 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
     }
   }
 
+  void _handleDoubleTapLeft() {
+    final target = widget.state.position - const Duration(seconds: 10);
+    widget.onSeek(target < Duration.zero ? Duration.zero : target);
+
+    setState(() {
+      _showLeftSeekRipple = true;
+    });
+    _leftSeekTimer?.cancel();
+    _leftSeekTimer = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) {
+        setState(() => _showLeftSeekRipple = false);
+      }
+    });
+  }
+
+  void _handleDoubleTapRight() {
+    final target = widget.state.position + const Duration(seconds: 10);
+    widget.onSeek(target > widget.state.duration ? widget.state.duration : target);
+
+    setState(() {
+      _showRightSeekRipple = true;
+    });
+    _rightSeekTimer?.cancel();
+    _rightSeekTimer = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) {
+        setState(() => _showRightSeekRipple = false);
+      }
+    });
+  }
+
+  void _onVerticalDragUpdate(DragUpdateDetails details, double screenWidth, double screenHeight) {
+    final isLeft = details.globalPosition.dx < screenWidth / 2;
+    final delta = -details.primaryDelta! / screenHeight; // inverted drag: up = increase
+
+    if (isLeft) {
+      // Left side: Brightness
+      setState(() {
+        _currentBrightness = (_currentBrightness + delta).clamp(0.0, 1.0);
+        _showBrightnessHud = true;
+      });
+      _brightnessHudTimer?.cancel();
+      _brightnessHudTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (mounted) setState(() => _showBrightnessHud = false);
+      });
+    } else {
+      // Right side: Volume
+      setState(() {
+        _currentVolume = (_currentVolume + (delta * 100)).clamp(0.0, 100.0);
+        _showVolumeHud = true;
+      });
+      widget.onVolumeChange?.call(_currentVolume);
+      _volumeHudTimer?.cancel();
+      _volumeHudTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (mounted) setState(() => _showVolumeHud = false);
+      });
+    }
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    setState(() {
+      _isScrubbing = true;
+      _scrubTarget = widget.state.position;
+      _scrubOffset = Duration.zero;
+    });
+    _hideTimer?.cancel();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details, double screenWidth) {
+    final totalSeconds = widget.state.duration.inSeconds > 0
+        ? widget.state.duration.inSeconds
+        : 7200;
+    // Scrub sensitivity: dragging full screen width moves through 90 seconds
+    final scrubDeltaSeconds = (details.primaryDelta! / screenWidth) * 90;
+    final newOffsetSeconds = _scrubOffset.inSeconds + scrubDeltaSeconds;
+
+    final newTargetSeconds = (widget.state.position.inSeconds + newOffsetSeconds).clamp(
+      0.0,
+      totalSeconds.toDouble(),
+    );
+
+    setState(() {
+      _scrubOffset = Duration(seconds: newOffsetSeconds.toInt());
+      _scrubTarget = Duration(seconds: newTargetSeconds.toInt());
+    });
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_isScrubbing) {
+      widget.onSeek(_scrubTarget);
+      setState(() {
+        _isScrubbing = false;
+      });
+      _startHideTimer();
+    }
+  }
+
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _leftSeekTimer?.cancel();
+    _rightSeekTimer?.cancel();
+    _brightnessHudTimer?.cancel();
+    _volumeHudTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _toggleVisibility,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedOpacity(
-        opacity: _isVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 250),
-        child: IgnorePointer(
-          ignoring: !_isVisible,
-          child: Container(
-            color: Colors.black.withAlpha((0.55 * 255).round()),
-            child: SafeArea(
-              child: Stack(
-                children: [
-                  // Top Bar
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: _buildTopBar(context),
-                  ),
+    final size = MediaQuery.of(context).size;
 
-                  // Center Controls (Rewind, Play/Pause, Forward)
-                  Align(
-                    alignment: Alignment.center,
-                    child: _buildCenterControls(),
+    return Stack(
+      children: [
+        // Gesture Detector Zone
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _toggleVisibility,
+            onVerticalDragUpdate: (details) =>
+                _onVerticalDragUpdate(details, size.width, size.height),
+            onHorizontalDragStart: _onHorizontalDragStart,
+            onHorizontalDragUpdate: (details) =>
+                _onHorizontalDragUpdate(details, size.width),
+            onHorizontalDragEnd: _onHorizontalDragEnd,
+            child: Row(
+              children: [
+                // Left Double-tap area (Rewind 10s)
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: _handleDoubleTapLeft,
+                    child: Container(color: Colors.transparent),
                   ),
+                ),
+                // Center Dead Zone
+                const SizedBox(width: 80),
+                // Right Double-tap area (Forward 10s)
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: _handleDoubleTapRight,
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
 
-                  // Bottom Controls (Timeline, Aspect Ratio, Tracks)
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _buildBottomBar(context),
+        // Left Double-Tap Seek Animation Ripple
+        if (_showLeftSeekRipple)
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: size.width * 0.4,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.centerLeft,
+                  radius: 1.0,
+                  colors: [
+                    AppTheme.primaryAccent.withAlpha((0.25 * 255).round()),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.replay_10_rounded, color: Colors.white, size: 48),
+                    SizedBox(height: 6),
+                    Text(
+                      '-10s',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        // Right Double-Tap Seek Animation Ripple
+        if (_showRightSeekRipple)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: size.width * 0.4,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.centerRight,
+                  radius: 1.0,
+                  colors: [
+                    AppTheme.primaryAccent.withAlpha((0.25 * 255).round()),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.forward_10_rounded, color: Colors.white, size: 48),
+                    SizedBox(height: 6),
+                    Text(
+                      '+10s',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        // Brightness HUD Overlay (Left Vertical)
+        if (_showBrightnessHud)
+          Positioned(
+            left: 32,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildHudIndicator(
+                icon: _currentBrightness > 0.5
+                    ? Icons.brightness_high_rounded
+                    : Icons.brightness_medium_rounded,
+                percent: _currentBrightness,
+                label: '${(_currentBrightness * 100).toInt()}%',
+              ),
+            ),
+          ),
+
+        // Volume HUD Overlay (Right Vertical)
+        if (_showVolumeHud)
+          Positioned(
+            right: 32,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildHudIndicator(
+                icon: _currentVolume == 0
+                    ? Icons.volume_off_rounded
+                    : _currentVolume > 50
+                        ? Icons.volume_up_rounded
+                        : Icons.volume_down_rounded,
+                percent: _currentVolume / 100.0,
+                label: '${_currentVolume.toInt()}%',
+              ),
+            ),
+          ),
+
+        // Horizontal Scrub Timeline Preview HUD
+        if (_isScrubbing)
+          Positioned.fill(
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withAlpha((0.85 * 255).round()),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.primaryAccent.withAlpha((0.5 * 255).round())),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha((0.5 * 255).round()),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _scrubOffset.isNegative
+                              ? Icons.fast_rewind_rounded
+                              : Icons.fast_forward_rounded,
+                          color: AppTheme.primaryAccent,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_scrubOffset.isNegative ? '' : '+'}${Formatters.formatDuration(_scrubOffset)}',
+                          style: TextStyle(
+                            color: _scrubOffset.isNegative
+                                ? AppTheme.warningAccent
+                                : AppTheme.successAccent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${Formatters.formatDuration(_scrubTarget)} / ${Formatters.formatDuration(widget.state.duration)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        // Main Animated Controls UI
+        Positioned.fill(
+          child: AnimatedOpacity(
+            opacity: _isVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: IgnorePointer(
+              ignoring: !_isVisible,
+              child: Container(
+                color: Colors.black.withAlpha((0.55 * 255).round()),
+                child: SafeArea(
+                  child: Stack(
+                    children: [
+                      // Top Bar
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: _buildTopBar(context),
+                      ),
+
+                      // Center Controls (Rewind, Play/Pause, Forward)
+                      Align(
+                        alignment: Alignment.center,
+                        child: _buildCenterControls(),
+                      ),
+
+                      // Bottom Controls (Timeline, Aspect Ratio, Tracks)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: _buildBottomBar(context),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildHudIndicator({
+    required IconData icon,
+    required double percent,
+    required String label,
+  }) {
+    return Container(
+      width: 44,
+      height: 160,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withAlpha((0.8 * 255).round()),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(height: 8),
+          Expanded(
+            child: RotatedBox(
+              quarterTurns: 3,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: percent.clamp(0.0, 1.0),
+                  backgroundColor: Colors.white24,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryAccent),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -147,6 +529,23 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay> {
                   ),
               ],
             ),
+          ),
+          // Picture-in-Picture (PiP) Button
+          IconButton(
+            icon: const Icon(Icons.picture_in_picture_alt_rounded, color: Colors.white),
+            tooltip: 'Picture-in-Picture',
+            onPressed: () {
+              if (widget.onPictureInPicture != null) {
+                widget.onPictureInPicture!();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Entering Picture-in-Picture mode...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
           ),
           // Aspect Ratio Toggle
           IconButton(

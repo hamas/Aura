@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
 
@@ -139,7 +140,7 @@ class StreamPickerModal extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Content Area
-              if (!isLoading && streams.isEmpty)
+              if (isLoading && streams.isEmpty)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
@@ -150,21 +151,75 @@ class StreamPickerModal extends StatelessWidget {
                   ),
                   child: const Column(
                     children: [
-                      Icon(Icons.cloud_off_rounded, size: 40, color: AppTheme.textMuted),
-                      SizedBox(height: 12),
+                      SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primaryAccent,
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      SizedBox(height: 16),
                       Text(
-                        'No streams found for this media',
+                        'Querying community add-ons...',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Ensure you have configured active Stremio add-ons in the Add-ons tab.',
-                        style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                        'Resolving streams via Stremio v3 protocol & Debrid endpoints',
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                         textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              else if (!isLoading && streams.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceCard.withAlpha((0.5 * 255).round()),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF1E2638)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.cloud_off_rounded, size: 44, color: AppTheme.textMuted),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'No streams found',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'No active add-ons returned streams for this media. Install additional Stremio add-ons or verify your Debrid token in Settings.',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.35),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryAccent,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.push('/addons');
+                        },
+                        icon: const Icon(Icons.extension_rounded, size: 18),
+                        label: const Text(
+                          'Configure Add-ons',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
                       ),
                     ],
                   ),

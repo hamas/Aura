@@ -69,9 +69,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         child: BlocBuilder<CatalogBloc, CatalogState>(
           builder: (context, catalogState) {
             if (catalogState.status == CatalogStatus.loading && catalogState.trending.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryAccent),
-              );
+              return _buildShimmerSkeleton(context);
             }
 
             final heroItems = catalogState.trending.take(5).toList();
@@ -667,6 +665,134 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerSkeleton(BuildContext context) {
+    final height = MediaQuery.of(context).size.height * 0.52;
+
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hero Shimmer Banner
+          Stack(
+            children: [
+              _buildShimmerBox(
+                width: double.infinity,
+                height: height,
+                borderRadius: 0,
+              ),
+              Positioned(
+                bottom: 30,
+                left: 20,
+                right: 20,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildShimmerBox(width: 100, height: 12, borderRadius: 4),
+                    const SizedBox(height: 10),
+                    _buildShimmerBox(width: 240, height: 26, borderRadius: 6),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildShimmerBox(width: 50, height: 20, borderRadius: 4),
+                        const SizedBox(width: 10),
+                        _buildShimmerBox(width: 40, height: 20, borderRadius: 4),
+                        const SizedBox(width: 10),
+                        _buildShimmerBox(width: 60, height: 20, borderRadius: 4),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildShimmerBox(width: 120, height: 38, borderRadius: 8),
+                        const SizedBox(width: 12),
+                        _buildShimmerBox(width: 100, height: 38, borderRadius: 8),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Shelves Shimmer
+          for (int s = 0; s < 2; s++) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildShimmerBox(width: 160, height: 18, borderRadius: 4),
+                  const SizedBox(height: 6),
+                  _buildShimmerBox(width: 220, height: 12, borderRadius: 4),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 225,
+              child: ListView.separated(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                scrollDirection: Axis.horizontal,
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (_, __) {
+                  return SizedBox(
+                    width: 130,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildShimmerBox(
+                            width: 130,
+                            height: double.infinity,
+                            borderRadius: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildShimmerBox(width: 110, height: 12, borderRadius: 3),
+                        const SizedBox(height: 6),
+                        _buildShimmerBox(width: 70, height: 10, borderRadius: 3),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerBox({
+    required double width,
+    required double height,
+    required double borderRadius,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceElevated,
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.surfaceElevated,
+            AppTheme.surfaceElevated.withAlpha((0.6 * 255).round()),
+            AppTheme.surfaceElevated,
           ],
         ),
       ),
