@@ -167,7 +167,7 @@ class MainNavigationScaffold extends StatelessWidget {
     if (location.startsWith('/clips')) {
       return 1;
     }
-    if (location.startsWith('/library')) {
+    if (location.startsWith('/downloads') || location.startsWith('/library')) {
       return 2;
     }
     return 0;
@@ -182,7 +182,7 @@ class MainNavigationScaffold extends StatelessWidget {
         context.go('/clips');
         break;
       case 2:
-        context.go('/library');
+        context.go('/downloads');
         break;
     }
   }

@@ -75,7 +75,7 @@ class AuraFloatingBottomPill extends StatelessWidget {
                 _buildNavItem(
                   context,
                   index: 2,
-                  icon: AppIcons.library,
+                  icon: AppIcons.downloads,
                   isSelected: currentIndex == 2,
                 ),
               ],
