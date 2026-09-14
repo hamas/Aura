@@ -159,84 +159,72 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // IMDb / Rotten Tomatoes Rating Badge Chip on top of logo/title
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0x33FFFFFF),
-                    width: 1,
+              // IMDb / Rotten Tomatoes Rating Badge Chip (Transparent, 20% smaller)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // IMDb badge icon
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 3, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5C518),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: const Text(
+                      'IMDb',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 7.2,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // IMDb badge icon
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5C518),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: const Text(
-                        'IMDb',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
+                  const SizedBox(width: 4),
+                  Text(
+                    item.formattedRating.isNotEmpty
+                        ? item.formattedRating
+                        : '8.5',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.6,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 5),
-                    Text(
-                      item.formattedRating.isNotEmpty
-                          ? item.formattedRating
-                          : '8.5',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Rotten Tomatoes icon & score
+                  const Icon(
+                    Icons.local_pizza_rounded,
+                    color: Color(0xFFFA320A),
+                    size: 10.4,
+                  ),
+                  const SizedBox(width: 2),
+                  const Text(
+                    '94%',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.6,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 8),
-                    // Rotten Tomatoes icon & score
-                    const Icon(
-                      Icons.local_pizza_rounded,
-                      color: Color(0xFFFA320A),
-                      size: 13,
+                  ),
+                  const SizedBox(width: 6),
+                  // Popcorn icon & audience score
+                  const Icon(
+                    Icons.confirmation_number_rounded,
+                    color: Color(0xFFFFC107),
+                    size: 10.4,
+                  ),
+                  const SizedBox(width: 2),
+                  const Text(
+                    '88%',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.6,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 3),
-                    const Text(
-                      '94%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Popcorn icon & audience score
-                    const Icon(
-                      Icons.confirmation_number_rounded,
-                      color: Color(0xFFFFC107),
-                      size: 13,
-                    ),
-                    const SizedBox(width: 3),
-                    const Text(
-                      '88%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               // Movie / Show Title Logo Text or Clearart Image
