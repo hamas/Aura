@@ -89,17 +89,20 @@ class AppRouter {
       ),
 
       // Profile Selection Screen Route (Full overlay outside navigation shell)
+      // Profile Selection Screen Route (Full overlay outside navigation shell)
       GoRoute(
         path: '/profiles',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const ProfileSelectionScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: ProfileSelectionScreen(),
+        ),
       ),
 
       // Detail Screen Route
       GoRoute(
         path: '/detail/:type/:id',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final typeString = state.pathParameters['type'] ?? 'movie';
           final idString = state.pathParameters['id'] ?? '0';
           final id = int.tryParse(idString) ?? 0;
@@ -108,10 +111,12 @@ class AppRouter {
               : MediaType.movie;
           final initialItem = state.extra as MediaItem?;
 
-          return DetailScreen(
-            id: id,
-            type: type,
-            initialItem: initialItem,
+          return NoTransitionPage(
+            child: DetailScreen(
+              id: id,
+              type: type,
+              initialItem: initialItem,
+            ),
           );
         },
       ),
@@ -120,7 +125,7 @@ class AppRouter {
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
           final streamUrl = extra['streamUrl'] as String? ?? '';
           final title = extra['title'] as String?;
@@ -135,28 +140,30 @@ class AppRouter {
 
           final playerService = MediaKitPlayerService();
 
-          return BlocProvider(
-            create: (context) {
-              final bloc = PlayerBloc(playerService: playerService);
-              bloc.add(
-                PlayStreamEvent(
-                  streamUrl: streamUrl,
-                  title: title,
-                  subtitle: subtitle,
-                  httpHeaders: headers,
-                ),
-              );
-              return bloc;
-            },
-            child: PlayerView(
-              playerService: playerService,
-              onBack: () => Navigator.of(context).pop(),
-              mediaId: mediaId,
-              posterPath: posterPath,
-              backdropPath: backdropPath,
-              mediaType: mediaType,
-              seasonNumber: seasonNumber,
-              episodeNumber: episodeNumber,
+          return NoTransitionPage(
+            child: BlocProvider(
+              create: (context) {
+                final bloc = PlayerBloc(playerService: playerService);
+                bloc.add(
+                  PlayStreamEvent(
+                    streamUrl: streamUrl,
+                    title: title,
+                    subtitle: subtitle,
+                    httpHeaders: headers,
+                  ),
+                );
+                return bloc;
+              },
+              child: PlayerView(
+                playerService: playerService,
+                onBack: () => Navigator.of(context).pop(),
+                mediaId: mediaId,
+                posterPath: posterPath,
+                backdropPath: backdropPath,
+                mediaType: mediaType,
+                seasonNumber: seasonNumber,
+                episodeNumber: episodeNumber,
+              ),
             ),
           );
         },
