@@ -34,6 +34,9 @@ class CastMember extends Equatable {
         'profile_path': profilePath,
       };
 
+  String get fullProfileUrl =>
+      profilePath != null ? '${ApiConstants.tmdbPosterW500}$profilePath' : '';
+
   @override
   List<Object?> get props => [id, name, character, profilePath];
 }
@@ -53,6 +56,7 @@ class MediaItem extends Equatable {
   final List<Season> seasons;
   final int? runtimeMinutes;
   final String? tagline;
+  final String? trailerUrl;
 
   const MediaItem({
     required this.id,
@@ -69,6 +73,7 @@ class MediaItem extends Equatable {
     this.seasons = const [],
     this.runtimeMinutes,
     this.tagline,
+    this.trailerUrl,
   });
 
   String get fullPosterUrl =>

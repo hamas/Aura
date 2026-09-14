@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/constants/api_constants.dart';
 
 class Episode extends Equatable {
   final int id;
@@ -9,6 +10,7 @@ class Episode extends Equatable {
   final String? stillPath;
   final double voteAverage;
   final String? airDate;
+  final int? runtimeMinutes;
 
   const Episode({
     required this.id,
@@ -19,7 +21,11 @@ class Episode extends Equatable {
     this.stillPath,
     this.voteAverage = 0.0,
     this.airDate,
+    this.runtimeMinutes,
   });
+
+  String get fullStillUrl =>
+      stillPath != null ? '${ApiConstants.tmdbBackdropW780}$stillPath' : '';
 
   factory Episode.fromJson(Map<String, dynamic> json) {
     return Episode(
@@ -31,6 +37,7 @@ class Episode extends Equatable {
       stillPath: json['still_path'] as String?,
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
       airDate: json['air_date'] as String?,
+      runtimeMinutes: json['runtime'] as int?,
     );
   }
 
@@ -43,11 +50,19 @@ class Episode extends Equatable {
         'still_path': stillPath,
         'vote_average': voteAverage,
         'air_date': airDate,
+        'runtime': runtimeMinutes,
       };
 
   @override
-  List<Object?> get props =>
-      [id, episodeNumber, seasonNumber, name, stillPath, voteAverage];
+  List<Object?> get props => [
+        id,
+        episodeNumber,
+        seasonNumber,
+        name,
+        stillPath,
+        voteAverage,
+        runtimeMinutes,
+      ];
 }
 
 class Season extends Equatable {
