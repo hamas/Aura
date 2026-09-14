@@ -94,30 +94,7 @@ class ClipPageItem extends StatelessWidget {
           ),
         ),
 
-        // 3. Top Header Label: "Clips"
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 8,
-          left: 20,
-          child: Row(
-            children: [
-              const AuraIcon(
-                AppIcons.clips,
-                color: AppColors.accentPink,
-                size: 20,
-                fill: 1.0,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'CLIPS',
-                style: AppTypography.sectionTitle.copyWith(
-                  letterSpacing: 2.0,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
+
 
         // 4. Vertical Interactive Action Rail (Right Side)
         Positioned(

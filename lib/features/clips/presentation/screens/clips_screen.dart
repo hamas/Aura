@@ -187,28 +187,41 @@ class _ClipsScreenState extends State<ClipsScreen> {
             );
           }
 
-          return PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-            physics: const PageScrollPhysics(),
-            itemCount: state.clips.length,
-            onPageChanged: (index) {
-              context.read<ClipsBloc>().add(ChangeActiveClipIndexEvent(index));
-            },
-            itemBuilder: (context, index) {
-              final clip = state.clips[index];
-              final isActive = state.activeIndex == index;
-              final isLiked = state.likedClipIds.contains(clip.id);
+          return Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                physics: const PageScrollPhysics(),
+                itemCount: state.clips.length,
+                onPageChanged: (index) {
+                  context.read<ClipsBloc>().add(ChangeActiveClipIndexEvent(index));
+                },
+                itemBuilder: (context, index) {
+                  final clip = state.clips[index];
+                  final isActive = state.activeIndex == index;
+                  final isLiked = state.likedClipIds.contains(clip.id);
 
-              return ClipPageItem(
-                clip: clip,
-                isActive: isActive,
-                isMuted: state.isMuted,
-                isLiked: isLiked,
-                onPlayTap: () => _openStreamPicker(context, clip.mediaItem),
-                onShareTap: () => _shareClip(clip),
-              );
-            },
+                  return ClipPageItem(
+                    clip: clip,
+                    isActive: isActive,
+                    isMuted: state.isMuted,
+                    isLiked: isLiked,
+                    onPlayTap: () => _openStreamPicker(context, clip.mediaItem),
+                    onShareTap: () => _shareClip(clip),
+                  );
+                },
+              ),
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: AuraAdaptiveAppBar(
+                  title: 'Clips',
+                  opacity: 1.0,
+                ),
+              ),
+            ],
           );
         },
       ),
