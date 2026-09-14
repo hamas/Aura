@@ -8,6 +8,8 @@ import '../../domain/entities/user_profile.dart';
 import '../widgets/components/profile_card.dart';
 import '../widgets/components/pin_entry_dialog.dart';
 
+import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
+
 class ProfileSelectionScreen extends StatefulWidget {
   final ProfileManager? profileManager;
   final VoidCallback? onProfileSelected;
@@ -38,6 +40,26 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         _profiles = widget.profileManager!.getProfiles();
         _activeProfile = widget.profileManager!.getActiveProfile();
       });
+    } else {
+      // Default fallback demo profiles
+      setState(() {
+        _profiles = [
+          UserProfile(
+            id: 'p1',
+            name: 'Primary Account',
+            avatarPath: '',
+            createdAt: DateTime.now(),
+          ),
+          UserProfile(
+            id: 'p2',
+            name: 'Kids',
+            avatarPath: '',
+            isKids: true,
+            createdAt: DateTime.now(),
+          ),
+        ];
+        _activeProfile = _profiles.first;
+      });
     }
   }
 
@@ -66,66 +88,69 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
     });
     if (widget.onProfileSelected != null) {
       widget.onProfileSelected!();
+    } else {
+      Navigator.of(context).maybePop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AuraScaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppTokens.spacingLg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Who's watching?",
-                style: context.auraText.displayHero.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 32,
-                ),
+      body: Stack(
+        children: [
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTokens.spacingLg,
+                vertical: 80.0,
               ),
-              const SizedBox(height: AppTokens.spacingSm),
-              Text(
-                'Select a profile to customize recommendations & history',
-                style: context.auraText.caption
-                    .copyWith(color: AppColors.textMuted),
-              ),
-              const SizedBox(height: AppTokens.spacingXl),
-              if (_profiles.isEmpty)
-                ProfileCard(
-                  profile: UserProfile(
-                    id: 'p1',
-                    name: 'Primary Account',
-                    avatarPath: '',
-                    createdAt: DateTime.now(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Who's watching?",
+                    style: context.auraText.displayHero.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 32,
+                    ),
                   ),
-                  isActive: true,
-                  onTap: () {
-                    if (widget.onProfileSelected != null) {
-                      widget.onProfileSelected!();
-                    }
-                  },
-                )
-              else
-                Wrap(
-                  spacing: AppTokens.spacingLg,
-                  runSpacing: AppTokens.spacingLg,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    ..._profiles.map((profile) {
-                      final isActive = profile.id == _activeProfile?.id;
-                      return ProfileCard(
-                        profile: profile,
-                        isActive: isActive,
-                        onTap: () => _selectProfile(profile),
-                      );
-                    }),
-                  ],
-                ),
-            ],
+                  const SizedBox(height: AppTokens.spacingSm),
+                  Text(
+                    'Select a profile to customize recommendations & history',
+                    style: context.auraText.caption
+                        .copyWith(color: AppColors.textMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppTokens.spacingXl),
+                  Wrap(
+                    spacing: AppTokens.spacingLg,
+                    runSpacing: AppTokens.spacingLg,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      ..._profiles.map((profile) {
+                        final isActive = profile.id == _activeProfile?.id;
+                        return ProfileCard(
+                          profile: profile,
+                          isActive: isActive,
+                          onTap: () => _selectProfile(profile),
+                        );
+                      }),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AuraAdaptiveAppBar(
+              title: 'Profiles',
+              opacity: 1.0,
+            ),
+          ),
+        ],
       ),
     );
   }

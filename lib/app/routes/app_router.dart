@@ -16,6 +16,7 @@ import '../../features/player/data/services/media_kit_player_service.dart';
 import '../../features/player/presentation/bloc/player_bloc.dart';
 import '../../features/player/presentation/bloc/player_event.dart';
 import '../../features/player/presentation/widgets/player_view.dart';
+import '../../features/profiles/presentation/screens/profile_selection_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -85,6 +86,13 @@ class AppRouter {
             ),
           ),
         ],
+      ),
+
+      // Profile Selection Screen Route (Full overlay outside navigation shell)
+      GoRoute(
+        path: '/profiles',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ProfileSelectionScreen(),
       ),
 
       // Detail Screen Route
