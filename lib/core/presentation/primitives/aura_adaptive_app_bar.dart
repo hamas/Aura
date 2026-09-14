@@ -244,8 +244,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
     }
     return Text(
       widget.title ?? '',
-      style:
-          context.auraText.sectionTitle.copyWith(color: AppColors.textPrimary),
+      style: context.auraText.sectionTitle.copyWith(color: Colors.white),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
