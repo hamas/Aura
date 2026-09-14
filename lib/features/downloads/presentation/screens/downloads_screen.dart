@@ -130,6 +130,10 @@ class DownloadsScreen extends StatelessWidget {
                     children: [
                       // Storage Consumption Card
                       _buildStorageBar(context, state),
+                      const SizedBox(height: 12),
+
+                      // Smart Downloads Dynamic Management Status Row
+                      _buildSmartDownloadsBanner(context),
                       const SizedBox(height: 20),
 
                       // In-Progress / Active Queue Section
@@ -249,6 +253,45 @@ class DownloadsScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSmartDownloadsBanner(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: AppTokens.borderRadiusSmall,
+        border: Border.all(
+          color: AppColors.primaryAccent.withAlpha((0.3 * 255).round()),
+        ),
+      ),
+      child: const Row(
+        children: [
+          AuraIcon(
+            AppIcons.autoAwesome,
+            color: AppColors.primaryAccent,
+            size: 18,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Watched episodes deleted • Next 2 episodes queued on Wi-Fi',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          AuraBadge(
+            label: 'COMMUTER MODE',
+            backgroundColor: Color(0x1EA0E1E5),
+            borderColor: AppColors.primaryAccent,
+            textColor: AppColors.primaryAccent,
+          ),
+        ],
       ),
     );
   }
@@ -523,6 +566,13 @@ class DownloadsScreen extends StatelessWidget {
                           fontSize: 11,
                         ),
                       ),
+                      if (task.mediaType == MediaType.series) ...[
+                        const SizedBox(width: 8),
+                        AuraBadge.status(
+                          'SMART DOWNLOADS ACTIVE',
+                          active: true,
+                        ),
+                      ],
                     ],
                   ),
                 ],
