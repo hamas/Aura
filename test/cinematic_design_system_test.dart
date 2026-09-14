@@ -5,8 +5,12 @@ import 'package:aura/features/catalog/presentation/widgets/widgets.dart';
 import 'package:aura/features/library/domain/entities/library_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('Cinematic Design System Tokens & Geometry', () {
     test('Aura theme tokens match Netflix dark aesthetic and brand accent', () {
       expect(AppColors.surfaceBackground, equals(const Color(0xFF141414)));

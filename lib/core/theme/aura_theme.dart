@@ -18,8 +18,6 @@ class AuraTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      fontFamily: AppTypography.fontFamily,
-      fontFamilyFallback: AppTypography.fontFamilyFallback,
       scaffoldBackgroundColor: AppColors.surfaceBackground,
       canvasColor: AppColors.surfaceBackground,
       textTheme: AppTypography.textTheme,

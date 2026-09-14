@@ -2,8 +2,12 @@ import 'package:aura/core/presentation/primitives/primitives.dart';
 import 'package:aura/core/theme/aura_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('Global Typography Engine Tests', () {
     test('AppTypography provides standard styled text definitions', () {
       expect(AppTypography.displayHero.fontSize, equals(30));
