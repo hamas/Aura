@@ -227,9 +227,9 @@ void main() {
       expect(find.text('8.8'), findsOneWidget);
       expect(find.text('4K HDR'), findsOneWidget);
       expect(find.text('MOVIE'), findsOneWidget);
-      expect(find.text('My List'), findsOneWidget);
-      expect(find.text('Share'), findsOneWidget);
-      expect(find.text('Audio'), findsOneWidget);
+      expect(find.byIcon(AppIcons.favorite), findsOneWidget);
+      expect(find.byIcon(AppIcons.forward), findsOneWidget);
+      expect(find.byIcon(AppIcons.volumeUp), findsOneWidget);
       expect(find.text('Play'), findsOneWidget);
     });
   });

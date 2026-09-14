@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:aura/core/presentation/primitives/primitives.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
@@ -136,7 +137,6 @@ class ClipPageItem extends StatelessWidget {
                     fill: isInWatchlist ? 1.0 : 0.0,
                     iconColor:
                         isInWatchlist ? AppColors.accentPink : Colors.white,
-                    label: 'My List',
                     onTap: () {
                       final libraryItem = LibraryItem(
                         id: clip.mediaId.toString(),
@@ -163,10 +163,10 @@ class ClipPageItem extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(height: 18),
                   // Share Sheet Button (Forward Icon)
                   _buildRailAction(
                     icon: AppIcons.forward,
-                    label: 'Share',
                     onTap: onShareTap,
                   ),
                   const SizedBox(height: 18),
@@ -174,7 +174,6 @@ class ClipPageItem extends StatelessWidget {
                   // Audio Mute Toggle (Volume Up / Volume Mute Icons)
                   _buildRailAction(
                     icon: isMuted ? AppIcons.volumeMute : AppIcons.volumeUp,
-                    label: isMuted ? 'Muted' : 'Audio',
                     onTap: () {
                       context.read<ClipsBloc>().add(ToggleClipMuteEvent());
                     },
@@ -283,43 +282,53 @@ class ClipPageItem extends StatelessWidget {
 
   Widget _buildRailAction({
     required IconData icon,
-    required String label,
     required VoidCallback onTap,
     Color iconColor = Colors.white,
     double fill = 0.0,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha((0.6 * 255).round()),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0x24FFFFFF),
-                width: 1,
+      behavior: HitTestBehavior.opaque,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24.0),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 8 Blur Background
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: const SizedBox.expand(),
               ),
             ),
-            child: AuraIcon(
-              icon,
-              color: iconColor,
-              size: 24,
-              fill: fill,
+
+            // 20% Opacity Surface Background Overlay & Border
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceBackground.withValues(alpha: 0.20),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.40),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: AuraIcon(
+                icon,
+                color: iconColor,
+                size: 24,
+                fill: fill,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
