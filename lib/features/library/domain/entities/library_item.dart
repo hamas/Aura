@@ -23,6 +23,11 @@ class WatchProgress extends Equatable {
 
   bool get isFinished => percentage >= 0.90;
 
+  int get remainingSeconds =>
+      (durationSeconds - positionSeconds).clamp(0, durationSeconds);
+
+  int get remainingMinutes => (remainingSeconds / 60).ceil();
+
   factory WatchProgress.fromJson(Map<String, dynamic> json) {
     return WatchProgress(
       positionSeconds: json['position_seconds'] as int? ?? 0,
