@@ -190,7 +190,7 @@ class _AuraAdaptiveAppBarState extends State<AuraAdaptiveAppBar> {
 
     return Container(
       padding:
-          widget.padding ?? EdgeInsets.fromLTRB(14, topPadding + 6, 14, 10),
+          widget.padding ?? EdgeInsets.fromLTRB(16, topPadding + 6, 16, 10),
       decoration: BoxDecoration(
         color: AppColors.surfaceBackground.withAlpha((opacity * 255).round()),
         boxShadow: opacity > 0.4
