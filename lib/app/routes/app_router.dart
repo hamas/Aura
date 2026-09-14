@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_colors.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/detail_screen.dart';
 import '../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
+import '../../features/clips/presentation/screens/clips_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/player/data/services/media_kit_player_service.dart';
 import '../../features/player/presentation/bloc/player_bloc.dart';
 import '../../features/player/presentation/bloc/player_event.dart';
 import '../../features/player/presentation/widgets/player_view.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -36,6 +37,12 @@ class AppRouter {
             path: '/',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: DiscoveryScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/clips',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: ClipsScreen(),
             ),
           ),
           GoRoute(
@@ -148,16 +155,18 @@ class MainNavigationScaffold extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/search')) {
+    if (location.startsWith('/clips')) {
       return 1;
     }
-    if (location.startsWith('/library')) {
+    if (location.startsWith('/search')) {
       return 2;
     }
-    if (location.startsWith('/addons')) {
+    if (location.startsWith('/library')) {
       return 3;
     }
-    if (location.startsWith('/settings') || location.startsWith('/profile')) {
+    if (location.startsWith('/settings') ||
+        location.startsWith('/profile') ||
+        location.startsWith('/addons')) {
       return 4;
     }
     return 0;
@@ -169,13 +178,13 @@ class MainNavigationScaffold extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/search');
+        context.go('/clips');
         break;
       case 2:
-        context.go('/library');
+        context.go('/search');
         break;
       case 3:
-        context.go('/addons');
+        context.go('/library');
         break;
       case 4:
         context.go('/settings');
@@ -191,37 +200,43 @@ class MainNavigationScaffold extends StatelessWidget {
       body: child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFF1E2638), width: 1)),
+          color: AppColors.surfaceBackground,
+          border: Border(top: BorderSide(color: Color(0xFF1F1F1F), width: 1)),
         ),
         child: NavigationBar(
+          backgroundColor: AppColors.surfaceBackground,
+          indicatorColor: AppColors.surfaceElevated,
           selectedIndex: currentIndex,
           onDestinationSelected: (idx) => _onItemTapped(idx, context),
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.movie_outlined),
-              selectedIcon: Icon(Icons.movie, color: AppTheme.primaryAccent),
-              label: 'Discover',
+              icon: Icon(Icons.home_outlined),
+              selectedIcon:
+                  Icon(Icons.home_rounded, color: AppColors.accentPink),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.video_collection_outlined),
+              selectedIcon: Icon(Icons.video_collection_rounded,
+                  color: AppColors.accentPink),
+              label: 'Clips',
             ),
             NavigationDestination(
               icon: Icon(Icons.search_outlined),
-              selectedIcon: Icon(Icons.search, color: AppTheme.primaryAccent),
+              selectedIcon:
+                  Icon(Icons.search_rounded, color: AppColors.accentPink),
               label: 'Search',
             ),
             NavigationDestination(
               icon: Icon(Icons.video_library_outlined),
-              selectedIcon:
-                  Icon(Icons.video_library, color: AppTheme.primaryAccent),
+              selectedIcon: Icon(Icons.video_library_rounded,
+                  color: AppColors.accentPink),
               label: 'Library',
             ),
             NavigationDestination(
-              icon: Icon(Icons.extension_outlined),
-              selectedIcon:
-                  Icon(Icons.extension, color: AppTheme.primaryAccent),
-              label: 'Add-ons',
-            ),
-            NavigationDestination(
               icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings, color: AppTheme.primaryAccent),
+              selectedIcon:
+                  Icon(Icons.settings_rounded, color: AppColors.accentPink),
               label: 'Settings',
             ),
           ],

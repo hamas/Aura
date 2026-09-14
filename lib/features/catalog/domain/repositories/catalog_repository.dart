@@ -25,4 +25,7 @@ abstract class CatalogRepository {
 
   /// Gets detailed episode list for a specific season.
   Future<Season> getSeasonDetails(int tmdbSeriesId, int seasonNumber);
+
+  /// Gets video trailers and teaser clips for a media item.
+  Future<List<Map<String, dynamic>>> getVideos(int tmdbId, MediaType type);
 }

@@ -11,6 +11,9 @@ import '../features/auth/presentation/bloc/auth_event.dart';
 import '../features/catalog/data/repositories/catalog_repository_impl.dart';
 import '../features/catalog/domain/repositories/catalog_repository.dart';
 import '../features/catalog/presentation/bloc/catalog_bloc.dart';
+import '../features/clips/data/repositories/clips_repository_impl.dart';
+import '../features/clips/domain/repositories/clips_repository.dart';
+import '../features/clips/presentation/bloc/clips_bloc.dart';
 import '../features/library/data/repositories/library_repository_impl.dart';
 import '../features/library/domain/repositories/library_repository.dart';
 import '../features/library/presentation/bloc/library_bloc.dart';
@@ -32,6 +35,8 @@ class AuraApp extends StatelessWidget {
       prefs: prefs,
       authRepository: authRepository,
     );
+    final ClipsRepository clipsRepository =
+        ClipsRepositoryImpl(catalogRepository: catalogRepository);
 
     return MultiRepositoryProvider(
       providers: [
@@ -39,6 +44,7 @@ class AuraApp extends StatelessWidget {
         RepositoryProvider<CatalogRepository>.value(value: catalogRepository),
         RepositoryProvider<AddonRepository>.value(value: addonRepository),
         RepositoryProvider<LibraryRepository>.value(value: libraryRepository),
+        RepositoryProvider<ClipsRepository>.value(value: clipsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -56,6 +62,9 @@ class AuraApp extends StatelessWidget {
           BlocProvider<LibraryBloc>(
             create: (context) =>
                 LibraryBloc(libraryRepository: libraryRepository),
+          ),
+          BlocProvider<ClipsBloc>(
+            create: (context) => ClipsBloc(clipsRepository: clipsRepository),
           ),
         ],
         child: MaterialApp.router(

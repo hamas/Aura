@@ -48,4 +48,9 @@ class CatalogRepositoryImpl implements CatalogRepository {
   Future<Season> getSeasonDetails(int tmdbSeriesId, int seasonNumber) {
     return _apiClient.getSeasonDetails(tmdbSeriesId, seasonNumber);
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getVideos(int tmdbId, MediaType type) {
+    return _apiClient.getVideos(tmdbId, type);
+  }
 }

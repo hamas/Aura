@@ -19,6 +19,8 @@ import '../bloc/catalog_event.dart';
 import '../bloc/catalog_state.dart';
 import '../widgets/widgets.dart';
 
+enum MediaCategoryFilter { all, tvShows, movies }
+
 /// Netflix-style cinematic Discovery & Home screen for Aura.
 class DiscoveryScreen extends StatefulWidget {
   const DiscoveryScreen({super.key});
@@ -30,6 +32,7 @@ class DiscoveryScreen extends StatefulWidget {
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   final ScrollController _scrollController = ScrollController();
   double _navOpacity = 0.0;
+  MediaCategoryFilter _selectedFilter = MediaCategoryFilter.all;
 
   @override
   void initState() {
@@ -82,12 +85,131 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _navigateToDetail(mediaItem);
   }
 
+  void _showCastDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Row(
+          children: [
+            Icon(Icons.cast_rounded, color: AppColors.accentPink),
+            SizedBox(width: 10),
+            Text(
+              'Connect Device',
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Searching for available Chromecast, Android TV, and DLNA display targets on your local network...',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close',
+                style: TextStyle(color: AppColors.accentPink)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCategoriesModal() {
+    final genres = [
+      'Action & Adventure',
+      'Sci-Fi & Cyberpunk',
+      'Crime & Mystery',
+      'Drama',
+      'Comedy',
+      'Animation & Anime',
+      'Documentary',
+      'Thriller & Suspense',
+      'Fantasy',
+      'Horror',
+    ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surfaceCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const Text(
+                'Browse Categories',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: genres.length,
+                  itemBuilder: (context, index) {
+                    final genre = genres[index];
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        genre,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textMuted,
+                        size: 20,
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppColors.surfaceElevated,
+                            content: Text('Filtering by "$genre"'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AuraScaffold(
       body: Stack(
         children: [
-          // Main Scrollable Content
+          // 1. Full-Bleed Scrollable Content starting beneath status bar
           RefreshIndicator(
             onRefresh: _onRefresh,
             color: AppColors.accentPink,
@@ -99,7 +221,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   return _buildNetflixShimmerSkeleton(context);
                 }
 
-                final heroItems = catalogState.trending.take(5).toList();
+                List<MediaItem> heroItems;
+                if (_selectedFilter == MediaCategoryFilter.movies) {
+                  heroItems = catalogState.trendingMovies.take(5).toList();
+                } else if (_selectedFilter == MediaCategoryFilter.tvShows) {
+                  heroItems = catalogState.trendingSeries.take(5).toList();
+                } else {
+                  heroItems = catalogState.trending.take(5).toList();
+                }
 
                 return BlocBuilder<LibraryBloc, LibraryState>(
                   builder: (context, libraryState) {
@@ -108,99 +237,117 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                             item.progress != null && !item.progress!.isFinished)
                         .toList();
 
-                    return CustomScrollView(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      slivers: [
-                        // 1. Billboard Hero Banner
-                        if (heroItems.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: BillboardHeroBanner(
-                              items: heroItems,
-                              onPlayTap: _navigateToDetail,
-                              onDetailsTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        // 2. Shelf: Continue Watching (16:9 cards)
-                        if (continueWatchingItems.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf<LibraryItem>(
-                              title: 'Continue Watching',
-                              subtitle: 'Resume playback where you left off',
-                              items: continueWatchingItems,
-                              height: 165,
-                              itemSpacing: 14,
-                              itemBuilder: (context, item, index) {
-                                return ContinueWatchingCard(
-                                  item: item,
-                                  onTap: () => _onContinueWatchingTap(item),
-                                );
-                              },
-                            ),
-                          ),
-
-                        // 3. Shelf: Trending Movies (2:3 vertical posters)
-                        if (catalogState.trendingMovies.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf.media(
-                              title: 'Trending Movies',
-                              subtitle: 'Top worldwide cinema releases',
-                              items: catalogState.trendingMovies,
-                              onItemTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        // 4. Shelf: Popular TV Shows (2:3 vertical posters)
-                        if (catalogState.trendingSeries.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf.media(
-                              title: 'Popular TV Shows',
-                              subtitle: 'Binge-worthy series trending today',
-                              items: catalogState.trendingSeries,
-                              onItemTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        // 5. Shelf: Trending Combined & Community Picks
-                        if (catalogState.trending.length > 5)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf.media(
-                              title: 'Community Picks & Trending',
-                              subtitle: 'Aggregated community favorites',
-                              items: catalogState.trending.skip(5).toList(),
-                              onItemTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        // 6. Shelf: Critically Acclaimed Series
-                        if (catalogState.popularSeries.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf.media(
-                              title: 'Critically Acclaimed Series',
-                              subtitle: 'Top rated worldwide television',
-                              items: catalogState.popularSeries,
-                              onItemTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        // 7. Shelf: Popular Blockbusters
-                        if (catalogState.popularMovies.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: HorizontalContentShelf.media(
-                              title: 'Blockbuster Cinema',
-                              subtitle: 'All-time audience blockbusters',
-                              items: catalogState.popularMovies,
-                              onItemTap: _navigateToDetail,
-                            ),
-                          ),
-
-                        const SliverToBoxAdapter(
-                          child: SizedBox(height: 48),
+                    return MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
                         ),
-                      ],
+                        slivers: [
+                          // Billboard Hero Banner
+                          if (heroItems.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: BillboardHeroBanner(
+                                items: heroItems,
+                                onPlayTap: _navigateToDetail,
+                                onDetailsTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Continue Watching Shelf
+                          if (continueWatchingItems.isNotEmpty &&
+                              _selectedFilter == MediaCategoryFilter.all)
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf<LibraryItem>(
+                                title: 'Continue Watching',
+                                subtitle: 'Resume playback where you left off',
+                                items: continueWatchingItems,
+                                height: 165,
+                                itemSpacing: 14,
+                                itemBuilder: (context, item, index) {
+                                  return ContinueWatchingCard(
+                                    item: item,
+                                    onTap: () => _onContinueWatchingTap(item),
+                                  );
+                                },
+                              ),
+                            ),
+
+                          // Trending Movies Shelf
+                          if (catalogState.trendingMovies.isNotEmpty &&
+                              (_selectedFilter == MediaCategoryFilter.all ||
+                                  _selectedFilter ==
+                                      MediaCategoryFilter.movies))
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf.media(
+                                title: 'Trending Movies',
+                                subtitle: 'Top worldwide cinema releases',
+                                items: catalogState.trendingMovies,
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Popular TV Shows Shelf
+                          if (catalogState.trendingSeries.isNotEmpty &&
+                              (_selectedFilter == MediaCategoryFilter.all ||
+                                  _selectedFilter ==
+                                      MediaCategoryFilter.tvShows))
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf.media(
+                                title: 'Popular TV Shows',
+                                subtitle: 'Binge-worthy series trending today',
+                                items: catalogState.trendingSeries,
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Community Picks & Trending Combined
+                          if (catalogState.trending.length > 5 &&
+                              _selectedFilter == MediaCategoryFilter.all)
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf.media(
+                                title: 'Community Picks & Trending',
+                                subtitle: 'Aggregated community favorites',
+                                items: catalogState.trending.skip(5).toList(),
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Critically Acclaimed Series
+                          if (catalogState.popularSeries.isNotEmpty &&
+                              (_selectedFilter == MediaCategoryFilter.all ||
+                                  _selectedFilter ==
+                                      MediaCategoryFilter.tvShows))
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf.media(
+                                title: 'Critically Acclaimed Series',
+                                subtitle: 'Top rated worldwide television',
+                                items: catalogState.popularSeries,
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          // Blockbuster Cinema
+                          if (catalogState.popularMovies.isNotEmpty &&
+                              (_selectedFilter == MediaCategoryFilter.all ||
+                                  _selectedFilter ==
+                                      MediaCategoryFilter.movies))
+                            SliverToBoxAdapter(
+                              child: HorizontalContentShelf.media(
+                                title: 'Blockbuster Cinema',
+                                subtitle: 'All-time audience blockbusters',
+                                items: catalogState.popularMovies,
+                                onItemTap: _navigateToDetail,
+                              ),
+                            ),
+
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 48),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -208,108 +355,228 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           ),
 
-          // Sticky Translucent Netflix Top App Bar
+          // 2. Modern Netflix Top App Bar with Logo, Actions, and Category Subheader
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: _buildStickyTopNavBar(context),
+            child: _buildModernTopNavBar(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStickyTopNavBar(BuildContext context) {
+  Widget _buildModernTopNavBar(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(18, topPadding + 6, 14, 10),
+      padding: EdgeInsets.fromLTRB(16, topPadding + 4, 14, 8),
       decoration: BoxDecoration(
         color:
             AppColors.surfaceBackground.withAlpha((_navOpacity * 255).round()),
         boxShadow: _navOpacity > 0.4
             ? [
                 BoxShadow(
-                  color: Colors.black.withAlpha((0.6 * 255).round()),
+                  color: Colors.black.withAlpha((0.7 * 255).round()),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ]
             : null,
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Aura Brand Wordmark
-          Image.asset(
-            AppAssets.logoWordmark,
-            height: 28,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => Text(
-              'AURA',
-              style: context.auraText.displayHero.copyWith(fontSize: 22),
-            ),
-          ),
-          const Spacer(),
+          // Row 1: Brand Wordmark + Action Icons (Cast, Search, Profile)
+          Row(
+            children: [
+              // Aura Brand Logo Wordmark
+              Image.asset(
+                AppAssets.logoWordmark,
+                height: 26,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Text(
+                  'AURA',
+                  style: context.auraText.displayHero.copyWith(fontSize: 22),
+                ),
+              ),
+              const Spacer(),
 
-          // Search Action Icon
-          IconButton(
-            onPressed: () => context.push('/search'),
-            icon: const Icon(
-              Icons.search_rounded,
-              color: AppColors.textPrimary,
-              size: 24,
-            ),
-            tooltip: 'Search media',
-          ),
+              // Cast Screen Action Icon
+              IconButton(
+                onPressed: _showCastDialog,
+                icon: const Icon(
+                  Icons.cast_rounded,
+                  color: AppColors.textPrimary,
+                  size: 22,
+                ),
+                tooltip: 'Cast screen',
+              ),
 
-          // Profile / Avatar Action
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, authState) {
-              final user = authState.user;
-              return GestureDetector(
-                onTap: () => context.push('/settings'),
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.only(left: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated,
-                    borderRadius: AppTokens.borderRadiusSmall,
-                    border: Border.all(
-                      color: authState.isAuthenticated
-                          ? AppColors.accentPink
-                          : const Color(0xFF333333),
-                      width: 1.5,
+              // Search Action Icon
+              IconButton(
+                onPressed: () => context.push('/search'),
+                icon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textPrimary,
+                  size: 24,
+                ),
+                tooltip: 'Search media',
+              ),
+
+              // Profile Avatar Action
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  final user = authState.user;
+                  return GestureDetector(
+                    onTap: () => context.push('/settings'),
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      margin: const EdgeInsets.only(left: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceElevated,
+                        borderRadius: AppTokens.borderRadiusSmall,
+                        border: Border.all(
+                          color: authState.isAuthenticated
+                              ? AppColors.accentPink
+                              : const Color(0xFF333333),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius:
+                            BorderRadius.circular(AppTokens.radiusSmall - 1),
+                        child: user?.photoUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: user!.photoUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Container(
+                                  color: AppColors.surfaceElevated,
+                                ),
+                                errorWidget: (_, __, ___) => const Icon(
+                                  Icons.person_rounded,
+                                  color: AppColors.textSecondary,
+                                  size: 16,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.textSecondary,
+                                size: 16,
+                              ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Row 2: Category Pills (TV Shows, Movies, Categories ▾)
+          Row(
+            children: [
+              _buildCategoryPill(
+                label: 'TV Shows',
+                isSelected: _selectedFilter == MediaCategoryFilter.tvShows,
+                onTap: () {
+                  setState(() {
+                    _selectedFilter =
+                        _selectedFilter == MediaCategoryFilter.tvShows
+                            ? MediaCategoryFilter.all
+                            : MediaCategoryFilter.tvShows;
+                  });
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildCategoryPill(
+                label: 'Movies',
+                isSelected: _selectedFilter == MediaCategoryFilter.movies,
+                onTap: () {
+                  setState(() {
+                    _selectedFilter =
+                        _selectedFilter == MediaCategoryFilter.movies
+                            ? MediaCategoryFilter.all
+                            : MediaCategoryFilter.movies;
+                  });
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildCategoryPill(
+                label: 'Categories ▾',
+                isSelected: false,
+                onTap: _showCategoriesModal,
+              ),
+              if (_selectedFilter != MediaCategoryFilter.all) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedFilter = MediaCategoryFilter.all;
+                    });
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white12,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.close_rounded,
+                            size: 13, color: AppColors.textSecondary),
+                        SizedBox(width: 3),
+                        Text(
+                          'Clear',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(AppTokens.radiusSmall - 1),
-                    child: user?.photoUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: user!.photoUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: AppColors.surfaceElevated,
-                            ),
-                            errorWidget: (_, __, ___) => const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.textSecondary,
-                              size: 18,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.textSecondary,
-                            size: 18,
-                          ),
-                  ),
                 ),
-              );
-            },
+              ],
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryPill({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.accentPink
+              : Colors.black.withAlpha((0.35 * 255).round()),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.accentPink : const Color(0x33FFFFFF),
+            width: 0.8,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF0E0F12) : AppColors.textPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -322,7 +589,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Hero Shimmer
           Stack(
             children: [
               _buildShimmerBox(
@@ -391,10 +657,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
-          // Shelves Shimmers
           for (int s = 0; s < 2; s++) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),

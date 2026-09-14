@@ -242,6 +242,24 @@ class TmdbApiClient {
     }
   }
 
+  /// Fetches video trailers and teaser clips for a media item
+  Future<List<Map<String, dynamic>>> getVideos(
+      int tmdbId, MediaType type) async {
+    final endpoint = type == MediaType.movie
+        ? '/movie/$tmdbId/videos'
+        : '/tv/$tmdbId/videos';
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        endpoint,
+        queryParameters: _buildParams(),
+      );
+      final results = response.data?['results'] as List<dynamic>? ?? [];
+      return results.whereType<Map<String, dynamic>>().toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   // Fallback showcase data for offline or demo testing
   List<MediaItem> _getSampleTrendingItems() {
     return [

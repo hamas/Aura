@@ -46,6 +46,12 @@ class FakeCatalogRepository implements CatalogRepository {
   @override
   Future<Season> getSeasonDetails(int tmdbSeriesId, int seasonNumber) async =>
       season;
+  @override
+  Future<List<Map<String, dynamic>>> getVideos(
+          int tmdbId, MediaType type) async =>
+      [
+        {'key': 'mock_key', 'site': 'YouTube', 'type': 'Trailer'}
+      ];
 }
 
 class FakeLibraryRepository implements LibraryRepository {
