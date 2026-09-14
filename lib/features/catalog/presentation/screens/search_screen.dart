@@ -163,7 +163,7 @@ class _SearchScreenState extends State<SearchScreen> {
             left: 0,
             right: 0,
             child: AuraAdaptiveAppBar(
-              title: 'Search Catalog',
+              title: 'Search',
               opacity: 1.0,
             ),
           ),
