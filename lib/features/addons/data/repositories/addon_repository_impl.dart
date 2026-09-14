@@ -55,9 +55,8 @@ class AddonRepositoryImpl implements AddonRepository {
       );
 
       final defaults = [defaultCinemeta, defaultOpenSubtitles];
-      for (final addon in defaults) {
-        await installAddon(addon);
-      }
+      final rawJsonList = defaults.map((a) => jsonEncode(a.toJson())).toList();
+      await _prefs.setStringList(_keyInstalledAddons, rawJsonList);
       return defaults;
     }
 

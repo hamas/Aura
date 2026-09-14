@@ -1,7 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:aura/features/addons/data/repositories/addon_repository_impl.dart';
 import 'package:aura/features/debrid/domain/entities/debrid_account.dart';
 import 'package:aura/features/library/domain/entities/library_item.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -54,13 +55,16 @@ void main() {
 
     test(
         'AddonRepositoryImpl provides community default manifests on first launch',
-        () {
-      const defaultManifests = AddonRepositoryImpl.defaultManifestUrls;
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final repo = AddonRepositoryImpl(prefs: prefs);
 
-      expect(defaultManifests,
-          contains('https://v3-cinemeta.strem.io/manifest.json'));
-      expect(defaultManifests,
-          contains('https://opensubtitles-v3.strem.io/manifest.json'));
+      final installed = await repo.getInstalledAddons();
+      expect(installed.length, equals(2));
+      expect(installed.any((a) => a.id == 'com.linvo.cinemeta'), isTrue);
+      expect(
+          installed.any((a) => a.id == 'org.stremio.opensubtitles-v3'), isTrue);
     });
 
     test('LibraryItem serializes and deserializes cleanly with progress', () {
