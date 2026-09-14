@@ -34,7 +34,7 @@ abstract final class AppIcons {
   static const IconData bookmarkAdd = Symbols.bookmark_add_rounded;
   static const IconData bookmarkAdded = Symbols.bookmark_added_rounded;
   static const IconData bookmark = Symbols.bookmark_rounded;
-  static const IconData volumeMute = Symbols.volume_off_rounded;
+  static const IconData volumeMute = Symbols.volume_mute_rounded;
   static const IconData download = Symbols.download_rounded;
   static const IconData downloadDone = Symbols.download_done_rounded;
   static const IconData downloading = Symbols.downloading_rounded;
@@ -79,9 +79,9 @@ abstract final class AppIcons {
   static const IconData movieFilter = Symbols.movie_filter_rounded;
   static const IconData videoLibrary = Symbols.video_library_rounded;
   static const IconData tv = Symbols.tv_rounded;
-  static const IconData volumeUp = Symbols.volume_up_rounded;
+  static const IconData volumeUp = Symbols.volume_down_rounded;
   static const IconData volumeDown = Symbols.volume_down_rounded;
-  static const IconData volumeOff = Symbols.volume_off_rounded;
+  static const IconData volumeOff = Symbols.volume_mute_rounded;
   static const IconData brightnessHigh = Symbols.brightness_high_rounded;
   static const IconData brightnessMedium = Symbols.brightness_medium_rounded;
   static const IconData fullscreen = Symbols.fullscreen_rounded;
