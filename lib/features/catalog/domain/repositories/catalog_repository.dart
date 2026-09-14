@@ -2,8 +2,14 @@ import '../entities/media_item.dart';
 import '../entities/season_episode.dart';
 
 abstract class CatalogRepository {
-  /// Fetches trending movies and series for home hero carousel and feeds.
+  /// Fetches trending movies and series combined for home hero carousel and feeds.
   Future<List<MediaItem>> getTrending({String timeWindow = 'day'});
+
+  /// Fetches trending movies.
+  Future<List<MediaItem>> getTrendingMovies({String timeWindow = 'day'});
+
+  /// Fetches trending TV shows.
+  Future<List<MediaItem>> getTrendingSeries({String timeWindow = 'day'});
 
   /// Fetches popular movies.
   Future<List<MediaItem>> getPopularMovies({int page = 1});

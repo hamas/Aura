@@ -20,6 +20,8 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     try {
       final results = await Future.wait([
         _catalogRepository.getTrending(),
+        _catalogRepository.getTrendingMovies(),
+        _catalogRepository.getTrendingSeries(),
         _catalogRepository.getPopularMovies(),
         _catalogRepository.getPopularSeries(),
       ]);
@@ -27,8 +29,10 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       emit(state.copyWith(
         status: CatalogStatus.success,
         trending: results[0],
-        popularMovies: results[1],
-        popularSeries: results[2],
+        trendingMovies: results[1],
+        trendingSeries: results[2],
+        popularMovies: results[3],
+        popularSeries: results[4],
       ));
     } catch (e) {
       emit(state.copyWith(

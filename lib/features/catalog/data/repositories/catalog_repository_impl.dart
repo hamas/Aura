@@ -15,6 +15,16 @@ class CatalogRepositoryImpl implements CatalogRepository {
   }
 
   @override
+  Future<List<MediaItem>> getTrendingMovies({String timeWindow = 'day'}) {
+    return _apiClient.getTrendingMovies(timeWindow: timeWindow);
+  }
+
+  @override
+  Future<List<MediaItem>> getTrendingSeries({String timeWindow = 'day'}) {
+    return _apiClient.getTrendingSeries(timeWindow: timeWindow);
+  }
+
+  @override
   Future<List<MediaItem>> getPopularMovies({int page = 1}) {
     return _apiClient.getPopularMovies(page: page);
   }

@@ -6,6 +6,8 @@ enum CatalogStatus { initial, loading, success, failure }
 class CatalogState extends Equatable {
   final CatalogStatus status;
   final List<MediaItem> trending;
+  final List<MediaItem> trendingMovies;
+  final List<MediaItem> trendingSeries;
   final List<MediaItem> popularMovies;
   final List<MediaItem> popularSeries;
   final List<MediaItem> searchResults;
@@ -17,6 +19,8 @@ class CatalogState extends Equatable {
   const CatalogState({
     this.status = CatalogStatus.initial,
     this.trending = const [],
+    this.trendingMovies = const [],
+    this.trendingSeries = const [],
     this.popularMovies = const [],
     this.popularSeries = const [],
     this.searchResults = const [],
@@ -29,6 +33,8 @@ class CatalogState extends Equatable {
   CatalogState copyWith({
     CatalogStatus? status,
     List<MediaItem>? trending,
+    List<MediaItem>? trendingMovies,
+    List<MediaItem>? trendingSeries,
     List<MediaItem>? popularMovies,
     List<MediaItem>? popularSeries,
     List<MediaItem>? searchResults,
@@ -40,6 +46,8 @@ class CatalogState extends Equatable {
     return CatalogState(
       status: status ?? this.status,
       trending: trending ?? this.trending,
+      trendingMovies: trendingMovies ?? this.trendingMovies,
+      trendingSeries: trendingSeries ?? this.trendingSeries,
       popularMovies: popularMovies ?? this.popularMovies,
       popularSeries: popularSeries ?? this.popularSeries,
       searchResults: searchResults ?? this.searchResults,
@@ -54,6 +62,8 @@ class CatalogState extends Equatable {
   List<Object?> get props => [
         status,
         trending,
+        trendingMovies,
+        trendingSeries,
         popularMovies,
         popularSeries,
         searchResults,
