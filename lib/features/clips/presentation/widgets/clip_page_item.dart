@@ -70,7 +70,8 @@ class _ClipPageItemState extends State<ClipPageItem>
   }
 
   void _navigateToDetails() {
-    context.push('/details', extra: widget.clip.mediaItem);
+    final item = widget.clip.mediaItem;
+    context.push('/detail/${item.type.name}/${item.id}', extra: item);
   }
 
   @override

@@ -146,13 +146,14 @@ class AppRouter {
         path: '/detail/:type/:id',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
-          final typeString = state.pathParameters['type'] ?? 'movie';
+          final rawType = (state.pathParameters['type'] ?? 'movie').toLowerCase();
           final idString = state.pathParameters['id'] ?? '0';
           final id = int.tryParse(idString) ?? 0;
-          final type = typeString == 'series' || typeString == 'tv'
-              ? MediaType.series
-              : MediaType.movie;
           final initialItem = state.extra as MediaItem?;
+          final type = initialItem?.type ??
+              (rawType.contains('series') || rawType.contains('tv')
+                  ? MediaType.series
+                  : MediaType.movie);
 
           return NoTransitionPage(
             key: state.pageKey,

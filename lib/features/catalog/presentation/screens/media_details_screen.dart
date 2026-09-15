@@ -351,11 +351,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {
           final isSelectedMatching = state.selectedMedia != null &&
-              state.selectedMedia!.id == widget.id &&
-              state.selectedMedia!.type == widget.type;
+              state.selectedMedia!.id == widget.id;
           final isInitialMatching = widget.initialItem != null &&
-              widget.initialItem!.id == widget.id &&
-              widget.initialItem!.type == widget.type;
+              widget.initialItem!.id == widget.id;
 
           final item = isSelectedMatching
               ? state.selectedMedia

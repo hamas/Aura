@@ -149,8 +149,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                     fit: BoxFit.cover,
                     clipBehavior: Clip.hardEdge,
                     child: SizedBox(
-                      width: 16,
-                      height: 9,
+                      width: 1280,
+                      height: 720,
                       child: IgnorePointer(
                         child: YoutubePlayer(
                           controller: _youtubeController!,
