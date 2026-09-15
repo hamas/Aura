@@ -6,6 +6,7 @@ class DualSubtitleOverlay extends StatelessWidget {
   final List<SubtitleCue> secondaryCues;
   final Duration currentPosition;
   final double offsetSeconds;
+  final double fontScale;
 
   const DualSubtitleOverlay({
     super.key,
@@ -13,6 +14,7 @@ class DualSubtitleOverlay extends StatelessWidget {
     this.secondaryCues = const [],
     required this.currentPosition,
     this.offsetSeconds = 0.0,
+    this.fontScale = 1.0,
   });
 
   @override
@@ -47,6 +49,7 @@ class DualSubtitleOverlay extends StatelessWidget {
                   textColor: const Color(0xFFE2C4FF),
                   borderColor: const Color(0x7FB877FF),
                   backgroundColor: const Color(0xA6000000),
+                  fontSize: 14 * fontScale,
                 );
               }).toList(),
             ),
@@ -66,6 +69,7 @@ class DualSubtitleOverlay extends StatelessWidget {
                   borderColor: Colors.transparent,
                   backgroundColor: const Color(0xBF000000),
                   isPrimary: true,
+                  fontSize: 16 * fontScale,
                 );
               }).toList(),
             ),
@@ -81,6 +85,7 @@ class _SubtitleBadge extends StatelessWidget {
   final Color borderColor;
   final Color backgroundColor;
   final bool isPrimary;
+  final double fontSize;
 
   const _SubtitleBadge({
     required this.text,
@@ -88,6 +93,7 @@ class _SubtitleBadge extends StatelessWidget {
     required this.borderColor,
     required this.backgroundColor,
     this.isPrimary = false,
+    required this.fontSize,
   });
 
   @override
@@ -114,7 +120,7 @@ class _SubtitleBadge extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           color: textColor,
-          fontSize: isPrimary ? 16 : 14,
+          fontSize: fontSize,
           fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
           height: 1.3,
         ),

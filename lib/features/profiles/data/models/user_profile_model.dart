@@ -10,6 +10,12 @@ class UserProfileModel extends UserProfile {
     super.isPrimary = false,
     super.isKids = false,
     super.maxAgeRating = 'NC-17',
+    super.displayLanguage = 'English',
+    super.audioLanguage = 'English',
+    super.subtitleLanguage = 'English',
+    super.subtitleSize = '100%',
+    super.autoPlayNext = true,
+    super.autoPlayPreviews = true,
     required super.createdAt,
   });
 
@@ -24,6 +30,12 @@ class UserProfileModel extends UserProfile {
       isPrimary: json['isPrimary'] as bool? ?? false,
       isKids: json['isKids'] as bool? ?? false,
       maxAgeRating: json['maxAgeRating'] as String? ?? 'NC-17',
+      displayLanguage: json['displayLanguage'] as String? ?? 'English',
+      audioLanguage: json['audioLanguage'] as String? ?? 'English',
+      subtitleLanguage: json['subtitleLanguage'] as String? ?? 'English',
+      subtitleSize: json['subtitleSize'] as String? ?? '100%',
+      autoPlayNext: json['autoPlayNext'] as bool? ?? true,
+      autoPlayPreviews: json['autoPlayPreviews'] as bool? ?? true,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
@@ -40,6 +52,12 @@ class UserProfileModel extends UserProfile {
       'isPrimary': isPrimary,
       'isKids': isKids,
       'maxAgeRating': maxAgeRating,
+      'displayLanguage': displayLanguage,
+      'audioLanguage': audioLanguage,
+      'subtitleLanguage': subtitleLanguage,
+      'subtitleSize': subtitleSize,
+      'autoPlayNext': autoPlayNext,
+      'autoPlayPreviews': autoPlayPreviews,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -54,6 +72,12 @@ class UserProfileModel extends UserProfile {
       isPrimary: entity.isPrimary,
       isKids: entity.isKids,
       maxAgeRating: entity.maxAgeRating,
+      displayLanguage: entity.displayLanguage,
+      audioLanguage: entity.audioLanguage,
+      subtitleLanguage: entity.subtitleLanguage,
+      subtitleSize: entity.subtitleSize,
+      autoPlayNext: entity.autoPlayNext,
+      autoPlayPreviews: entity.autoPlayPreviews,
       createdAt: entity.createdAt,
     );
   }

@@ -102,4 +102,5 @@ abstract final class AppIcons {
   static const IconData gavel = Symbols.gavel_rounded;
   static const IconData shield = Symbols.shield_rounded;
   static const IconData group = Symbols.group_rounded;
+  static const IconData language = Symbols.language_rounded;
 }

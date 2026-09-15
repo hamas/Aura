@@ -11,6 +11,12 @@ class UserProfile extends Equatable {
   final bool isPrimary;
   final bool isKids;
   final String maxAgeRating;
+  final String displayLanguage;
+  final String audioLanguage;
+  final String subtitleLanguage;
+  final String subtitleSize;
+  final bool autoPlayNext;
+  final bool autoPlayPreviews;
   final DateTime createdAt;
 
   const UserProfile({
@@ -22,6 +28,12 @@ class UserProfile extends Equatable {
     this.isPrimary = false,
     this.isKids = false,
     this.maxAgeRating = 'NC-17',
+    this.displayLanguage = 'English',
+    this.audioLanguage = 'English',
+    this.subtitleLanguage = 'English',
+    this.subtitleSize = '100%',
+    this.autoPlayNext = true,
+    this.autoPlayPreviews = true,
     required this.createdAt,
   });
 
@@ -58,6 +70,12 @@ class UserProfile extends Equatable {
     bool? isPrimary,
     bool? isKids,
     String? maxAgeRating,
+    String? displayLanguage,
+    String? audioLanguage,
+    String? subtitleLanguage,
+    String? subtitleSize,
+    bool? autoPlayNext,
+    bool? autoPlayPreviews,
     DateTime? createdAt,
   }) {
     return UserProfile(
@@ -69,6 +87,12 @@ class UserProfile extends Equatable {
       isPrimary: isPrimary ?? this.isPrimary,
       isKids: isKids ?? this.isKids,
       maxAgeRating: maxAgeRating ?? this.maxAgeRating,
+      displayLanguage: displayLanguage ?? this.displayLanguage,
+      audioLanguage: audioLanguage ?? this.audioLanguage,
+      subtitleLanguage: subtitleLanguage ?? this.subtitleLanguage,
+      subtitleSize: subtitleSize ?? this.subtitleSize,
+      autoPlayNext: autoPlayNext ?? this.autoPlayNext,
+      autoPlayPreviews: autoPlayPreviews ?? this.autoPlayPreviews,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -83,6 +107,12 @@ class UserProfile extends Equatable {
         isPrimary,
         isKids,
         maxAgeRating,
+        displayLanguage,
+        audioLanguage,
+        subtitleLanguage,
+        subtitleSize,
+        autoPlayNext,
+        autoPlayPreviews,
         createdAt,
       ];
 }

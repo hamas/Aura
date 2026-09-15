@@ -17,7 +17,7 @@ import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
 import '../../../profiles/data/services/profile_manager.dart';
 import '../../../profiles/domain/entities/user_profile.dart';
-import '../../../profiles/presentation/widgets/components/profile_editor_modal.dart';
+import '../../../profiles/presentation/screens/edit_profile_sub_page.dart';
 import '../widgets/components/settings_debrid_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -34,6 +34,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String? _currentSubPage;
+  UserProfile? _editingProfile;
+  bool _isCreatingNewProfile = false;
 
   // Settings State
   String _uiLanguage = 'English';
@@ -157,11 +159,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
 
+    String getAppBarTitle() {
+      if (_currentSubPage == 'EditProfile') {
+        return _isCreatingNewProfile ? 'Add Profile' : 'Edit Profile';
+      }
+      return _currentSubPage ?? 'Settings';
+    }
+
     return PopScope(
       canPop: _currentSubPage == null,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && _currentSubPage != null) {
-          setState(() => _currentSubPage = null);
+          setState(() {
+            if (_currentSubPage == 'EditProfile') {
+              _currentSubPage = 'Profile';
+              _editingProfile = null;
+              _isCreatingNewProfile = false;
+            } else {
+              _currentSubPage = null;
+            }
+          });
         }
       },
       child: Scaffold(
@@ -186,10 +203,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               left: 0,
               right: 0,
               child: AuraAdaptiveAppBar(
-                title: _currentSubPage ?? 'Settings',
+                title: getAppBarTitle(),
                 opacity: 1.0,
                 onBackPressed: _currentSubPage != null
-                    ? () => setState(() => _currentSubPage = null)
+                    ? () {
+                        setState(() {
+                          if (_currentSubPage == 'EditProfile') {
+                            _currentSubPage = 'Profile';
+                            _editingProfile = null;
+                            _isCreatingNewProfile = false;
+                          } else {
+                            _currentSubPage = null;
+                          }
+                        });
+                      }
                     : null,
               ),
             ),
@@ -485,6 +512,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     switch (_currentSubPage) {
       case 'Profile':
         return _buildProfileSubPage();
+      case 'EditProfile':
+        return _profileManager != null
+            ? EditProfileSubPage(
+                initialProfile: _editingProfile,
+                profileManager: _profileManager!,
+                onSaved: _reloadProfiles,
+                onBack: () {
+                  setState(() {
+                    _currentSubPage = 'Profile';
+                    _editingProfile = null;
+                    _isCreatingNewProfile = false;
+                  });
+                },
+              )
+            : const SizedBox.shrink();
       case 'Interface':
         return _buildInterfaceSubPage();
       case 'Player':
@@ -1164,17 +1206,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _openProfileEditorModal([UserProfile? profile]) {
     if (_profileManager == null) return;
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => ProfileEditorModal(
-        initialProfile: profile,
-        profileManager: _profileManager!,
-        onSaved: _reloadProfiles,
-      ),
-    );
+    setState(() {
+      _editingProfile = profile;
+      _isCreatingNewProfile = profile == null;
+      _currentSubPage = 'EditProfile';
+    });
   }
 
   List<Color> _getPaletteColors(String paletteId) {
