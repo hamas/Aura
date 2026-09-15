@@ -42,6 +42,7 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
   void _openProfileEditor([UserProfile? profile]) {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => ProfileEditorModal(

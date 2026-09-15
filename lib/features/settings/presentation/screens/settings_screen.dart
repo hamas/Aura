@@ -651,6 +651,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onPressed: () {
                           showModalBottomSheet<void>(
                             context: context,
+                            useRootNavigator: true,
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
                             builder: (context) => HouseholdPasswordSheet(
@@ -1165,6 +1166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_profileManager == null) return;
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => ProfileEditorModal(

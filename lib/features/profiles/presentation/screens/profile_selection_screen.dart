@@ -69,6 +69,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
     if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => ProfileEditorModal(
