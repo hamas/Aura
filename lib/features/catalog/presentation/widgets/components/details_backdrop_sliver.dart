@@ -71,40 +71,46 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
 
     if (!mounted) return;
 
-    if (result.hasStream) {
-      final player = Player(
-        configuration: const PlayerConfiguration(
-          logLevel: MPVLogLevel.warn,
-        ),
-      );
-      final controller = VideoController(
-        player,
-        configuration: const VideoControllerConfiguration(
-          enableHardwareAcceleration: true,
-        ),
-      );
+    if (result.streamUrl != null && result.streamUrl!.isNotEmpty) {
+      try {
+        final player = Player(
+          configuration: const PlayerConfiguration(
+            logLevel: MPVLogLevel.warn,
+          ),
+        );
+        final controller = VideoController(
+          player,
+          configuration: const VideoControllerConfiguration(
+            enableHardwareAcceleration: true,
+          ),
+        );
 
-      await player.setVolume(0);
-      await player.setPlaylistMode(PlaylistMode.loop);
-      await player.open(Media(result.streamUrl!));
+        await player.setVolume(0);
+        await player.setPlaylistMode(PlaylistMode.loop);
+        await player.open(Media(result.streamUrl!));
 
-      if (mounted) {
-        setState(() {
-          _player = player;
-          _videoController = controller;
-          _trailerResult = result;
-          _isMuted = true;
-          _isPlaying = true;
-        });
-      } else {
-        await player.dispose();
+        if (mounted) {
+          setState(() {
+            _player = player;
+            _videoController = controller;
+            _trailerResult = result;
+            _isMuted = true;
+            _isPlaying = true;
+          });
+        } else {
+          await player.dispose();
+        }
+        return;
+      } catch (e) {
+        debugPrint('[DetailsBackdropSliver] Error initializing player stream: $e');
       }
-    } else {
-      if (mounted) {
-        setState(() {
-          _trailerResult = result;
-        });
-      }
+    }
+
+    // Immediately trigger AmbientBackdropFallback if no playable direct stream URL exists or open failed
+    if (mounted) {
+      setState(() {
+        _trailerResult = result;
+      });
     }
   }
 

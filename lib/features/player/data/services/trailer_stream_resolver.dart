@@ -1,22 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-enum TrailerSource { youtubeDirect, itunes, trakt, none }
+enum TrailerSource { youtubeDirect, itunes, youtubeEmbed, trakt, none }
 
 class TrailerStreamResult {
   final String? streamUrl;
   final TrailerSource source;
   final String? title;
+  final String? embedUrl;
 
   const TrailerStreamResult({
     this.streamUrl,
     required this.source,
     this.title,
+    this.embedUrl,
   });
 
-  bool get hasStream => streamUrl != null && streamUrl!.isNotEmpty;
+  bool get hasStream => (streamUrl != null && streamUrl!.isNotEmpty) || (embedUrl != null && embedUrl!.isNotEmpty);
 }
 
 /// Pure Dart multi-tiered trailer stream resolution pipeline for Aura.
@@ -33,30 +36,50 @@ class TrailerStreamResolver {
     String? tmdbTrailerUrl,
     String? mediaType,
   }) async {
+    final videoId = tmdbTrailerUrl != null ? YoutubeExplodeUtil.extractVideoId(tmdbTrailerUrl) : null;
+    debugPrint('[TrailerResolver] Resolving for: $title (${year ?? "N/A"}), TMDB key: ${videoId ?? "N/A"}');
+
     // Tier 1: YouTube Direct Stream Extraction via YoutubeExplode
-    if (tmdbTrailerUrl != null && tmdbTrailerUrl.isNotEmpty) {
-      final videoId = YoutubeExplodeUtil.extractVideoId(tmdbTrailerUrl);
-      if (videoId != null && videoId.isNotEmpty) {
+    if (videoId != null && videoId.isNotEmpty) {
+      try {
         final ytResult = await _resolveYouTubeDirectStream(videoId);
-        if (ytResult.hasStream) return ytResult;
+        if (ytResult.hasStream) {
+          debugPrint('[TrailerResolver] Tier 1 Success (YouTube Direct): ${ytResult.streamUrl}');
+          return ytResult;
+        }
+      } catch (e, stack) {
+        debugPrint('[TrailerResolver] Tier 1 Exception (YouTube Direct): $e\n$stack');
       }
     }
 
     // Tier 2: iTunes Search API Fallback
-    final itunesResult = await _resolveITunesPreviewStream(
-      title: title,
-      year: year,
-      mediaType: mediaType,
-    );
-    if (itunesResult.hasStream) return itunesResult;
+    try {
+      final itunesResult = await _resolveITunesPreviewStream(
+        title: title,
+        year: year,
+        mediaType: mediaType,
+      );
+      if (itunesResult.hasStream) {
+        debugPrint('[TrailerResolver] Tier 2 Success (iTunes Direct MP4): ${itunesResult.streamUrl}');
+        return itunesResult;
+      }
+    } catch (e) {
+      debugPrint('[TrailerResolver] Tier 2 Exception (iTunes): $e');
+    }
 
-    // Tier 3: Trakt API Fallback
-    final traktResult = await _resolveTraktTrailerStream(
-      title: title,
-      year: year,
-    );
-    if (traktResult.hasStream) return traktResult;
+    // Tier 3: Privacy-enhanced clean Youtube embed fallback URL when direct scrapers are 403-blocked
+    if (videoId != null && videoId.isNotEmpty) {
+      final cleanEmbedUrl =
+          'https://www.youtube-nocookie.com/embed/$videoId?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&mute=1';
+      debugPrint('[TrailerResolver] Tier 3 Fallback (Clean YouTube Embed): $cleanEmbedUrl');
+      return TrailerStreamResult(
+        embedUrl: cleanEmbedUrl,
+        source: TrailerSource.youtubeEmbed,
+        title: title,
+      );
+    }
 
+    debugPrint('[TrailerResolver] All resolution tiers exhausted. Triggering AmbientBackdropFallback.');
     return const TrailerStreamResult(source: TrailerSource.none);
   }
 
@@ -65,7 +88,7 @@ class TrailerStreamResolver {
     try {
       final manifest = await yt.videos.streamsClient
           .getManifest(videoId)
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 4));
 
       // Prioritize Muxed (video + audio in single stream) or MP4 video streams
       final muxedStreams = manifest.muxed.sortByVideoQuality();
@@ -88,8 +111,8 @@ class TrailerStreamResolver {
           source: TrailerSource.youtubeDirect,
         );
       }
-    } catch (_) {
-      // Fall through gracefully on timeout, age-restriction, or private video exception
+    } catch (e) {
+      debugPrint('[TrailerResolver] YoutubeExplode error for ID $videoId: $e');
     } finally {
       yt.close();
     }
@@ -101,16 +124,46 @@ class TrailerStreamResolver {
     String? year,
     String? mediaType,
   }) async {
+    final sanitizedTitle = _sanitizeTitle(title);
+    final entity = (mediaType == 'series' || mediaType == 'tv') ? 'tvShow' : 'movie';
+
+    final result = await _executeITunesSearch(
+      searchQuery: sanitizedTitle,
+      entity: entity,
+      year: year,
+    );
+
+    if (result.hasStream) return result;
+
+    // Retry once with primary title before colon/dash if full title returned no results
+    if (sanitizedTitle.contains(':') || sanitizedTitle.contains(' - ')) {
+      final primaryTitle = sanitizedTitle.split(RegExp(r'[:\-]')).first.trim();
+      if (primaryTitle.isNotEmpty && primaryTitle != sanitizedTitle) {
+        debugPrint('[TrailerResolver] Retrying iTunes Search with primary title: $primaryTitle');
+        final retryResult = await _executeITunesSearch(
+          searchQuery: primaryTitle,
+          entity: entity,
+          year: year,
+        );
+        if (retryResult.hasStream) return retryResult;
+      }
+    }
+
+    return const TrailerStreamResult(source: TrailerSource.none);
+  }
+
+  Future<TrailerStreamResult> _executeITunesSearch({
+    required String searchQuery,
+    required String entity,
+    String? year,
+  }) async {
     try {
-      final entity = (mediaType == 'series' || mediaType == 'tv')
-          ? 'tvShow'
-          : 'movie';
-      final encodedTitle = Uri.encodeComponent(title);
+      final encodedTitle = Uri.encodeComponent(searchQuery);
       final uri = Uri.parse(
           'https://itunes.apple.com/search?term=$encodedTitle&entity=$entity&limit=5');
 
       final response =
-          await _httpClient.get(uri).timeout(const Duration(seconds: 5));
+          await _httpClient.get(uri).timeout(const Duration(seconds: 4));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final results = data['results'] as List<dynamic>? ?? [];
@@ -136,6 +189,7 @@ class TrailerStreamResolver {
             }
           }
         }
+
         // Fallback: Return first previewUrl if year filter was strict
         for (final item in results) {
           if (item is Map<String, dynamic> && item['previewUrl'] != null) {
@@ -147,18 +201,18 @@ class TrailerStreamResolver {
           }
         }
       }
-    } catch (_) {
-      // Fall through gracefully
+    } catch (e) {
+      debugPrint('[TrailerResolver] iTunes Search HTTP error: $e');
     }
     return const TrailerStreamResult(source: TrailerSource.none);
   }
 
-  Future<TrailerStreamResult> _resolveTraktTrailerStream({
-    required String title,
-    String? year,
-  }) async {
-    // Tertiary fallback reserved for Trakt community trailer stream resolution
-    return const TrailerStreamResult(source: TrailerSource.none);
+  String _sanitizeTitle(String title) {
+    // Remove year brackets/parentheses e.g., (2024) or [2024]
+    var cleaned = title.replaceAll(RegExp(r'\s*[\(\[\{]\d{4}[\)\]\}]'), '');
+    // Replace special punctuation while preserving letters, numbers, spaces, colons, hyphens
+    cleaned = cleaned.replaceAll(RegExp(r'[^\w\s\:\-]'), '');
+    return cleaned.trim();
   }
 }
 

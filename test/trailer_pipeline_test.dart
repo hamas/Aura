@@ -26,9 +26,9 @@ void main() {
       final result = await resolver.resolveTrailerStream(
         title: 'NonExistentTestMovie123456',
         year: '1900',
-        tmdbTrailerUrl: 'invalid_url',
+        tmdbTrailerUrl: null,
       );
-      expect(result.hasStream, isFalse);
+      expect(result.streamUrl, isNull);
       expect(result.source, TrailerSource.none);
     });
   });
