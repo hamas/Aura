@@ -303,6 +303,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 32),
+        Center(
+          child: Text(
+            'Developed by Hamas',
+            style: TextStyle(
+              fontSize: 10.0,
+              color: Colors.white.withValues(alpha: 0.5),
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
       ],
     );
   }
