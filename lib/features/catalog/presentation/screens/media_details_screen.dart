@@ -450,7 +450,20 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // 1. Title
+                                    // 1. Year (Top)
+                                    Text(
+                                      item.releaseYear.isNotEmpty
+                                          ? item.releaseYear
+                                          : 'N/A',
+                                      style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+
+                                    // 2. Title
                                     Text(
                                       item.title,
                                       maxLines: 2,
@@ -462,7 +475,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                     ),
                                     const SizedBox(height: 3),
 
-                                    // 2. Genre Under Title
+                                    // 3. Genre
                                     Text(
                                       item.genres.isNotEmpty
                                           ? item.genres.map((g) => g.name).join(' • ')
@@ -477,22 +490,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const SizedBox(height: 5),
 
-                                    // 3. Release Year
-                                    Text(
-                                      item.releaseYear.isNotEmpty
-                                          ? item.releaseYear
-                                          : 'N/A',
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-
-                                    // 4. Ratings Row right above button under genre & release year
+                                    // 4. Rating
                                     Row(
                                       children: [
                                         Container(
@@ -551,7 +551,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                     ),
                                     const SizedBox(height: 8),
 
-                                    // 5. Small Watch & Download Button Row
+                                    // 5. Buttons
                                     DetailsActionButtons(
                                       item: item,
                                       isInWatchlist: isInWatchlist,
