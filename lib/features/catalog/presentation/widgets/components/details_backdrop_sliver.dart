@@ -193,7 +193,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
       actions: [
         IconButton(
           icon: AuraIcon(
-            widget.isInWatchlist ? AppIcons.bookmark : AppIcons.bookmark,
+            AppIcons.favorite,
+            fill: widget.isInWatchlist ? 1.0 : 0.0,
             color:
                 widget.isInWatchlist ? AppColors.accentPink : AppColors.textPrimary,
           ),
