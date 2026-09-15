@@ -42,7 +42,7 @@ class ProfileManager {
 
     final List<dynamic> list = jsonDecode(rawJson) as List<dynamic>;
     return list
-        .map((item) => UserProfileModel.fromJson(item as Map<String, dynamic>))
+        .map<UserProfile>((item) => UserProfileModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
 

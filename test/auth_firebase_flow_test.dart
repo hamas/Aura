@@ -30,6 +30,26 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserProfile> signInWithHouseholdPassword({
+    required String email,
+    required String password,
+  }) async {
+    currentUser = UserProfile(
+      id: 'household_uid_12345',
+      email: email,
+      displayName: 'Household User',
+      createdAt: DateTime.now(),
+    );
+    return currentUser!;
+  }
+
+  @override
+  Future<void> setOrUpdateHouseholdPassword(String newPassword) async {}
+
+  @override
+  Future<bool> isHouseholdPasswordLinked() async => true;
+
+  @override
   Future<void> signOut() async {
     currentUser = null;
   }

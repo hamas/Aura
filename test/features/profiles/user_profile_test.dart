@@ -27,7 +27,7 @@ void main() {
     });
 
     test('PIN hashing and verification', () {
-      final pin = '1234';
+      const pin = '1234';
       final hashed = UserProfile.hashPin(pin);
 
       final profile = UserProfile(

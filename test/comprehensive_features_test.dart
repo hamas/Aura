@@ -7,6 +7,28 @@ import 'package:aura/features/trakt/data/services/trakt_scrobble_service.dart';
 import 'package:aura/features/player/audio/audio_enhancer_service.dart';
 import 'package:aura/features/profiles/presentation/screens/profile_selection_screen.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:aura/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:aura/features/auth/domain/repositories/auth_repository.dart';
+import 'package:aura/features/auth/domain/entities/user_profile.dart' as auth_entity;
+
+class _MockAuthRepository implements AuthRepository {
+  @override
+  Stream<auth_entity.UserProfile?> get authStateChanges => Stream.value(null);
+  @override
+  Future<auth_entity.UserProfile?> getCurrentUser() async => null;
+  @override
+  Future<auth_entity.UserProfile> signInWithGoogle() async => throw UnimplementedError();
+  @override
+  Future<auth_entity.UserProfile> signInWithHouseholdPassword({required String email, required String password}) async => throw UnimplementedError();
+  @override
+  Future<void> setOrUpdateHouseholdPassword(String newPassword) async {}
+  @override
+  Future<bool> isHouseholdPasswordLinked() async => false;
+  @override
+  Future<void> signOut() async {}
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -34,16 +56,16 @@ void main() {
       expect(KidsCertification.isAllowed('R'), isFalse);
     });
 
-    test('ProfileManager enforces max 4 profiles per household', () async {
+    test('ProfileManager enforces max 3 profiles per household', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final manager = ProfileManager(prefs);
 
-      // Default profile is created
+      // Default profile is created ("Profile 1")
       expect(manager.getProfiles().length, equals(1));
 
-      // Add 3 more profiles (Total 4)
-      for (int i = 2; i <= 4; i++) {
+      // Add 2 more profiles (Total 3)
+      for (int i = 2; i <= 3; i++) {
         final success = await manager.saveProfile(UserProfile(
           id: 'p$i',
           name: 'User $i',
@@ -53,15 +75,15 @@ void main() {
         expect(success, isTrue);
       }
 
-      // 5th profile should fail
+      // 4th profile should fail
       final overflowSuccess = await manager.saveProfile(UserProfile(
-        id: 'p5',
-        name: 'User 5',
-        avatarPath: 'avatar_5.png',
+        id: 'p4',
+        name: 'User 4',
+        avatarPath: 'avatar_4.png',
         createdAt: DateTime.now(),
       ));
       expect(overflowSuccess, isFalse);
-      expect(manager.getProfiles().length, equals(4));
+      expect(manager.getProfiles().length, equals(3));
     });
   });
 
@@ -91,16 +113,19 @@ void main() {
         (tester) async {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(
-        MaterialApp(
-          home: ProfileSelectionScreen(
-            onProfileSelected: () {},
+        BlocProvider<AuthBloc>(
+          create: (_) => AuthBloc(authRepository: _MockAuthRepository()),
+          child: MaterialApp(
+            home: ProfileSelectionScreen(
+              onProfileSelected: () {},
+            ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.text("Who's watching?"), findsOneWidget);
-      expect(find.text('Primary Account'), findsOneWidget);
+      expect(find.text('Profile 1'), findsOneWidget);
     });
   });
 }
