@@ -1,9 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:aura/core/constants/api_constants.dart';
-import 'package:aura/core/network/youtube_trailer_resolver.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
@@ -29,57 +27,45 @@ class DetailsBackdropSliver extends StatefulWidget {
 
 class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
   bool _isMuted = true;
-  Player? _player;
-  VideoController? _controller;
-  bool _isVideoInitialized = false;
+  YoutubePlayerController? _youtubeController;
 
   @override
   void initState() {
     super.initState();
-    _initTrailerPlayer();
+    _initYoutubePlayer();
   }
 
   @override
   void didUpdateWidget(DetailsBackdropSliver oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.item.trailerUrl != widget.item.trailerUrl) {
-      _initTrailerPlayer();
+      _initYoutubePlayer();
     }
   }
 
-  Future<void> _initTrailerPlayer() async {
+  void _initYoutubePlayer() {
     final rawTrailerUrl = widget.item.trailerUrl;
     if (rawTrailerUrl == null || rawTrailerUrl.isEmpty) {
       return;
     }
 
-    try {
-      final directStreamUrl =
-          await YouTubeTrailerResolver.resolveDirectStreamUrl(rawTrailerUrl);
-      final urlToPlay = directStreamUrl ?? rawTrailerUrl;
+    final videoId =
+        YoutubePlayerController.convertUrlToId(rawTrailerUrl) ?? rawTrailerUrl;
+    if (videoId.isEmpty) return;
 
-      _player ??= Player(
-        configuration: const PlayerConfiguration(
-          logLevel: MPVLogLevel.error,
-        ),
-      );
-      _controller ??= VideoController(_player!);
+    _youtubeController = YoutubePlayerController.fromVideoId(
+      videoId: videoId,
+      autoPlay: true,
+      params: const YoutubePlayerParams(
+        mute: true,
+        showControls: false,
+        showFullscreenButton: false,
+        loop: true,
+      ),
+    );
 
-      await _player!.setVolume(_isMuted ? 0.0 : 100.0);
-      await _player!.setPlaylistMode(PlaylistMode.loop);
-      await _player!.open(Media(urlToPlay));
-
-      if (mounted) {
-        setState(() {
-          _isVideoInitialized = true;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isVideoInitialized = false;
-        });
-      }
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -87,12 +73,16 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     setState(() {
       _isMuted = !_isMuted;
     });
-    _player?.setVolume(_isMuted ? 0.0 : 100.0);
+    if (_isMuted) {
+      _youtubeController?.mute();
+    } else {
+      _youtubeController?.unMute();
+    }
   }
 
   @override
   void dispose() {
-    _player?.dispose();
+    _youtubeController?.close();
     super.dispose();
   }
 
@@ -121,13 +111,11 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active Trailer Video Player Layer
-            if (_isVideoInitialized && _controller != null)
+            // 2. Active YouTube Trailer Player Layer
+            if (_youtubeController != null)
               Positioned.fill(
-                child: Video(
-                  controller: _controller!,
-                  fit: BoxFit.cover,
-                  controls: (_) => const SizedBox.shrink(),
+                child: YoutubePlayer(
+                  controller: _youtubeController!,
                 ),
               ),
 
