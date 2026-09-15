@@ -405,30 +405,34 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             }
           }
 
-          final itemGenreIds = item.genres.map((g) => g.id).toSet();
+          final itemGenreIds = item.genres.map((g) => g.id).where((id) => id > 0).toSet();
+          final itemGenreNames = item.genres.map((g) => g.name.trim().toLowerCase()).toSet();
 
           final List<MediaItem> recommendations = uniqueCandidates.values.toList();
           recommendations.sort((a, b) {
-            final aGenreMatches =
-                a.genres.where((g) => itemGenreIds.contains(g.id)).length;
-            final bGenreMatches =
-                b.genres.where((g) => itemGenreIds.contains(g.id)).length;
+            // Count matching genre IDs & matching genre names
+            final aGenreIdMatches = a.genres.where((g) => g.id > 0 && itemGenreIds.contains(g.id)).length;
+            final bGenreIdMatches = b.genres.where((g) => g.id > 0 && itemGenreIds.contains(g.id)).length;
 
-            if (aGenreMatches != bGenreMatches) {
-              return bGenreMatches.compareTo(aGenreMatches);
+            final aGenreNameMatches = a.genres.where((g) => itemGenreNames.contains(g.name.trim().toLowerCase())).length;
+            final bGenreNameMatches = b.genres.where((g) => itemGenreNames.contains(g.name.trim().toLowerCase())).length;
+
+            final aScore = (aGenreIdMatches * 2) + aGenreNameMatches;
+            final bScore = (bGenreIdMatches * 2) + bGenreNameMatches;
+
+            if (aScore != bScore) {
+              return bScore.compareTo(aScore);
             }
 
-            // Per-item deterministic hash tie-breaker (ensures different movies get unique ordered recommendations)
-            final aHash = (a.id ^ (item.id * 31)) % 10007;
-            final bHash = (b.id ^ (item.id * 31)) % 10007;
-            if (aHash != bHash) {
-              return bHash.compareTo(aHash);
-            }
-
-            // Fallback sorting by release year (latest first)
+            // Secondary sorting by release year (latest first)
             final aYear = int.tryParse(a.releaseYear) ?? 0;
             final bYear = int.tryParse(b.releaseYear) ?? 0;
-            return bYear.compareTo(aYear);
+            if (aYear != bYear) {
+              return bYear.compareTo(aYear);
+            }
+
+            // Tertiary sorting by vote rating
+            return b.voteAverage.compareTo(a.voteAverage);
           });
 
           return BlocBuilder<LibraryBloc, LibraryState>(

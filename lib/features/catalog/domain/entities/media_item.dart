@@ -188,8 +188,11 @@ class MediaItem extends Equatable {
           .map((g) => Genre.fromJson(g))
           .toList();
     } else if (rawGenreIds != null && rawGenreIds.isNotEmpty) {
-      final names = TmdbGenreMapper.getGenreNames(rawGenreIds);
-      genresList = names.map((name) => Genre(id: 0, name: name)).toList();
+      genresList = rawGenreIds.map((id) {
+        final names = TmdbGenreMapper.getGenreNames([id]);
+        final name = names.isNotEmpty ? names.first : 'Genre';
+        return Genre(id: id, name: name);
+      }).toList();
     }
 
     final rawCredits = json['credits'];
