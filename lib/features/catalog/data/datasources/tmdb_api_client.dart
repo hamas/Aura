@@ -560,14 +560,12 @@ class TmdbApiClient {
       (m) => m.id == id,
       orElse: () => MediaItem(
         id: id,
-        imdbId: 'tt0137523',
-        title: 'Fight Club',
+        title: 'Media Details',
         overview:
-            'A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy.',
-        voteAverage: 8.8,
-        releaseDate: '1999-10-15',
+            'Detailed overview for this media item is being loaded from the catalog service.',
+        voteAverage: 7.5,
+        releaseDate: '2024-01-01',
         type: type,
-        runtimeMinutes: 139,
       ),
     );
   }
