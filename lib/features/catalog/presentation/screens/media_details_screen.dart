@@ -630,18 +630,30 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                               padding: EdgeInsets.zero,
                               showChevron: false,
                             ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              height: 220,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: recommendations.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: 12),
-                                itemBuilder: (context, index) =>
-                                    MediaPosterCard(
-                                        item: recommendations[index]),
+                            const SizedBox(height: 12),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 0.67,
                               ),
+                              itemCount: recommendations.take(12).length,
+                              itemBuilder: (context, index) {
+                                final item = recommendations[index];
+                                return MediaPosterCard(
+                                  item: item,
+                                  onTap: () {
+                                    context.push(
+                                      '/detail/${item.type.name}/${item.id}',
+                                      extra: item,
+                                    );
+                                  },
+                                );
+                              },
                             ),
                             const SizedBox(height: 48),
                           ],
