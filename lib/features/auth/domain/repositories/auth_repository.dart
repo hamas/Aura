@@ -7,6 +7,18 @@ abstract class AuthRepository {
   /// Sign in with Google Auth flow.
   Future<UserProfile> signInWithGoogle();
 
+  /// Sign in with Household Email & Password.
+  Future<UserProfile> signInWithHouseholdPassword({
+    required String email,
+    required String password,
+  });
+
+  /// Set or update Household Password for currently signed-in owner account.
+  Future<void> setOrUpdateHouseholdPassword(String newPassword);
+
+  /// Check whether household password provider is currently linked.
+  Future<bool> isHouseholdPasswordLinked();
+
   /// Sign out.
   Future<void> signOut();
 

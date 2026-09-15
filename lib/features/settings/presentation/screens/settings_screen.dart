@@ -11,6 +11,8 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/data/datasources/google_auth_datasource.dart';
+import '../../../auth/presentation/widgets/household_password_sheet.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
 import '../widgets/components/settings_debrid_card.dart';
@@ -50,9 +52,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _torrentProfile = 'Default';
 
   bool _showDiscordActivity = false;
+  bool _isHouseholdPasswordLinked = false;
 
   // Debrid Repository
   final DebridRepositoryImpl _debridRepo = DebridRepositoryImpl();
+  final GoogleAuthDataSource _googleAuthDataSource = GoogleAuthDataSource();
   DebridAccount? _debridAccount;
   bool _isLoadingDebrid = false;
   final TextEditingController _rdKeyController = TextEditingController();
@@ -63,6 +67,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _currentSubPage = widget.initialSubPage;
     _loadSettings();
     _loadDebridStatus();
+    _checkHouseholdPasswordStatus();
+  }
+
+  Future<void> _checkHouseholdPasswordStatus() async {
+    final linked = await _googleAuthDataSource.isHouseholdPasswordLinked();
+    if (mounted) {
+      setState(() => _isHouseholdPasswordLinked = linked);
+    }
   }
 
   Future<void> _loadDebridStatus() async {
@@ -466,78 +478,181 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // --- SUB PAGE: PROFILE ---
   Widget _buildProfileSubPage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildAccountDetailsHeader(),
-        const SizedBox(height: AppTokens.spacingLg),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0x1AFFFFFF)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Trakt & Integrations',
-                style: context.auraText.bodyOverview.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final user = state.user;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAccountDetailsHeader(),
+            const SizedBox(height: AppTokens.spacingLg),
+
+            // Household Password Card
+            if (user != null) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0x1AFFFFFF)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Household Access',
+                          style: context.auraText.bodyOverview.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _isHouseholdPasswordLinked
+                                ? Colors.green.withValues(alpha: 0.2)
+                                : Colors.orange.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: _isHouseholdPasswordLinked
+                                  ? Colors.greenAccent
+                                  : Colors.orangeAccent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _isHouseholdPasswordLinked ? 'Active' : 'Not Configured',
+                            style: TextStyle(
+                              color: _isHouseholdPasswordLinked
+                                  ? Colors.greenAccent
+                                  : Colors.orangeAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Allow family members on other devices to sign in using your email and a custom household password.',
+                      style: context.auraText.caption.copyWith(
+                        color: AppColors.textMuted,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0x22FFFFFF)),
+                          ),
+                        ),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => HouseholdPasswordSheet(
+                              ownerEmail: user.email,
+                              onPasswordSaved: () => _checkHouseholdPasswordStatus(),
+                            ),
+                          );
+                        },
+                        icon: const AuraIcon(AppIcons.lock, size: 16, color: Colors.white),
+                        label: Text(
+                          _isHouseholdPasswordLinked
+                              ? 'Change Household Password'
+                              : 'Set Household Password',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              const SizedBox(height: AppTokens.spacingLg),
+            ],
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0x1AFFFFFF)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Trakt Scrobbling',
-                    style: context.auraText.caption.copyWith(
-                      color: Colors.white70,
-                      fontSize: 14.0,
+                    'Trakt & Integrations',
+                    style: context.auraText.bodyOverview.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Trakt Scrobbling',
+                        style: context.auraText.caption.copyWith(
+                          color: Colors.white70,
+                          fontSize: 14.0,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
+                        onPressed: () {},
+                        child: const Text('Authenticate', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  const Divider(color: Color(0x1AFFFFFF), height: 24),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    activeThumbColor: Colors.black,
+                    activeTrackColor: Colors.white,
+                    inactiveThumbColor: Colors.white54,
+                    inactiveTrackColor: Colors.white10,
+                    title: Text(
+                      'Show watching activity on Discord',
+                      style: context.auraText.caption.copyWith(
+                        color: Colors.white70,
+                        fontSize: 14.0,
+                      ),
                     ),
-                    onPressed: () {},
-                    child: const Text('Authenticate', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    value: _showDiscordActivity,
+                    onChanged: (val) {
+                      setState(() => _showDiscordActivity = val);
+                      _saveBool('pref_discord_activity', val);
+                    },
                   ),
                 ],
               ),
-              const Divider(color: Color(0x1AFFFFFF), height: 24),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                activeThumbColor: Colors.black,
-                activeTrackColor: Colors.white,
-                inactiveThumbColor: Colors.white54,
-                inactiveTrackColor: Colors.white10,
-                title: Text(
-                  'Show watching activity on Discord',
-                  style: context.auraText.caption.copyWith(
-                    color: Colors.white70,
-                    fontSize: 14.0,
-                  ),
-                ),
-                value: _showDiscordActivity,
-                onChanged: (val) {
-                  setState(() => _showDiscordActivity = val);
-                  _saveBool('pref_discord_activity', val);
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 

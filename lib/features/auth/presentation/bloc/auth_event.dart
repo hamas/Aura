@@ -18,3 +18,17 @@ class SignInWithGoogleRequested extends SignInWithGoogleEvent {}
 class SignOutEvent extends AuthEvent {}
 
 class SignOutRequested extends SignOutEvent {}
+
+class SignInWithHouseholdPasswordEvent extends AuthEvent {
+  final String email;
+  final String password;
+
+  const SignInWithHouseholdPasswordEvent({
+    required this.email,
+    required this.password,
+  });
+
+  @override
+  List<Object?> get props => [email, password];
+}
+

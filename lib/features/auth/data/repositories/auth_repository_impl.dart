@@ -32,6 +32,29 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserProfile> signInWithHouseholdPassword({
+    required String email,
+    required String password,
+  }) async {
+    final user = await _googleAuthDataSource.signInWithHouseholdPassword(
+      email: email,
+      password: password,
+    );
+    _authStateController.add(user);
+    return user;
+  }
+
+  @override
+  Future<void> setOrUpdateHouseholdPassword(String newPassword) {
+    return _googleAuthDataSource.setOrUpdateHouseholdPassword(newPassword);
+  }
+
+  @override
+  Future<bool> isHouseholdPasswordLinked() {
+    return _googleAuthDataSource.isHouseholdPasswordLinked();
+  }
+
+  @override
   Future<void> signOut() async {
     await _googleAuthDataSource.signOut();
     _authStateController.add(null);

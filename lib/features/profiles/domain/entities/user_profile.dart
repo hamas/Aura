@@ -6,7 +6,9 @@ class UserProfile extends Equatable {
   final String id;
   final String name;
   final String avatarPath;
+  final String avatarPaletteId;
   final String? pinHash;
+  final bool isPrimary;
   final bool isKids;
   final String maxAgeRating;
   final DateTime createdAt;
@@ -15,7 +17,9 @@ class UserProfile extends Equatable {
     required this.id,
     required this.name,
     this.avatarPath = '',
+    this.avatarPaletteId = 'electric_violet',
     this.pinHash,
+    this.isPrimary = false,
     this.isKids = false,
     this.maxAgeRating = 'NC-17',
     required this.createdAt,
@@ -34,11 +38,24 @@ class UserProfile extends Equatable {
 
   String get avatarUrl => avatarPath;
 
+  /// Generate 1-2 character profile initials from name
+  String get initials {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return 'A';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length > 1 && parts[1].isNotEmpty) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return trimmed.substring(0, trimmed.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
   UserProfile copyWith({
     String? id,
     String? name,
     String? avatarPath,
+    String? avatarPaletteId,
     String? pinHash,
+    bool? isPrimary,
     bool? isKids,
     String? maxAgeRating,
     DateTime? createdAt,
@@ -47,7 +64,9 @@ class UserProfile extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       avatarPath: avatarPath ?? this.avatarPath,
+      avatarPaletteId: avatarPaletteId ?? this.avatarPaletteId,
       pinHash: pinHash ?? this.pinHash,
+      isPrimary: isPrimary ?? this.isPrimary,
       isKids: isKids ?? this.isKids,
       maxAgeRating: maxAgeRating ?? this.maxAgeRating,
       createdAt: createdAt ?? this.createdAt,
@@ -59,11 +78,43 @@ class UserProfile extends Equatable {
         id,
         name,
         avatarPath,
+        avatarPaletteId,
         pinHash,
+        isPrimary,
         isKids,
         maxAgeRating,
         createdAt,
       ];
+}
+
+class ProfileAvatarPalette {
+  static const List<Map<String, dynamic>> curatedPalettes = [
+    {
+      'id': 'electric_violet',
+      'name': 'Electric Violet',
+      'colors': [0xFF8A2BE2, 0xFF4A00E0],
+    },
+    {
+      'id': 'neon_cyan',
+      'name': 'Neon Cyan',
+      'colors': [0xFF00F2FE, 0xFF4FACFE],
+    },
+    {
+      'id': 'sunset_orange',
+      'name': 'Sunset Orange',
+      'colors': [0xFFFF0844, 0xFFFFB199],
+    },
+    {
+      'id': 'emerald_gold',
+      'name': 'Emerald Gold',
+      'colors': [0xFF11998E, 0xFF38EF7D],
+    },
+    {
+      'id': 'crimson_dark',
+      'name': 'Crimson Dark',
+      'colors': [0xFFED213A, 0xFF93291E],
+    },
+  ];
 }
 
 class KidsCertification {

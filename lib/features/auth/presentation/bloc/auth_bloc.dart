@@ -11,6 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         super(const AuthState()) {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<SignInWithGoogleEvent>(_onSignInWithGoogle);
+    on<SignInWithHouseholdPasswordEvent>(_onSignInWithHouseholdPassword);
     on<SignOutEvent>(_onSignOut);
 
     // Listen to real-time auth state changes from Firebase/Google Auth
@@ -42,6 +43,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
     try {
       final user = await _authRepository.signInWithGoogle();
+      emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+    } catch (e) {
+      emit(state.copyWith(
+        status: AuthStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onSignInWithHouseholdPassword(
+      SignInWithHouseholdPasswordEvent event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+    try {
+      final user = await _authRepository.signInWithHouseholdPassword(
+        email: event.email,
+        password: event.password,
+      );
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
     } catch (e) {
       emit(state.copyWith(

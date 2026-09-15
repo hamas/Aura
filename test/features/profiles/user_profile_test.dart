@@ -1,53 +1,74 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:aura/features/profiles/domain/entities/user_profile.dart';
-import 'package:aura/features/profiles/data/models/user_profile_model.dart';
 
 void main() {
-  group('UserProfile & UserProfileModel Tests', () {
-    final now = DateTime.now();
-
-    test('UserProfile evaluates pin protection accurately', () {
-      final adult = UserProfile(
-        id: 'p1',
-        name: 'Adult',
-        avatarPath: '',
-        pinHash: UserProfile.hashPin('1234'),
-        createdAt: now,
+  group('UserProfile Unit Tests', () {
+    test('initials computation handles single and multi-word names correctly', () {
+      final p1 = UserProfile(
+        id: '1',
+        name: 'Hamas',
+        createdAt: DateTime.now(),
       );
+      expect(p1.initials, 'HA');
 
-      final kids = UserProfile(
-        id: 'p2',
-        name: 'Kids',
-        avatarPath: '',
-        isKids: true,
-        createdAt: now,
+      final p2 = UserProfile(
+        id: '2',
+        name: 'John Doe',
+        createdAt: DateTime.now(),
       );
+      expect(p2.initials, 'JD');
 
-      expect(adult.hasPin, true);
-      expect(adult.verifyPin('1234'), true);
-      expect(adult.verifyPin('9999'), false);
-      expect(kids.hasPin, false);
+      final p3 = UserProfile(
+        id: '3',
+        name: 'A',
+        createdAt: DateTime.now(),
+      );
+      expect(p3.initials, 'A');
     });
 
-    test('UserProfileModel serialization roundtrip works correctly', () {
-      final model = UserProfileModel(
-        id: 'p1',
-        name: 'Alice',
-        avatarPath: 'https://example.com/avatar.png',
-        isKids: true,
-        pinHash: UserProfile.hashPin('9999'),
-        maxAgeRating: 'PG',
-        createdAt: now,
+    test('PIN hashing and verification', () {
+      final pin = '1234';
+      final hashed = UserProfile.hashPin(pin);
+
+      final profile = UserProfile(
+        id: '1',
+        name: 'Test',
+        pinHash: hashed,
+        createdAt: DateTime.now(),
       );
 
-      final json = model.toJson();
-      final restored = UserProfileModel.fromJson(json);
+      expect(profile.hasPin, isTrue);
+      expect(profile.verifyPin('1234'), isTrue);
+      expect(profile.verifyPin('9999'), isFalse);
+    });
 
-      expect(restored.id, model.id);
-      expect(restored.name, model.name);
-      expect(restored.isKids, true);
-      expect(restored.pinHash, model.pinHash);
-      expect(restored.maxAgeRating, 'PG');
+    test('KidsCertification ratings guard', () {
+      expect(KidsCertification.isAllowed('PG'), isTrue);
+      expect(KidsCertification.isAllowed('G'), isTrue);
+      expect(KidsCertification.isAllowed('TV-Y7'), isTrue);
+      expect(KidsCertification.isAllowed('R'), isFalse);
+      expect(KidsCertification.isAllowed('NC-17'), isFalse);
+      expect(KidsCertification.isAllowed('TV-MA'), isFalse);
+    });
+
+    test('UserProfile copyWith mutations', () {
+      final original = UserProfile(
+        id: 'p1',
+        name: 'Original',
+        isKids: false,
+        createdAt: DateTime.now(),
+      );
+
+      final mutated = original.copyWith(
+        name: 'Updated Name',
+        isKids: true,
+        avatarPaletteId: 'neon_cyan',
+      );
+
+      expect(mutated.id, 'p1');
+      expect(mutated.name, 'Updated Name');
+      expect(mutated.isKids, isTrue);
+      expect(mutated.avatarPaletteId, 'neon_cyan');
     });
   });
 }

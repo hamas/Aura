@@ -20,7 +20,6 @@ class GoogleAuthDataSource {
     try {
       return _firebaseAuth ?? FirebaseAuth.instance;
     } catch (_) {
-      // Return injected instance if available
       if (_firebaseAuth != null) return _firebaseAuth;
       rethrow;
     }
@@ -71,6 +70,84 @@ class GoogleAuthDataSource {
       if (e is ServerException) rethrow;
       throw ServerException('Google Sign In failed: $e');
     }
+  }
+
+  Future<UserProfile> signInWithHouseholdPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final user = userCredential.user;
+      if (user == null) {
+        throw const ServerException('Sign in failed: User is null');
+      }
+      return _mapFirebaseUser(user)!;
+    } catch (e) {
+      throw ServerException('Household Sign In failed: $e');
+    }
+  }
+
+  Future<void> setOrUpdateHouseholdPassword(String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw const ServerException('No authenticated user found');
+    }
+
+    final isPasswordLinked = user.providerData
+        .any((p) => p.providerId == EmailAuthProvider.PROVIDER_ID);
+
+    try {
+      if (!isPasswordLinked) {
+        final credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: newPassword,
+        );
+        await user.linkWithCredential(credential);
+      } else {
+        await user.updatePassword(newPassword);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        // Re-authenticate via Google
+        final googleUser = await _googleSignIn.signIn();
+        if (googleUser != null) {
+          final googleAuth = await googleUser.authentication;
+          final googleCred = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+          await user.reauthenticateWithCredential(googleCred);
+
+          // Retry linking or updating password
+          if (!isPasswordLinked) {
+            final credential = EmailAuthProvider.credential(
+              email: user.email!,
+              password: newPassword,
+            );
+            await user.linkWithCredential(credential);
+          } else {
+            await user.updatePassword(newPassword);
+          }
+        } else {
+          throw const ServerException('Re-authentication cancelled');
+        }
+      } else {
+        throw ServerException('Failed to set household password: ${e.message}');
+      }
+    } catch (e) {
+      throw ServerException('Failed to set household password: $e');
+    }
+  }
+
+  Future<bool> isHouseholdPasswordLinked() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    return user.providerData
+        .any((p) => p.providerId == EmailAuthProvider.PROVIDER_ID);
   }
 
   Future<void> signOut() async {
