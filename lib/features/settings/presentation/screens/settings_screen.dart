@@ -559,7 +559,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         onPressed: () {
-                          showModalBottomSheet(
+                          showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
@@ -658,13 +658,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // --- SUB PAGE: INTERFACE ---
   Widget _buildInterfaceSubPage() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x1AFFFFFF)),
-      ),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0x1AFFFFFF)),
+        ),
       child: Column(
         children: [
           ListTile(
@@ -751,16 +753,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
   // --- SUB PAGE: PLAYER ---
   Widget _buildPlayerSubPage() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0x1AFFFFFF)),
       ),
       child: Column(
@@ -862,6 +867,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
