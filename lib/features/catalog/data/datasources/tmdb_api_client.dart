@@ -88,11 +88,20 @@ class TmdbApiClient {
       );
 
       final results = response.data?['results'] as List<dynamic>? ?? [];
-      return results
+      final items = results
           .whereType<Map<String, dynamic>>()
           .map((m) => MediaItem.fromTmdbJson(m, explicitType: MediaType.movie))
           .where((m) => m.isReleased)
           .toList();
+
+      final itemsWithLogos = await Future.wait(
+        items.map((item) async {
+          final logoPath = await fetchLogoPath(item.id, item.type);
+          return logoPath != null ? item.copyWith(logoPath: logoPath) : item;
+        }),
+      );
+
+      return itemsWithLogos;
     } catch (_) {
       return _getSampleMovies().where((m) => m.isReleased).toList();
     }
@@ -107,11 +116,20 @@ class TmdbApiClient {
       );
 
       final results = response.data?['results'] as List<dynamic>? ?? [];
-      return results
+      final items = results
           .whereType<Map<String, dynamic>>()
           .map((m) => MediaItem.fromTmdbJson(m, explicitType: MediaType.series))
           .where((m) => m.isReleased)
           .toList();
+
+      final itemsWithLogos = await Future.wait(
+        items.map((item) async {
+          final logoPath = await fetchLogoPath(item.id, item.type);
+          return logoPath != null ? item.copyWith(logoPath: logoPath) : item;
+        }),
+      );
+
+      return itemsWithLogos;
     } catch (_) {
       return _getSampleSeries().where((m) => m.isReleased).toList();
     }

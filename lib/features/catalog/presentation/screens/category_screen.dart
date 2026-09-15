@@ -226,32 +226,38 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ? itemsWithLogos.take(5).toList()
         : _items.take(5).toList();
 
-    return AuraScaffold(
+    return MainNavigationScaffold(
+      child: AuraScaffold(
       body: Stack(
         children: [
-          _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.accentPink),
-                )
-              : MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: ClampingScrollPhysics(),
-                    ),
-                    slivers: [
-                      // Hero Banner Slider (Latest 5 items in this category)
-                      if (heroItems.isNotEmpty)
-                        SliverToBoxAdapter(
-                          child: BillboardHeroBanner(
-                            items: heroItems,
-                            autoScroll: true,
-                            onPlayTap: _navigateToDetail,
-                            onDetailsTap: _navigateToDetail,
+          RefreshIndicator(
+            onRefresh: _fetchCategoryItems,
+            color: Colors.white,
+            backgroundColor: AppColors.surfaceElevated,
+            strokeWidth: 2.0,
+            edgeOffset: MediaQuery.of(context).padding.top + 60.0,
+            displacement: 24.0,
+            child: _isLoading && _items.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.accentPink),
+                  )
+                : MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        // Hero Banner Slider (Latest 5 items in this category)
+                        if (heroItems.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: BillboardHeroBanner(
+                              items: heroItems,
+                              autoScroll: true,
+                              onPlayTap: _navigateToDetail,
+                              onDetailsTap: _navigateToDetail,
+                            ),
                           ),
-                        ),
 
                       // Centered Category Chips below Hero Banner
                       SliverToBoxAdapter(
@@ -445,6 +451,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ],
                   ),
                 ),
+          ),
 
           // Pinned Top Bar
           Positioned(
@@ -459,6 +466,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }

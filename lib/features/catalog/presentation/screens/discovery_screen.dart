@@ -72,8 +72,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   }
 
   Future<void> _onRefresh() async {
-    context.read<CatalogBloc>().add(LoadDiscoveryFeedsEvent());
-    context.read<LibraryBloc>().add(LoadLibraryEvent());
+    final catalogBloc = context.read<CatalogBloc>();
+    final libraryBloc = context.read<LibraryBloc>();
+
+    catalogBloc.add(LoadDiscoveryFeedsEvent());
+    libraryBloc.add(LoadLibraryEvent());
+
+    try {
+      await catalogBloc.stream.firstWhere(
+        (state) =>
+            state.status == CatalogStatus.success ||
+            state.status == CatalogStatus.failure,
+      ).timeout(const Duration(seconds: 15));
+    } catch (_) {}
   }
 
   void _navigateToDetail(MediaItem item) {
@@ -117,12 +128,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   return const DiscoveryShimmerSkeleton();
                 }
 
-                final candidateHeroPool =
-                    _selectedFilter == MediaCategoryFilter.movies
+                final candidateHeroPool = _selectedFilter ==
+                        MediaCategoryFilter.movies
+                    ? (catalogState.trendingMovies.isNotEmpty
                         ? catalogState.trendingMovies
-                        : _selectedFilter == MediaCategoryFilter.tvShows
+                        : catalogState.trending
+                            .where((m) => m.type == MediaType.movie)
+                            .toList())
+                    : _selectedFilter == MediaCategoryFilter.tvShows
+                        ? (catalogState.trendingSeries.isNotEmpty
                             ? catalogState.trendingSeries
-                            : catalogState.trending;
+                            : catalogState.trending
+                                .where((m) => m.type == MediaType.series)
+                                .toList())
+                        : catalogState.trending;
 
                 // Dedicated Tier-1 Hero Selection Algorithm:
                 // Vote count >= 500, vote average >= 6.8, with valid backdrop & logo.
@@ -137,15 +156,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       hasValidLogo;
                 }).toList();
 
-                final List<MediaItem> heroItems = prestigeHeroPool.isNotEmpty
-                    ? prestigeHeroPool.take(5).toList()
-                    : candidateHeroPool
-                        .where((item) {
-                          return item.logoPath != null &&
-                              item.logoPath!.isNotEmpty;
-                        })
-                        .take(5)
+                final List<MediaItem> heroItems;
+                if (prestigeHeroPool.isNotEmpty) {
+                  heroItems = prestigeHeroPool.take(5).toList();
+                } else {
+                  final withLogos = candidateHeroPool
+                      .where((item) =>
+                          item.logoPath != null && item.logoPath!.isNotEmpty)
+                      .toList();
+                  if (withLogos.isNotEmpty) {
+                    heroItems = withLogos.take(5).toList();
+                  } else {
+                    final withBackdrops = candidateHeroPool
+                        .where((item) =>
+                            item.backdropPath != null &&
+                            item.backdropPath!.isNotEmpty)
                         .toList();
+                    heroItems = withBackdrops.isNotEmpty
+                        ? withBackdrops.take(5).toList()
+                        : candidateHeroPool.take(5).toList();
+                  }
+                }
 
                 final rawGridItems = catalogState.gridItems;
                 final List<MediaItem> gridItems;
@@ -216,9 +247,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       removeTop: true,
                       child: CustomScrollView(
                         controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: ClampingScrollPhysics(),
-                        ),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
                           if (heroItems.isNotEmpty)
                             SliverToBoxAdapter(

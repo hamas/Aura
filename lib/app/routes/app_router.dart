@@ -1,9 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/presentation/primitives/primitives.dart';
-import '../../core/theme/app_colors.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/category_screen.dart';
@@ -41,73 +39,86 @@ class AppRouter {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DiscoveryScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const DiscoveryScreen(),
             ),
           ),
           GoRoute(
             path: '/clips',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ClipsScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/search',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SearchScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const ClipsScreen(),
             ),
           ),
           GoRoute(
             path: '/library',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: LibraryScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const LibraryScreen(),
             ),
           ),
           GoRoute(
             path: '/downloads',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DownloadsScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const DownloadsScreen(),
             ),
           ),
           GoRoute(
             path: '/addons',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AddonsScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const AddonsScreen(),
             ),
           ),
           GoRoute(
             path: '/settings',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SettingsScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const SettingsScreen(),
             ),
           ),
           GoRoute(
             path: '/profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SettingsScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const SettingsScreen(),
             ),
           ),
         ],
       ),
 
-      // Category Grid Screen Route
+      // Standalone Category Grid Screen Route (on root navigator so context.push from Search/Home works)
       GoRoute(
         path: '/category',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
           final genre = state.uri.queryParameters['genre'] ?? 'Action';
           return NoTransitionPage(
+            key: ValueKey('category_${genre}_${state.pageKey}'),
             child: CategoryScreen(genreName: genre),
           );
         },
+      ),
+
+      // Standalone Search Screen Route (outside navigation shell to hide bottom pill)
+      GoRoute(
+        path: '/search',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const SearchScreen(),
+        ),
       ),
 
       // Profile Selection Screen Route (Full overlay outside navigation shell)
       GoRoute(
         path: '/profiles',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: ProfileSelectionScreen(),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const ProfileSelectionScreen(),
         ),
       ),
 
@@ -121,6 +132,7 @@ class AppRouter {
           final initialName = state.extra as String?;
 
           return NoTransitionPage(
+            key: state.pageKey,
             child: PersonDetailsScreen(
               personId: id,
               initialName: initialName,
@@ -143,6 +155,7 @@ class AppRouter {
           final initialItem = state.extra as MediaItem?;
 
           return NoTransitionPage(
+            key: state.pageKey,
             child: DetailScreen(
               id: id,
               type: type,
@@ -172,6 +185,7 @@ class AppRouter {
           final playerService = MediaKitPlayerService();
 
           return NoTransitionPage(
+            key: state.pageKey,
             child: BlocProvider(
               create: (context) {
                 final bloc = PlayerBloc(playerService: playerService);
@@ -201,116 +215,4 @@ class AppRouter {
       ),
     ],
   );
-}
-
-class MainNavigationScaffold extends StatelessWidget {
-  final Widget child;
-
-  const MainNavigationScaffold({super.key, required this.child});
-
-  int _calculateSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/clips')) {
-      return 1;
-    }
-    if (location.startsWith('/downloads') || location.startsWith('/library')) {
-      return 2;
-    }
-    return 0;
-  }
-
-  void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/clips');
-        break;
-      case 2:
-        context.go('/downloads');
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentIndex = _calculateSelectedIndex(context);
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final totalBottomBlurHeight = bottomPadding + 100.0;
-
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: AppColors.surfaceBackground,
-      body: Stack(
-        children: [
-          Positioned.fill(child: child),
-
-          // Bottom Bar Background Blur Overlay (matching top bar!)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: totalBottomBlurHeight,
-            child: ClipRect(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ShaderMask(
-                      blendMode: BlendMode.dstIn,
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Color(0xFFFFFFFF),
-                            Color(0x99FFFFFF),
-                            Color(0x00FFFFFF),
-                          ],
-                          stops: [0.0, 0.55, 1.0],
-                        ).createShader(bounds);
-                      },
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
-                        child: const ColoredBox(color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            AppColors.surfaceBackground.withValues(alpha: 0.51),
-                            AppColors.surfaceBackground.withValues(alpha: 0.21),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.60, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Floating Pill Toolbar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: bottomPadding + 8,
-            child: Center(
-              child: AuraFloatingBottomPill(
-                currentIndex: currentIndex,
-                onTap: (idx) => _onItemTapped(idx, context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
