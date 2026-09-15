@@ -55,6 +55,7 @@ android/.gradle/
 
 # Symbolication related
 app.*.symbols
+build/app/outputs/symbols/
 
 # Obfuscation related
 app.*.map.json

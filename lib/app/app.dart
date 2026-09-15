@@ -84,8 +84,66 @@ class AuraApp extends StatelessWidget {
           themeMode: ThemeMode.dark,
           darkTheme: AppTheme.darkTheme,
           routerConfig: AppRouter.router,
+          builder: (context, child) {
+            return _PrivacyCurtainWrapper(child: child ?? const SizedBox.shrink());
+          },
         ),
       ),
+    );
+  }
+}
+
+class _PrivacyCurtainWrapper extends StatefulWidget {
+  final Widget child;
+  const _PrivacyCurtainWrapper({required this.child});
+
+  @override
+  State<_PrivacyCurtainWrapper> createState() => _PrivacyCurtainWrapperState();
+}
+
+class _PrivacyCurtainWrapperState extends State<_PrivacyCurtainWrapper>
+    with WidgetsBindingObserver {
+  bool _isBackgrounded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      _isBackgrounded =
+          state == AppLifecycleState.inactive || state == AppLifecycleState.paused;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        if (_isBackgrounded)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black,
+              child: const Center(
+                child: Icon(
+                  Icons.lock,
+                  color: Colors.white24,
+                  size: 48,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
