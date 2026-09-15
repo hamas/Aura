@@ -142,6 +142,7 @@ class MediaItem extends Equatable {
     List<Season>? seasons,
     int? runtimeMinutes,
     String? tagline,
+    String? trailerUrl,
   }) {
     return MediaItem(
       id: id ?? this.id,
@@ -160,6 +161,7 @@ class MediaItem extends Equatable {
       seasons: seasons ?? this.seasons,
       runtimeMinutes: runtimeMinutes ?? this.runtimeMinutes,
       tagline: tagline ?? this.tagline,
+      trailerUrl: trailerUrl ?? this.trailerUrl,
     );
   }
 
@@ -263,20 +265,57 @@ class MediaItem extends Equatable {
       final videos = (json['videos']['results'] as List<dynamic>)
           .whereType<Map<String, dynamic>>()
           .toList();
-      final trailer = videos.firstWhere(
-        (v) =>
-            v['site'] == 'YouTube' &&
-            (v['type'] == 'Trailer' || v['type'] == 'Teaser'),
-        orElse: () => videos.firstWhere(
-          (v) => v['site'] == 'YouTube',
-          orElse: () => <String, dynamic>{},
-        ),
-      );
-      if (trailer['key'] != null) {
-        return 'https://www.youtube.com/watch?v=${trailer['key']}';
-      }
+      return extractTrailerUrlFromVideos(videos);
     }
     return null;
+  }
+
+  static String? extractTrailerUrlFromVideos(List<Map<String, dynamic>> videos) {
+    if (videos.isEmpty) return null;
+
+    final ytVideos = videos
+        .where((v) =>
+            v['site'] == 'YouTube' &&
+            v['key'] != null &&
+            (v['key'] as String).trim().isNotEmpty)
+        .toList();
+    if (ytVideos.isEmpty) return null;
+
+    // 1. Official Trailer
+    final officialTrailer = ytVideos.firstWhere(
+      (v) =>
+          (v['official'] == true || v['official'] == 1) &&
+          v['type'] == 'Trailer',
+      orElse: () => <String, dynamic>{},
+    );
+    if (officialTrailer['key'] != null) {
+      return 'https://www.youtube.com/watch?v=${officialTrailer['key']}';
+    }
+
+    // 2. Any Trailer
+    final anyTrailer = ytVideos.firstWhere(
+      (v) => v['type'] == 'Trailer',
+      orElse: () => <String, dynamic>{},
+    );
+    if (anyTrailer['key'] != null) {
+      return 'https://www.youtube.com/watch?v=${anyTrailer['key']}';
+    }
+
+    // 3. Teaser, Clip, or Featurette
+    final teaserOrClip = ytVideos.firstWhere(
+      (v) =>
+          v['type'] == 'Teaser' ||
+          v['type'] == 'Clip' ||
+          v['type'] == 'Featurette',
+      orElse: () => <String, dynamic>{},
+    );
+    if (teaserOrClip['key'] != null) {
+      return 'https://www.youtube.com/watch?v=${teaserOrClip['key']}';
+    }
+
+    // 4. Any YouTube video entry fallback
+    final fallback = ytVideos.first;
+    return 'https://www.youtube.com/watch?v=${fallback['key']}';
   }
 
   Map<String, dynamic> toJson() => {

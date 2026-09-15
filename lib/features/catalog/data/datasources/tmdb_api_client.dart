@@ -342,12 +342,21 @@ class TmdbApiClient {
         queryParameters: _buildParams({
           'append_to_response': 'credits,external_ids,images,videos',
           'include_image_language': 'en,null',
+          'include_video_language': 'en,null',
         }),
       );
 
       if (response.data != null) {
         var mediaItem =
             MediaItem.fromTmdbJson(response.data!, explicitType: type);
+
+        // Guarantee trailer URL resolution by querying dedicated videos endpoint if missing
+        if (mediaItem.trailerUrl == null || mediaItem.trailerUrl!.isEmpty) {
+          final trailerUrl = await fetchTrailerUrl(tmdbId, type);
+          if (trailerUrl != null) {
+            mediaItem = mediaItem.copyWith(trailerUrl: trailerUrl);
+          }
+        }
 
         // Guarantee IMDb ID mapping by querying dedicated external_ids endpoint if missing
         if (mediaItem.imdbId == null || mediaItem.imdbId!.isEmpty) {
@@ -475,6 +484,26 @@ class TmdbApiClient {
     }
   }
 
+  /// Dedicated resolver for /movie/{id}/videos and /tv/{id}/videos
+  Future<String?> fetchTrailerUrl(int tmdbId, MediaType type) async {
+    final endpoint = type == MediaType.movie
+        ? '/movie/$tmdbId/videos'
+        : '/tv/$tmdbId/videos';
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        endpoint,
+        queryParameters: _buildParams({
+          'include_video_language': 'en,null',
+        }),
+      );
+      final results = response.data?['results'] as List<dynamic>? ?? [];
+      final videos = results.whereType<Map<String, dynamic>>().toList();
+      return MediaItem.extractTrailerUrlFromVideos(videos);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Fetches video trailers and teaser clips for a media item
   Future<List<Map<String, dynamic>>> getVideos(
       int tmdbId, MediaType type) async {
@@ -484,7 +513,9 @@ class TmdbApiClient {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
         endpoint,
-        queryParameters: _buildParams(),
+        queryParameters: _buildParams({
+          'include_video_language': 'en,null',
+        }),
       );
       final results = response.data?['results'] as List<dynamic>? ?? [];
       return results.whereType<Map<String, dynamic>>().toList();
