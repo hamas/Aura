@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,7 +23,7 @@ class SignInModal extends StatefulWidget {
 }
 
 class _SignInModalState extends State<SignInModal> {
-  bool _showHouseholdForm = false;
+  bool _showHouseholdForm = true;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -63,11 +64,15 @@ class _SignInModalState extends State<SignInModal> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.isAuthenticated) {
-          if (widget.onSuccess != null) {
-            widget.onSuccess!();
-          } else {
+          if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
+          if (state.isGoogleAuthenticated) {
+            context.go('/settings');
+          } else {
+            context.go('/profiles');
+          }
+          widget.onSuccess?.call();
         } else if (state.status == AuthStatus.failure && state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
