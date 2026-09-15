@@ -25,7 +25,7 @@ class DetailsActionButtons extends StatelessWidget {
     return Row(
       children: [
         // Play Stream Button (Compact / Small with 5% White background)
-        ElevatedButton.icon(
+        ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white.withValues(alpha: 0.05),
             foregroundColor: Colors.white,
@@ -38,17 +38,23 @@ class DetailsActionButtons extends StatelessWidget {
             ),
           ),
           onPressed: onPlayPressed,
-          icon: const AuraIcon(
-            AppIcons.play,
-            color: Colors.white,
-            size: 16,
-          ),
-          label: Text(
-            item.type == MediaType.movie ? 'Play' : 'Watch',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Watch',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              SizedBox(width: 6),
+              AuraIcon(
+                AppIcons.play,
+                color: Colors.white,
+                size: 16,
+              ),
+            ],
           ),
         ),
         const SizedBox(width: 10),

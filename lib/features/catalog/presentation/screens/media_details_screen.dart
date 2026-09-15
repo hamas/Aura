@@ -412,9 +412,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 16),
-                          // Title & Poster Row below Hero Backdrop
+                          // Title & Poster Row below Hero Backdrop (Vertically Centered with Poster)
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
                                 width: 95,
@@ -450,7 +450,36 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // 1. Release Year (Top)
+                                    // 1. Title
+                                    Text(
+                                      item.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: context.auraText.displayHero.copyWith(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+
+                                    // 2. Genre Under Title
+                                    Text(
+                                      item.genres.isNotEmpty
+                                          ? item.genres.map((g) => g.name).join(' • ')
+                                          : (item.type == MediaType.movie
+                                              ? 'Movie'
+                                              : 'TV Series'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+
+                                    // 3. Release Year
                                     Text(
                                       item.releaseYear.isNotEmpty
                                           ? item.releaseYear
@@ -458,12 +487,12 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                       style: const TextStyle(
                                         color: AppColors.textMuted,
                                         fontSize: 11,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 6),
 
-                                    // 2. Ratings Row: IMDb & Rotten Tomatoes / Popcorn (Slightly Smaller)
+                                    // 4. Ratings Row right above button under genre & release year
                                     Row(
                                       children: [
                                         Container(
@@ -520,38 +549,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 8),
 
-                                    // 3. Title
-                                    Text(
-                                      item.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: context.auraText.displayHero.copyWith(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-
-                                    // 4. Genre Under Title
-                                    Text(
-                                      item.genres.isNotEmpty
-                                          ? item.genres.map((g) => g.name).join(' • ')
-                                          : (item.type == MediaType.movie
-                                              ? 'Movie'
-                                              : 'TV Series'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    // 5. Small Play & Download Button Row Under Released Year
+                                    // 5. Small Watch & Download Button Row
                                     DetailsActionButtons(
                                       item: item,
                                       isInWatchlist: isInWatchlist,
