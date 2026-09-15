@@ -376,9 +376,55 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             );
           }
 
-          final recommendations = item.type == MediaType.series
-              ? state.trendingSeries
-              : state.trendingMovies;
+          // Smart Related Content Engine:
+          // 1. Filter out current item
+          // 2. Rank candidates by matching genre overlap count (highest first)
+          // 3. Fall back to latest/trending items of same MediaType if no genre match
+          final candidatePool = [
+            if (item.type == MediaType.series) ...[
+              ...state.latestSeries,
+              ...state.trendingSeries,
+              ...state.popularSeries,
+            ] else ...[
+              ...state.latestMovies,
+              ...state.trendingMovies,
+              ...state.popularMovies,
+            ],
+            ...state.trending,
+            ...state.gridItems,
+          ];
+
+          // Deduplicate candidate list by item ID & exclude active item
+          final Map<int, MediaItem> uniqueCandidates = {};
+          for (final c in candidatePool) {
+            if (c.id != item.id && !uniqueCandidates.containsKey(c.id)) {
+              uniqueCandidates[c.id] = c;
+            }
+          }
+
+          final itemGenreIds = item.genres.map((g) => g.id).toSet();
+
+          final List<MediaItem> recommendations = uniqueCandidates.values.toList();
+          recommendations.sort((a, b) {
+            final aGenreMatches =
+                a.genres.where((g) => itemGenreIds.contains(g.id)).length;
+            final bGenreMatches =
+                b.genres.where((g) => itemGenreIds.contains(g.id)).length;
+
+            if (aGenreMatches != bGenreMatches) {
+              return bGenreMatches.compareTo(aGenreMatches);
+            }
+
+            // Secondary sorting by release year / date (latest first)
+            final aYear = int.tryParse(a.releaseYear) ?? 0;
+            final bYear = int.tryParse(b.releaseYear) ?? 0;
+            if (aYear != bYear) {
+              return bYear.compareTo(aYear);
+            }
+
+            // Tertiary sorting by rating
+            return b.voteAverage.compareTo(a.voteAverage);
+          });
 
           return BlocBuilder<LibraryBloc, LibraryState>(
             builder: (context, libraryState) {
@@ -627,17 +673,17 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           if (recommendations.isNotEmpty) ...[
                             const AuraSectionHeader(
                               title: 'More Like This',
-                              padding: EdgeInsets.zero,
+                              padding: EdgeInsets.only(bottom: 6),
                               showChevron: false,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
-                                mainAxisSpacing: 12,
+                                mainAxisSpacing: 10,
                                 crossAxisSpacing: 10,
                                 childAspectRatio: 0.67,
                               ),
