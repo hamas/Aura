@@ -12,6 +12,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<SignInWithGoogleEvent>(_onSignInWithGoogle);
     on<SignOutEvent>(_onSignOut);
+
+    // Listen to real-time auth state changes from Firebase/Google Auth
+    _authRepository.authStateChanges.listen((user) {
+      if (user != null) {
+        add(CheckAuthStatusEvent());
+      }
+    });
   }
 
   Future<void> _onCheckAuthStatus(
