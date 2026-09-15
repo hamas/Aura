@@ -9,6 +9,7 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../../auth/presentation/bloc/auth_event.dart';
 import '../../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../auth/presentation/widgets/sign_in_modal.dart';
 
 class SettingsAccountCard extends StatelessWidget {
   const SettingsAccountCard({super.key});
@@ -93,11 +94,14 @@ class SettingsAccountCard extends StatelessWidget {
                             foregroundColor: AppColors.surfaceBackground,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          onPressed: () => context
-                              .read<AuthBloc>()
-                              .add(SignInWithGoogleEvent()),
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const SignInModal(),
+                          ),
                           icon: const AuraIcon(AppIcons.login, size: 18),
-                          label: const Text('Sign In with Google'),
+                          label: const Text('Sign In to Account'),
                         ),
                 ),
               ],

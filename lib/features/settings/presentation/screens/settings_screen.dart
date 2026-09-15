@@ -13,6 +13,7 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/data/datasources/google_auth_datasource.dart';
 import '../../../auth/presentation/widgets/household_password_sheet.dart';
+import '../../../auth/presentation/widgets/sign_in_modal.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
 import '../../../profiles/data/services/profile_manager.dart';
@@ -308,7 +309,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // --- MINIMAL ACCOUNT DETAILS CARD ---
   Widget _buildAccountDetailsHeader() {
-    return BlocBuilder<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.isAuthenticated) {
+          _checkHouseholdPasswordStatus();
+        }
+      },
       builder: (context, state) {
         final user = state.user;
         final joiningDateStr = user != null
@@ -423,21 +429,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     )
                   : InkWell(
-                      onTap: () => context.read<AuthBloc>().add(SignInWithGoogleEvent()),
+                      onTap: () => showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const SignInModal(),
+                      ),
                       borderRadius: BorderRadius.circular(100),
                       child: Tooltip(
-                        message: 'Sign In with Google',
+                        message: 'Sign In Options',
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withValues(alpha: 0.1),
                           ),
-                          child: Image.asset(
-                            AppAssets.googleLogo,
-                            width: 20,
-                            height: 20,
-                            fit: BoxFit.contain,
+                          child: const AuraIcon(
+                            AppIcons.login,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                       ),
