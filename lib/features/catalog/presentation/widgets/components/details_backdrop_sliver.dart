@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:aura/core/constants/api_constants.dart';
+import 'package:aura/core/network/youtube_trailer_resolver.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
@@ -47,12 +48,16 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
   }
 
   Future<void> _initTrailerPlayer() async {
-    final trailerUrl = widget.item.trailerUrl;
-    if (trailerUrl == null || trailerUrl.isEmpty) {
+    final rawTrailerUrl = widget.item.trailerUrl;
+    if (rawTrailerUrl == null || rawTrailerUrl.isEmpty) {
       return;
     }
 
     try {
+      final directStreamUrl =
+          await YouTubeTrailerResolver.resolveDirectStreamUrl(rawTrailerUrl);
+      final urlToPlay = directStreamUrl ?? rawTrailerUrl;
+
       _player ??= Player(
         configuration: const PlayerConfiguration(
           logLevel: MPVLogLevel.error,
@@ -62,7 +67,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
 
       await _player!.setVolume(_isMuted ? 0.0 : 100.0);
       await _player!.setPlaylistMode(PlaylistMode.loop);
-      await _player!.open(Media(trailerUrl));
+      await _player!.open(Media(urlToPlay));
 
       if (mounted) {
         setState(() {
@@ -153,7 +158,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             ),
 
             // 5. Mute / Unmute Trailer Button (Icon-Only, Bottom Right)
-            if (widget.item.trailerUrl != null && widget.item.trailerUrl!.isNotEmpty)
+            if (widget.item.trailerUrl != null &&
+                widget.item.trailerUrl!.isNotEmpty)
               Positioned(
                 right: 16,
                 bottom: 16,
