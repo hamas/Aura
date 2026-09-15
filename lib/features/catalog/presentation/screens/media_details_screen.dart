@@ -377,27 +377,30 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           }
 
           // Smart Related Content Engine:
-          // 1. Filter out current item
-          // 2. Rank candidates by matching genre overlap count (highest first)
-          // 3. Fall back to latest/trending items of same MediaType if no genre match
+          // 1. Strict MediaType filter (movies get movies, shows get shows)
+          // 2. Exclude active item
+          // 3. Rank candidates by matching genre overlap count (highest first)
+          // 4. Deterministic hash tie-breaker using item.id so each page gets unique diverse results
           final candidatePool = [
             if (item.type == MediaType.series) ...[
-              ...state.latestSeries,
               ...state.trendingSeries,
               ...state.popularSeries,
+              ...state.latestSeries,
             ] else ...[
-              ...state.latestMovies,
               ...state.trendingMovies,
               ...state.popularMovies,
+              ...state.latestMovies,
             ],
             ...state.trending,
             ...state.gridItems,
           ];
 
-          // Deduplicate candidate list by item ID & exclude active item
+          // Deduplicate candidate list by item ID & exclude active item & match MediaType
           final Map<int, MediaItem> uniqueCandidates = {};
           for (final c in candidatePool) {
-            if (c.id != item.id && !uniqueCandidates.containsKey(c.id)) {
+            if (c.id != item.id &&
+                c.type == item.type &&
+                !uniqueCandidates.containsKey(c.id)) {
               uniqueCandidates[c.id] = c;
             }
           }
@@ -415,15 +418,17 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               return bGenreMatches.compareTo(aGenreMatches);
             }
 
-            // Secondary sorting by release year / date (latest first)
-            final aYear = int.tryParse(a.releaseYear) ?? 0;
-            final bYear = int.tryParse(b.releaseYear) ?? 0;
-            if (aYear != bYear) {
-              return bYear.compareTo(aYear);
+            // Per-item deterministic hash tie-breaker (ensures different movies get unique ordered recommendations)
+            final aHash = (a.id ^ (item.id * 31)) % 10007;
+            final bHash = (b.id ^ (item.id * 31)) % 10007;
+            if (aHash != bHash) {
+              return bHash.compareTo(aHash);
             }
 
-            // Tertiary sorting by rating
-            return b.voteAverage.compareTo(a.voteAverage);
+            // Fallback sorting by release year (latest first)
+            final aYear = int.tryParse(a.releaseYear) ?? 0;
+            final bYear = int.tryParse(b.releaseYear) ?? 0;
+            return bYear.compareTo(aYear);
           });
 
           return BlocBuilder<LibraryBloc, LibraryState>(
