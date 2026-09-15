@@ -191,7 +191,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     final shouldShowControls = hasNativeTrailer && (!_isPlaying || _showControlsOverlay);
 
     return SliverAppBar(
-      expandedHeight: 340.0,
+      expandedHeight: 280.0,
       pinned: true,
       backgroundColor: AppColors.surfaceBackground,
       flexibleSpace: FlexibleSpaceBar(

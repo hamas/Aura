@@ -41,7 +41,7 @@ void main() {
           home: Scaffold(
             body: SizedBox(
               width: 390,
-              height: 340,
+              height: 280,
               child: AmbientBackdropFallback(
                 backdropUrl: null,
                 title: 'Dune: Part Two',
