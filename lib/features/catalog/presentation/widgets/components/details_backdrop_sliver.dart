@@ -1,12 +1,15 @@
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:aura/core/constants/api_constants.dart';
+import 'package:aura/core/constants/app_assets.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
+import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/ambient_backdrop_fallback.dart';
 import 'package:aura/features/player/data/services/trailer_stream_resolver.dart';
@@ -190,10 +193,15 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     // Hide control icons while playing unless user explicitly tapped the screen to reveal controls
     final shouldShowControls = hasNativeTrailer && (!_isPlaying || _showControlsOverlay);
 
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return SliverAppBar(
       expandedHeight: 280.0,
       pinned: true,
       backgroundColor: AppColors.surfaceBackground,
+      automaticallyImplyLeading: false,
+      leadingWidth: 0,
+      titleSpacing: 0,
       flexibleSpace: FlexibleSpaceBar(
         background: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -238,6 +246,173 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                     ),
                   ),
                 ),
+
+              // 3. Homepage Top Bar Style Blur & Scrim Gradient Background at Top
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: topPadding + 64,
+                child: ClipRect(
+                  child: Stack(
+                    children: [
+                      // Progressive Blur
+                      Positioned.fill(
+                        child: ShaderMask(
+                          blendMode: BlendMode.dstIn,
+                          shaderCallback: (Rect bounds) {
+                            return const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFFFFFFFF),
+                                Color(0x99FFFFFF),
+                                Color(0x00FFFFFF),
+                              ],
+                              stops: [0.0, 0.55, 1.0],
+                            ).createShader(bounds);
+                          },
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                            child: const ColoredBox(color: Colors.black),
+                          ),
+                        ),
+                      ),
+                      // Scrim Gradient
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.surfaceBackground.withValues(alpha: 0.65),
+                                AppColors.surfaceBackground.withValues(alpha: 0.30),
+                                AppColors.surfaceBackground.withValues(alpha: 0.0),
+                              ],
+                              stops: const [0.0, 0.60, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 4. Custom Homepage Style Top Bar Row (Back button left, App Logo center/left, Share & Like right)
+              Positioned(
+                top: topPadding + 4,
+                left: AppTokens.screenEdgeHorizontal,
+                right: AppTokens.screenEdgeHorizontal,
+                child: Row(
+                  children: [
+                    // Left Back Button
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const AuraIcon(
+                          AppIcons.back,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // App Logo
+                    ClipOval(
+                      child: Image.asset(
+                        AppAssets.appIcon,
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 32,
+                          height: 32,
+                          decoration: const BoxDecoration(
+                            color: AppColors.accentPink,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'A',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // Right Actions: Share Icon
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const AuraIcon(
+                          AppIcons.share,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: widget.onShare,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Right Actions: Like / Watchlist Icon
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: AuraIcon(
+                          AppIcons.favorite,
+                          fill: widget.isInWatchlist ? 1.0 : 0.0,
+                          color: widget.isInWatchlist
+                              ? AppColors.accentPink
+                              : Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: widget.onToggleWatchlist,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               // Center Play / Pause Single Button Overlay
               if (shouldShowControls)
@@ -318,21 +493,6 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: AuraIcon(
-            AppIcons.favorite,
-            fill: widget.isInWatchlist ? 1.0 : 0.0,
-            color:
-                widget.isInWatchlist ? AppColors.accentPink : AppColors.textPrimary,
-          ),
-          onPressed: widget.onToggleWatchlist,
-        ),
-        IconButton(
-          icon: const AuraIcon(AppIcons.share, color: AppColors.textPrimary),
-          onPressed: widget.onShare,
-        ),
-      ],
     );
   }
 }
