@@ -279,7 +279,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
       await tester.pumpAndSettle();
 
-      expect(find.text('Top Cast & Crew'), findsOneWidget);
+      expect(find.text('Cast'), findsOneWidget);
       expect(find.text('Millie Bobby Brown'), findsOneWidget);
       expect(find.text('Eleven'), findsOneWidget);
       expect(find.text('Finn Wolfhard'), findsOneWidget);

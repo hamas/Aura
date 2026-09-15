@@ -23,7 +23,7 @@ class DetailsCastSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const AuraSectionHeader(
-          title: 'Top Cast & Crew',
+          title: 'Cast',
           padding: EdgeInsets.zero,
           showChevron: false,
         ),
