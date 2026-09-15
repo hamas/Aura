@@ -300,7 +300,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                 ),
               ),
 
-              // 4. Custom Homepage Style Top Bar Row (Back button left, App Logo center/left, Share & Like right)
+              // 4. Custom Homepage Style Top Bar Row (Back button left, Heart -> Share -> App Logo right)
               Positioned(
                 top: topPadding + 4,
                 left: AppTokens.screenEdgeHorizontal,
@@ -329,9 +329,61 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
-                    const SizedBox(width: 12),
 
-                    // App Logo
+                    const Spacer(),
+
+                    // Right Actions: 1. Like / Watchlist Icon (Heart)
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: AuraIcon(
+                          AppIcons.favorite,
+                          fill: widget.isInWatchlist ? 1.0 : 0.0,
+                          color: widget.isInWatchlist
+                              ? AppColors.accentPink
+                              : Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: widget.onToggleWatchlist,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Right Actions: 2. Share Icon
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const AuraIcon(
+                          AppIcons.share,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: widget.onShare,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Right Actions: 3. App Logo
                     ClipOval(
                       child: Image.asset(
                         AppAssets.appIcon,
@@ -356,58 +408,6 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                             ),
                           ),
                         ),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Right Actions: Share Icon
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const AuraIcon(
-                          AppIcons.share,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: widget.onShare,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Right Actions: Like / Watchlist Icon
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: AuraIcon(
-                          AppIcons.favorite,
-                          fill: widget.isInWatchlist ? 1.0 : 0.0,
-                          color: widget.isInWatchlist
-                              ? AppColors.accentPink
-                              : Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: widget.onToggleWatchlist,
                       ),
                     ),
                   ],
