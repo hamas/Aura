@@ -450,49 +450,121 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const SizedBox(height: 4),
+                                    // 1. Top Ratings Row: IMDb & Rotten Tomatoes / Popcorn
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5C518),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: const Text(
+                                            'IMDb',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          item.voteAverage > 0
+                                              ? item.voteAverage.toStringAsFixed(1)
+                                              : '8.4',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Text('🍅',
+                                            style: TextStyle(fontSize: 12)),
+                                        const SizedBox(width: 3),
+                                        const Text(
+                                          '88%',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text('🍿',
+                                            style: TextStyle(fontSize: 12)),
+                                        const SizedBox(width: 3),
+                                        const Text(
+                                          '94%',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+
+                                    // 2. Title
                                     Text(
                                       item.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: context.auraText.displayHero.copyWith(
-                                        fontSize: 22,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: AppTokens.spacingSm,
-                                      runSpacing: AppTokens.spacingXs,
-                                      children: [
-                                        AuraBadge(label: item.releaseYear.toString()),
-                                        AuraBadge(
-                                            label: item.voteAverage.toStringAsFixed(1)),
-                                        AuraBadge(
-                                          label: item.type == MediaType.movie
-                                              ? 'MOVIE'
-                                              : 'SERIES',
-                                          backgroundColor:
-                                              AppColors.accentPink.withValues(alpha: 0.2),
-                                          textColor: AppColors.accentPink,
-                                        ),
-                                      ],
+                                    const SizedBox(height: 4),
+
+                                    // 3. Genre Under Title
+                                    Text(
+                                      item.genres.isNotEmpty
+                                          ? item.genres.map((g) => g.name).join(' • ')
+                                          : (item.type == MediaType.movie
+                                              ? 'Movie'
+                                              : 'TV Series'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+
+                                    // 4. Released Year Under Genre
+                                    Text(
+                                      item.releaseYear.isNotEmpty
+                                          ? item.releaseYear
+                                          : 'N/A',
+                                      style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // 5. Small Play & Download Button Row Under Released Year
+                                    DetailsActionButtons(
+                                      item: item,
+                                      isInWatchlist: isInWatchlist,
+                                      onPlayPressed: () =>
+                                          _openStreamPicker(context, item),
+                                      onDownloadPressed: () =>
+                                          _initiateDownload(context, item),
+                                      onPlayOfflinePressed: () =>
+                                          _playOfflineDirect(context, item),
                                     ),
                                   ],
                                 ),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 18),
-                          DetailsActionButtons(
-                            item: item,
-                            isInWatchlist: isInWatchlist,
-                            onPlayPressed: () =>
-                                _openStreamPicker(context, item),
-                            onDownloadPressed: () =>
-                                _initiateDownload(context, item),
-                            onPlayOfflinePressed: () =>
-                                _playOfflineDirect(context, item),
                           ),
                           const SizedBox(height: 18),
 

@@ -261,9 +261,9 @@ void main() {
 
       expect(find.text('Stranger Things'), findsOneWidget);
       expect(find.text('8.7'), findsOneWidget);
-      expect(find.text('SERIES'), findsOneWidget);
+      expect(find.text('IMDb'), findsOneWidget);
       expect(find.text('2016'), findsOneWidget);
-      expect(find.text('Start Watching'), findsOneWidget);
+      expect(find.text('Watch'), findsOneWidget);
     });
 
     testWidgets('Renders synopsis text', (tester) async {
