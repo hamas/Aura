@@ -9,6 +9,8 @@ import '../widgets/components/profile_card.dart';
 import '../widgets/components/pin_entry_dialog.dart';
 
 import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../widgets/components/profile_editor_modal.dart';
 
 class ProfileSelectionScreen extends StatefulWidget {
@@ -35,36 +37,25 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
     _loadProfiles();
   }
 
-  void _loadProfiles() {
-    if (widget.profileManager != null) {
-      setState(() {
-        _profiles = widget.profileManager!.getProfiles();
-        _activeProfile = widget.profileManager!.getActiveProfile();
-      });
-    } else {
-      // Default fallback demo profiles
-      setState(() {
-        _profiles = [
-          UserProfile(
-            id: 'p1',
-            name: 'Profile 1',
-            avatarPath: '',
-            createdAt: DateTime.now(),
-          ),
-          UserProfile(
-            id: 'p2',
-            name: 'Kids',
-            avatarPath: '',
-            isKids: true,
-            createdAt: DateTime.now(),
-          ),
-        ];
-        _activeProfile = _profiles.first;
-      });
-    }
+  Future<void> _loadProfiles() async {
+    final manager = widget.profileManager ?? await ProfileManager.getInstance();
+    setState(() {
+      _profiles = manager.getProfiles();
+      _activeProfile = manager.getActiveProfile();
+    });
   }
 
   Future<void> _openManageProfiles() async {
+    final authState = context.read<AuthBloc>().state;
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile creation and management requires signing in with your Google Account in Settings.'),
+          backgroundColor: AppColors.surfaceCard,
+        ),
+      );
+      return;
+    }
     final manager = widget.profileManager ?? await ProfileManager.getInstance();
     if (!mounted) return;
     await showModalBottomSheet<void>(

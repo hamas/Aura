@@ -249,13 +249,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // 2. Minimal Navigation List using Pill Cards & Material Symbols
         Column(
           children: [
-            _buildMenuItemPill(
-              icon: AppIcons.person,
-              title: 'Profile',
-              subtitle: 'Household profiles, account details & security',
-              onTap: () => setState(() => _currentSubPage = 'Profile'),
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (!authState.isAuthenticated) return const SizedBox.shrink();
+                return Column(
+                  children: [
+                    _buildMenuItemPill(
+                      icon: AppIcons.person,
+                      title: 'Profile',
+                      subtitle: 'Household profiles, account details & security',
+                      onTap: () => setState(() => _currentSubPage = 'Profile'),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 8),
             _buildMenuItemPill(
               icon: AppIcons.tune,
               title: 'Interface',
