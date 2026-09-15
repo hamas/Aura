@@ -671,21 +671,25 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           ],
 
                           if (recommendations.isNotEmpty) ...[
-                            const AuraSectionHeader(
-                              title: 'More Like This',
-                              padding: EdgeInsets.only(bottom: 6),
-                              showChevron: false,
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                'More Like This',
+                                style: context.auraText.sectionTitle.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 4),
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
-                                mainAxisSpacing: 10,
-                                crossAxisSpacing: 10,
-                                childAspectRatio: 0.67,
+                                childAspectRatio: AppTokens.posterAspectRatio,
+                                mainAxisSpacing: AppTokens.spacingSm,
+                                crossAxisSpacing: AppTokens.spacingSm,
                               ),
                               itemCount: recommendations.take(12).length,
                               itemBuilder: (context, index) {
