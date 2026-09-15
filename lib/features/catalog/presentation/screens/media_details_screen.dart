@@ -676,16 +676,6 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           ],
 
                           if (recommendations.isNotEmpty) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                'More Like This',
-                                style: context.auraText.sectionTitle.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
