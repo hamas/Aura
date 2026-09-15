@@ -9,7 +9,7 @@ import '../widgets/components/profile_card.dart';
 import '../widgets/components/pin_entry_dialog.dart';
 
 import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
-import 'manage_profiles_screen.dart';
+import '../widgets/components/profile_editor_modal.dart';
 
 class ProfileSelectionScreen extends StatefulWidget {
   final ProfileManager? profileManager;
@@ -64,16 +64,18 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
     }
   }
 
-  void _openManageProfiles() {
-    final manager = widget.profileManager ?? ProfileManager();
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (ctx) => ManageProfilesScreen(
-          profileManager: manager,
-          onProfilesUpdated: () {
-            _loadProfiles();
-          },
-        ),
+  Future<void> _openManageProfiles() async {
+    final manager = widget.profileManager ?? await ProfileManager.getInstance();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ProfileEditorModal(
+        profileManager: manager,
+        onSaved: () {
+          _loadProfiles();
+        },
       ),
     );
   }
@@ -162,7 +164,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    onPressed: _openManageProfiles,
+                    onPressed: () => _openManageProfiles(),
                     icon: const Icon(Icons.edit, size: 16, color: Colors.white70),
                     label: const Text('Manage Profiles', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
@@ -179,7 +181,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
               opacity: 1.0,
               actions: [
                 TextButton.icon(
-                  onPressed: _openManageProfiles,
+                  onPressed: () => _openManageProfiles(),
                   icon: const Icon(Icons.edit, size: 14, color: Colors.white70),
                   label: const Text(
                     'Manage',

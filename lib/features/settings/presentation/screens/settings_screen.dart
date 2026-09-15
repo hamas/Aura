@@ -16,7 +16,8 @@ import '../../../auth/presentation/widgets/household_password_sheet.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
 import '../../../profiles/data/services/profile_manager.dart';
-import '../../../profiles/presentation/screens/manage_profiles_screen.dart';
+import '../../../profiles/domain/entities/user_profile.dart';
+import '../../../profiles/presentation/widgets/components/profile_editor_modal.dart';
 import '../widgets/components/settings_debrid_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -59,11 +60,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Debrid & Profile Managers
   final DebridRepositoryImpl _debridRepo = DebridRepositoryImpl();
   final GoogleAuthDataSource _googleAuthDataSource = GoogleAuthDataSource();
-  final ProfileManager _profileManager = ProfileManager();
+  ProfileManager? _profileManager;
+  List<UserProfile> _profiles = [];
   DebridAccount? _debridAccount;
   bool _isLoadingDebrid = false;
   final TextEditingController _rdKeyController = TextEditingController();
-  int _usedProfilesCount = 1;
 
   @override
   void initState() {
@@ -72,13 +73,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadSettings();
     _loadDebridStatus();
     _checkHouseholdPasswordStatus();
-    _loadProfilesCount();
+    _initProfiles();
   }
 
-  void _loadProfilesCount() {
-    setState(() {
-      _usedProfilesCount = _profileManager.getProfiles().length;
-    });
+  Future<void> _initProfiles() async {
+    final pm = await ProfileManager.getInstance();
+    if (mounted) {
+      setState(() {
+        _profileManager = pm;
+        _profiles = pm.getProfiles();
+      });
+    }
+  }
+
+  void _reloadProfiles() {
+    if (_profileManager != null) {
+      setState(() {
+        _profiles = _profileManager!.getProfiles();
+      });
+    }
   }
 
   Future<void> _checkHouseholdPasswordStatus() async {
@@ -211,24 +224,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             _buildMenuItemPill(
               icon: AppIcons.person,
-              title: 'Manage Profiles',
-              subtitle: '$_usedProfilesCount of ${ProfileManager.maxProfiles} household slots used',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (ctx) => ManageProfilesScreen(
-                      profileManager: _profileManager,
-                      onProfilesUpdated: _loadProfilesCount,
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            _buildMenuItemPill(
-              icon: AppIcons.person,
               title: 'Profile',
-              subtitle: 'Account details, cloud sync & auth session',
+              subtitle: 'Household profiles, account details & security',
               onTap: () => setState(() => _currentSubPage = 'Profile'),
             ),
             const SizedBox(height: 8),
@@ -513,7 +510,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // Manage Profiles Card
+            // Household Profiles Card
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -534,51 +531,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Text(
-                        '$_usedProfilesCount / ${ProfileManager.maxProfiles} Slots',
-                        style: context.auraText.caption.copyWith(
-                          color: Colors.white70,
-                          fontSize: 12,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: const Color(0x1AFFFFFF)),
+                        ),
+                        child: Text(
+                          '${_profiles.length} / ${ProfileManager.maxProfiles} Slots Used',
+                          style: context.auraText.caption.copyWith(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
-                    'Create, edit, or set PIN locks for household profiles.',
+                    'Tap a profile to edit details or PIN security. Tap + to add a member.',
                     style: context.auraText.caption.copyWith(
                       color: AppColors.textMuted,
                       fontSize: 12.5,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (ctx) => ManageProfilesScreen(
-                              profileManager: _profileManager,
-                              onProfilesUpdated: _loadProfilesCount,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const AuraIcon(AppIcons.person, size: 16, color: Colors.black),
-                      label: const Text(
-                        'Manage Profiles',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
+                  const SizedBox(height: 18),
+                  
+                  // Interactive Profiles Grid
+                  Center(
+                    child: Wrap(
+                      spacing: 20,
+                      runSpacing: 20,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        ..._profiles.map((profile) => _buildProfileItemTile(profile)),
+                        if (_profiles.length < ProfileManager.maxProfiles)
+                          _buildAddProfileItemTile(),
+                      ],
                     ),
                   ),
                 ],
@@ -1167,6 +1158,178 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _openProfileEditorModal([UserProfile? profile]) {
+    if (_profileManager == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ProfileEditorModal(
+        initialProfile: profile,
+        profileManager: _profileManager!,
+        onSaved: _reloadProfiles,
+      ),
+    );
+  }
+
+  List<Color> _getPaletteColors(String paletteId) {
+    final matches = ProfileAvatarPalette.curatedPalettes.where(
+      (p) => p['id'] == paletteId,
+    );
+    if (matches.isNotEmpty) {
+      final colors = (matches.first['colors'] as List).cast<int>();
+      return colors.map((c) => Color(c)).toList();
+    }
+    return [const Color(0xFF8A2BE2), const Color(0xFF4A00E0)];
+  }
+
+  Widget _buildProfileItemTile(UserProfile profile) {
+    final colors = _getPaletteColors(profile.avatarPaletteId);
+
+    return GestureDetector(
+      onTap: () => _openProfileEditorModal(profile),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.first.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  profile.initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withValues(alpha: 0.4),
+                ),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black54,
+                    ),
+                    child: const AuraIcon(
+                      AppIcons.edit,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+              if (profile.isKids)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'KIDS',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                profile.name,
+                style: context.auraText.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (profile.hasPin) ...[
+                const SizedBox(width: 4),
+                const AuraIcon(AppIcons.lock, size: 11, color: Colors.white54),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddProfileItemTile() {
+    return GestureDetector(
+      onTap: () => _openProfileEditorModal(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.05),
+              border: Border.all(
+                color: Colors.white38,
+                width: 1.5,
+              ),
+            ),
+            child: const Center(
+              child: AuraIcon(
+                AppIcons.add,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add Profile',
+            style: context.auraText.caption.copyWith(
+              color: Colors.white70,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
