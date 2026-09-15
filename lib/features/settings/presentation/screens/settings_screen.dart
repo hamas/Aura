@@ -252,133 +252,123 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 1,
             ),
           ),
-          child: Column(
+          child: Row(
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white12,
-                    backgroundImage: user?.photoUrl != null
-                        ? NetworkImage(user!.photoUrl!)
-                        : null,
-                    child: user?.photoUrl == null
-                        ? const AuraIcon(
-                            AppIcons.person,
-                            color: Colors.white,
-                            size: 28,
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: Colors.white12,
+                backgroundImage: user?.photoUrl != null
+                    ? NetworkImage(user!.photoUrl!)
+                    : null,
+                child: user?.photoUrl == null
+                    ? const AuraIcon(
+                        AppIcons.person,
+                        color: Colors.white,
+                        size: 26,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user != null ? user.displayName : 'Guest User',
+                      style: context.auraText.bodyOverview.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
                       children: [
-                        Text(
-                          user != null ? user.displayName : 'Guest User',
-                          style: context.auraText.bodyOverview.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16.0,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (user != null) ...[
-                              Image.asset(
-                                AppAssets.googleLogo,
-                                width: 14,
-                                height: 14,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            Expanded(
-                              child: Text(
-                                user != null
-                                    ? user.email
-                                    : 'Sign in to sync watchlist & cloud preferences',
-                                style: context.auraText.caption.copyWith(
-                                  color: AppColors.textMuted,
-                                  fontSize: 13.0,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
                         if (user != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const AuraIcon(
-                                AppIcons.history,
-                                size: 13,
-                                color: Colors.white70,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Member since: $joiningDateStr',
-                                style: context.auraText.caption.copyWith(
-                                  color: Colors.white70,
-                                  fontSize: 11.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ],
+                          Image.asset(
+                            AppAssets.googleLogo,
+                            width: 13,
+                            height: 13,
+                            fit: BoxFit.contain,
                           ),
+                          const SizedBox(width: 5),
                         ],
+                        Expanded(
+                          child: Text(
+                            user != null
+                                ? user.email
+                                : 'Sign in to sync watchlist & cloud preferences',
+                            style: context.auraText.caption.copyWith(
+                              color: AppColors.textMuted,
+                              fontSize: 12.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: state.isAuthenticated
-                    ? OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.statusError,
-                          side: const BorderSide(color: AppColors.statusError, width: 1.0),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
+                    if (user != null) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          const AuraIcon(
+                            AppIcons.history,
+                            size: 12,
+                            color: Colors.white70,
                           ),
-                        ),
-                        onPressed: () => context.read<AuthBloc>().add(SignOutEvent()),
-                        icon: const AuraIcon(AppIcons.logout, size: 15),
-                        label: const Text('Sign Out', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                      )
-                    : ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                        ),
-                        onPressed: () => context.read<AuthBloc>().add(SignInWithGoogleEvent()),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              AppAssets.googleLogo,
-                              width: 16,
-                              height: 16,
-                              fit: BoxFit.contain,
+                          const SizedBox(width: 4),
+                          Text(
+                            'Member since: $joiningDateStr',
+                            style: context.auraText.caption.copyWith(
+                              color: Colors.white70,
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.normal,
                             ),
-                            const SizedBox(width: 8),
-                            const Text('Sign In with Google', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Right-aligned action icon
+              state.isAuthenticated
+                  ? IconButton(
+                      tooltip: 'Sign Out',
+                      onPressed: () => context.read<AuthBloc>().add(SignOutEvent()),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      icon: const AuraIcon(
+                        AppIcons.logout,
+                        color: AppColors.statusError,
+                        size: 20,
+                      ),
+                    )
+                  : InkWell(
+                      onTap: () => context.read<AuthBloc>().add(SignInWithGoogleEvent()),
+                      borderRadius: BorderRadius.circular(100),
+                      child: Tooltip(
+                        message: 'Sign In with Google',
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                          child: Image.asset(
+                            AppAssets.googleLogo,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
-              ),
+                    ),
             ],
           ),
         );
