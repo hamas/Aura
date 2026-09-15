@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:aura/core/constants/api_constants.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
@@ -28,7 +29,6 @@ class DetailsBackdropSliver extends StatefulWidget {
 class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
   bool _isMuted = true;
   bool _isPlaying = true;
-  bool _isFullscreen = false;
   YoutubePlayerController? _youtubeController;
 
   @override
@@ -101,10 +101,20 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
   }
 
   void _toggleFullscreen() {
-    if (_youtubeController == null) return;
-    setState(() {
-      _isFullscreen = !_isFullscreen;
-    });
+    final rawTrailerUrl = widget.item.trailerUrl;
+    if (rawTrailerUrl != null && rawTrailerUrl.isNotEmpty) {
+      context.push(
+        '/player',
+        extra: {
+          'streamUrl': rawTrailerUrl,
+          'title': widget.item.title,
+          'subtitle': 'Official Trailer',
+          'mediaId': widget.item.id.toString(),
+          'posterPath': widget.item.posterPath,
+          'backdropPath': widget.item.backdropPath,
+        },
+      );
+    }
   }
 
   @override
@@ -119,8 +129,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
         ? '${ApiConstants.tmdbImageBaseUrl}${widget.item.backdropPath}'
         : null;
 
-    final hasTrailer = widget.item.trailerUrl != null &&
-        widget.item.trailerUrl!.isNotEmpty;
+    final hasTrailer = _youtubeController != null;
 
     return SliverAppBar(
       expandedHeight: 340.0,
@@ -141,19 +150,22 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active YouTube Trailer Player Layer (Strictly contained inside hero area, zero bleed into poster)
+            // 2. Active YouTube Trailer Player Layer (Scaled to crop YouTube title chrome, zero bleed)
             if (_youtubeController != null)
               Positioned.fill(
                 child: ClipRect(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    clipBehavior: Clip.hardEdge,
-                    child: SizedBox(
-                      width: 1280,
-                      height: 720,
-                      child: IgnorePointer(
-                        child: YoutubePlayer(
-                          controller: _youtubeController!,
+                  child: Transform.scale(
+                    scale: 1.35,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      clipBehavior: Clip.hardEdge,
+                      child: SizedBox(
+                        width: 1280,
+                        height: 720,
+                        child: IgnorePointer(
+                          child: YoutubePlayer(
+                            controller: _youtubeController!,
+                          ),
                         ),
                       ),
                     ),
@@ -214,8 +226,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             // 6. Bottom Left Control: Mute / Unmute Button
             if (hasTrailer)
               Positioned(
-                left: 16,
-                bottom: 24,
+                left: 20,
+                bottom: 40,
                 child: GestureDetector(
                   onTap: _toggleMute,
                   child: Container(
@@ -240,8 +252,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             // 7. Bottom Right Control: Fullscreen Button
             if (hasTrailer)
               Positioned(
-                right: 16,
-                bottom: 24,
+                right: 20,
+                bottom: 40,
                 child: GestureDetector(
                   onTap: _toggleFullscreen,
                   child: Container(
@@ -254,10 +266,8 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                         width: 1,
                       ),
                     ),
-                    child: AuraIcon(
-                      _isFullscreen
-                          ? AppIcons.fullscreenExit
-                          : AppIcons.fullscreen,
+                    child: const AuraIcon(
+                      AppIcons.fullscreen,
                       size: 20,
                       color: Colors.white,
                     ),
