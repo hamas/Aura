@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -409,7 +411,79 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
+                          // Title & Poster Row below Hero Backdrop
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 95,
+                                height: 142,
+                                decoration: BoxDecoration(
+                                  borderRadius: AppTokens.borderRadiusSmall,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    width: 1,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black54,
+                                      blurRadius: 12,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: AppTokens.borderRadiusSmall,
+                                  child: item.posterPath != null
+                                      ? CachedNetworkImage(
+                                          imageUrl:
+                                              '${ApiConstants.tmdbPosterW500}${item.posterPath}',
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(color: AppColors.surfaceCard),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: context.auraText.displayHero.copyWith(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: AppTokens.spacingSm,
+                                      runSpacing: AppTokens.spacingXs,
+                                      children: [
+                                        AuraBadge(label: item.releaseYear.toString()),
+                                        AuraBadge(
+                                            label: item.voteAverage.toStringAsFixed(1)),
+                                        AuraBadge(
+                                          label: item.type == MediaType.movie
+                                              ? 'MOVIE'
+                                              : 'SERIES',
+                                          backgroundColor:
+                                              AppColors.accentPink.withValues(alpha: 0.2),
+                                          textColor: AppColors.accentPink,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
                           DetailsActionButtons(
                             item: item,
                             isInWatchlist: isInWatchlist,
