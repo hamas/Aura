@@ -41,7 +41,7 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
   String? _errorMessage;
 
   bool get _isEditing => widget.initialProfile != null;
-  bool get _isPrimary => widget.initialProfile?.isPrimary ?? false;
+  bool get _canDelete => _isEditing && widget.profileManager.getProfiles().length > 1;
 
   @override
   void initState() {
@@ -95,8 +95,8 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
       id: widget.initialProfile?.id ?? 'profile_${DateTime.now().millisecondsSinceEpoch}',
       name: trimmedName,
       avatarPaletteId: _selectedPaletteId,
-      isPrimary: _isPrimary,
-      isKids: _isPrimary ? false : _isKids,
+      isPrimary: false,
+      isKids: _isKids,
       pinHash: pinHash,
       displayLanguage: _displayLanguage,
       audioLanguage: _audioLanguage,
@@ -117,7 +117,7 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
   }
 
   Future<void> _deleteProfile() async {
-    if (_isPrimary) return;
+    if (!_canDelete) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -319,7 +319,7 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
                     value: _isKids,
                     activeTrackColor: Colors.white,
                     activeThumbColor: Colors.black,
-                    onChanged: _isPrimary ? null : (val) => setState(() => _isKids = val),
+                    onChanged: (val) => setState(() => _isKids = val),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -466,7 +466,7 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
             // Action Buttons
             Row(
               children: [
-                if (_isEditing && !_isPrimary)
+                if (_canDelete)
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
@@ -479,7 +479,7 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
                       child: const Text('Delete Profile'),
                     ),
                   ),
-                if (_isEditing && !_isPrimary) const SizedBox(width: 12),
+                if (_canDelete) const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(

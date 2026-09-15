@@ -47,7 +47,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         _profiles = [
           UserProfile(
             id: 'p1',
-            name: 'Primary Account',
+            name: 'Profile 1',
             avatarPath: '',
             createdAt: DateTime.now(),
           ),

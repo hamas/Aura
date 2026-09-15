@@ -6,7 +6,7 @@ import '../models/user_profile_model.dart';
 class ProfileManager {
   static const String _profilesKey = 'aura_user_profiles_v1';
   static const String _activeProfileIdKey = 'aura_active_profile_id';
-  static const int maxProfiles = 4;
+  static const int maxProfiles = 3;
   static ProfileManager? _instance;
   final SharedPreferences? _prefs;
 
@@ -28,10 +28,10 @@ class ProfileManager {
     final rawJson = p.getString(_profilesKey);
     if (rawJson == null || rawJson.isEmpty) {
       final defaultProfile = UserProfile(
-        id: 'default_adult',
-        name: 'Primary Account',
+        id: 'profile_1',
+        name: 'Profile 1',
         avatarPath: '',
-        isPrimary: true,
+        isPrimary: false,
         isKids: false,
         createdAt: DateTime.now(),
       );

@@ -33,7 +33,7 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
   String? _errorMessage;
 
   bool get _isEditing => widget.initialProfile != null;
-  bool get _isPrimary => widget.initialProfile?.isPrimary ?? false;
+  bool get _canDelete => _isEditing && widget.profileManager.getProfiles().length > 1;
 
   @override
   void initState() {
@@ -80,8 +80,8 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
       id: widget.initialProfile?.id ?? 'profile_${DateTime.now().millisecondsSinceEpoch}',
       name: trimmedName,
       avatarPaletteId: _selectedPaletteId,
-      isPrimary: _isPrimary,
-      isKids: _isPrimary ? false : _isKids, // Primary owner cannot be kids mode
+      isPrimary: false,
+      isKids: _isKids,
       pinHash: pinHash,
       createdAt: widget.initialProfile?.createdAt ?? DateTime.now(),
     );
@@ -96,7 +96,7 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
   }
 
   Future<void> _deleteProfile() async {
-    if (_isPrimary) return;
+    if (!_canDelete) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -239,22 +239,20 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
               ),
               const SizedBox(height: 20),
 
-              // 3. Kid Profile Switch (Disabled for Primary Account Owner)
-              if (!_isPrimary) ...[
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  activeThumbColor: Colors.black,
-                  activeTrackColor: Colors.white,
-                  title: const Text('Kid Profile', style: TextStyle(color: Colors.white, fontSize: 14)),
-                  subtitle: const Text(
-                    'Strictly filter titles to G, PG, TV-Y, TV-G, TV-Y7, and TV-14 ratings',
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
-                  ),
-                  value: _isKids,
-                  onChanged: (val) => setState(() => _isKids = val),
+              // 3. Kid Profile Switch
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeThumbColor: Colors.black,
+                activeTrackColor: Colors.white,
+                title: const Text('Kid Profile', style: TextStyle(color: Colors.white, fontSize: 14)),
+                subtitle: const Text(
+                  'Strictly filter titles to G, PG, TV-Y, TV-G, TV-Y7, and TV-14 ratings',
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
                 ),
-                const Divider(color: Color(0x1AFFFFFF), height: 20),
-              ],
+                value: _isKids,
+                onChanged: (val) => setState(() => _isKids = val),
+              ),
+              const Divider(color: Color(0x1AFFFFFF), height: 20),
 
               // 4. PIN Security Lock Toggle & Entry Field
               SwitchListTile(
@@ -299,7 +297,7 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
               // Action Buttons: Save & Delete
               Row(
                 children: [
-                  if (_isEditing && !_isPrimary)
+                  if (_canDelete)
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
@@ -312,7 +310,7 @@ class _ProfileEditorModalState extends State<ProfileEditorModal> {
                         child: const Text('Delete Profile'),
                       ),
                     ),
-                  if (_isEditing && !_isPrimary) const SizedBox(width: 12),
+                  if (_canDelete) const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
