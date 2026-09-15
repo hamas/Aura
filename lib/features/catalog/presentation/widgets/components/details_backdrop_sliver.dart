@@ -150,22 +150,19 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active YouTube Trailer Player Layer (Scaled to crop YouTube title chrome, zero bleed)
+            // 2. Active YouTube Trailer Player Layer (Strictly clipped within 340px hero area, zero bleed)
             if (_youtubeController != null)
               Positioned.fill(
                 child: ClipRect(
-                  child: Transform.scale(
-                    scale: 1.35,
-                    child: FittedBox(
-                      fit: BoxFit.cover,
-                      clipBehavior: Clip.hardEdge,
-                      child: SizedBox(
-                        width: 1280,
-                        height: 720,
-                        child: IgnorePointer(
-                          child: YoutubePlayer(
-                            controller: _youtubeController!,
-                          ),
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: 1280,
+                      height: 880,
+                      child: IgnorePointer(
+                        child: YoutubePlayer(
+                          controller: _youtubeController!,
                         ),
                       ),
                     ),
