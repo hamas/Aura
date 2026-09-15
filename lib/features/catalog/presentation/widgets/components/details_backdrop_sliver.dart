@@ -64,6 +64,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
         showControls: false,
         showFullscreenButton: false,
         loop: true,
+        strictRelatedVideos: true,
       ),
     );
 
@@ -104,8 +105,6 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     setState(() {
       _isFullscreen = !_isFullscreen;
     });
-    // Triggers full screen mode for YouTube player
-    // If running inside SliverAppBar, user can view full screen video player
   }
 
   @override
@@ -142,12 +141,17 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active YouTube Trailer Player Layer (IgnorePointer completely hides native YouTube UI/controls)
+            // 2. Active YouTube Trailer Player Layer (Cropped to remove top/bottom YouTube title & UI chrome)
             if (_youtubeController != null)
               Positioned.fill(
-                child: IgnorePointer(
-                  child: YoutubePlayer(
-                    controller: _youtubeController!,
+                child: ClipRect(
+                  child: Transform.scale(
+                    scale: 1.35,
+                    child: IgnorePointer(
+                      child: YoutubePlayer(
+                        controller: _youtubeController!,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -206,67 +210,65 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                 ),
               ),
 
-            // 6. Bottom Right Controls: Fullscreen & Mute Buttons (Like Clips Page)
+            // 6. Bottom Left Control: Mute / Unmute Button
+            if (hasTrailer)
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _toggleMute,
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: AuraIcon(
+                        _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // 7. Bottom Right Control: Fullscreen Button
             if (hasTrailer)
               Positioned(
                 right: 16,
                 bottom: 16,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Fullscreen Button
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _toggleFullscreen,
-                        borderRadius: BorderRadius.circular(100),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: AuraIcon(
-                            _isFullscreen
-                                ? AppIcons.fullscreenExit
-                                : AppIcons.fullscreen,
-                            size: 20,
-                            color: Colors.white,
-                          ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _toggleFullscreen,
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Mute / Unmute Button
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _toggleMute,
-                        borderRadius: BorderRadius.circular(100),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: AuraIcon(
-                            _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                        ),
+                      child: AuraIcon(
+                        _isFullscreen
+                            ? AppIcons.fullscreenExit
+                            : AppIcons.fullscreen,
+                        size: 20,
+                        color: Colors.white,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
           ],
