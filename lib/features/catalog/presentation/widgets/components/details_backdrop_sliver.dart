@@ -305,7 +305,9 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                 top: topPadding + 4,
                 left: AppTokens.screenEdgeHorizontal,
                 right: AppTokens.screenEdgeHorizontal,
+                height: 36,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Left Back Button
                     Container(
