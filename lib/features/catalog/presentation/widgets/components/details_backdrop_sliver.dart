@@ -76,8 +76,19 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
         final player = Player(
           configuration: const PlayerConfiguration(
             logLevel: MPVLogLevel.warn,
+            bufferSize: 32 * 1024 * 1024,
           ),
         );
+
+        if (player.platform is NativePlayer) {
+          try {
+            final mpv = player.platform as dynamic;
+            await mpv.setProperty('demuxer-max-bytes', '32MiB');
+            await mpv.setProperty('demuxer-readahead-secs', '5');
+            await mpv.setProperty('network-timeout', '5');
+          } catch (_) {}
+        }
+
         final controller = VideoController(
           player,
           configuration: const VideoControllerConfiguration(
@@ -190,37 +201,43 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // 1. Ambient Ken Burns Backdrop Fallback when no direct video stream is available
-              if (!hasNativeTrailer)
-                AmbientBackdropFallback(
-                  backdropUrl: backdropUrl,
-                  title: widget.item.title,
+              // 1. Base Ambient / TMDB Image Backdrop (stays underneath video for instant placeholder transition)
+              if (backdropUrl != null)
+                CachedNetworkImage(
+                  imageUrl: backdropUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => AmbientBackdropFallback(
+                    backdropUrl: null,
+                    title: widget.item.title,
+                  ),
                 )
-              else ...[
-                // Base Backdrop Image
-                if (backdropUrl != null)
-                  CachedNetworkImage(
-                    imageUrl: backdropUrl,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) =>
-                        Container(color: AppColors.surfaceCard),
-                  )
-                else
-                  Container(color: AppColors.surfaceCard),
+              else
+                AmbientBackdropFallback(
+                  backdropUrl: null,
+                  title: widget.item.title,
+                ),
 
-                // Active Native MediaKit Video Player (Filled cleanly using BoxFit.cover)
+              // 2. Active Native MediaKit Video Player (Zoomed & Cropped with BoxFit.cover to eliminate letterboxing)
+              if (hasNativeTrailer)
                 Positioned.fill(
                   child: ClipRect(
                     child: SizedBox.expand(
-                      child: Video(
-                        controller: _videoController!,
+                      child: FittedBox(
                         fit: BoxFit.cover,
-                        controls: (state) => const SizedBox.shrink(),
+                        clipBehavior: Clip.hardEdge,
+                        child: SizedBox(
+                          width: _player?.state.width?.toDouble() ?? 16,
+                          height: _player?.state.height?.toDouble() ?? 9,
+                          child: Video(
+                            controller: _videoController!,
+                            fit: BoxFit.cover,
+                            controls: (state) => const SizedBox.shrink(),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ],
 
               // Center Play / Pause Single Button Overlay
               if (shouldShowControls)

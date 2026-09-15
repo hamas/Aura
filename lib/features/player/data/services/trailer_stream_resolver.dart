@@ -39,26 +39,31 @@ class TrailerStreamResolver {
     final videoId = tmdbTrailerUrl != null ? YoutubeExplodeUtil.extractVideoId(tmdbTrailerUrl) : null;
     debugPrint('[TrailerResolver] Resolving for: $title (${year ?? "N/A"}), TMDB key: ${videoId ?? "N/A"}');
 
-    // Tier 1: YouTube Direct Stream Extraction via YoutubeExplode
-    if (videoId != null && videoId.isNotEmpty) {
-      try {
-        final ytResult = await _resolveYouTubeDirectStream(videoId);
-        if (ytResult.hasStream) {
-          debugPrint('[TrailerResolver] Tier 1 Success (YouTube Direct): ${ytResult.streamUrl}');
-          return ytResult;
-        }
-      } catch (e, stack) {
-        debugPrint('[TrailerResolver] Tier 1 Exception (YouTube Direct): $e\n$stack');
+    // Run YouTube Direct extraction and iTunes Search in parallel for fastest time-to-first-frame
+    final ytFuture = (videoId != null && videoId.isNotEmpty)
+        ? _resolveYouTubeDirectStream(videoId)
+        : Future.value(const TrailerStreamResult(source: TrailerSource.none));
+
+    final itunesFuture = _resolveITunesPreviewStream(
+      title: title,
+      year: year,
+      mediaType: mediaType,
+    );
+
+    // Race YouTube extraction with 2.5 second hard cap against iTunes
+    try {
+      final ytResult = await ytFuture.timeout(const Duration(milliseconds: 2500));
+      if (ytResult.hasStream) {
+        debugPrint('[TrailerResolver] Tier 1 Success (YouTube Direct): ${ytResult.streamUrl}');
+        return ytResult;
       }
+    } catch (e) {
+      debugPrint('[TrailerResolver] Tier 1 Timeout/Error (YouTube Direct): $e');
     }
 
-    // Tier 2: iTunes Search API Fallback
+    // Tier 2: Check iTunes Search Result
     try {
-      final itunesResult = await _resolveITunesPreviewStream(
-        title: title,
-        year: year,
-        mediaType: mediaType,
-      );
+      final itunesResult = await itunesFuture;
       if (itunesResult.hasStream) {
         debugPrint('[TrailerResolver] Tier 2 Success (iTunes Direct MP4): ${itunesResult.streamUrl}');
         return itunesResult;
@@ -88,7 +93,7 @@ class TrailerStreamResolver {
     try {
       final manifest = await yt.videos.streamsClient
           .getManifest(videoId)
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(milliseconds: 2500));
 
       // Prioritize Muxed (video + audio in single stream) or MP4 video streams
       final muxedStreams = manifest.muxed.sortByVideoQuality();
