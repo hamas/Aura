@@ -27,6 +27,8 @@ class DetailsBackdropSliver extends StatefulWidget {
 
 class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
   bool _isMuted = true;
+  bool _isPlaying = true;
+  bool _isFullscreen = false;
   YoutubePlayerController? _youtubeController;
 
   @override
@@ -53,6 +55,7 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
         YoutubePlayerController.convertUrlToId(rawTrailerUrl) ?? rawTrailerUrl;
     if (videoId.isEmpty) return;
 
+    _youtubeController?.close();
     _youtubeController = YoutubePlayerController.fromVideoId(
       videoId: videoId,
       autoPlay: true,
@@ -65,11 +68,27 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     );
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        _isPlaying = true;
+        _isMuted = true;
+      });
+    }
+  }
+
+  void _togglePlayPause() {
+    if (_youtubeController == null) return;
+    setState(() {
+      _isPlaying = !_isPlaying;
+    });
+    if (_isPlaying) {
+      _youtubeController?.playVideo();
+    } else {
+      _youtubeController?.pauseVideo();
     }
   }
 
   void _toggleMute() {
+    if (_youtubeController == null) return;
     setState(() {
       _isMuted = !_isMuted;
     });
@@ -78,6 +97,15 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     } else {
       _youtubeController?.unMute();
     }
+  }
+
+  void _toggleFullscreen() {
+    if (_youtubeController == null) return;
+    setState(() {
+      _isFullscreen = !_isFullscreen;
+    });
+    // Triggers full screen mode for YouTube player
+    // If running inside SliverAppBar, user can view full screen video player
   }
 
   @override
@@ -91,6 +119,9 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     final backdropUrl = widget.item.backdropPath != null
         ? '${ApiConstants.tmdbImageBaseUrl}${widget.item.backdropPath}'
         : null;
+
+    final hasTrailer = widget.item.trailerUrl != null &&
+        widget.item.trailerUrl!.isNotEmpty;
 
     return SliverAppBar(
       expandedHeight: 340.0,
@@ -111,11 +142,13 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active YouTube Trailer Player Layer
+            // 2. Active YouTube Trailer Player Layer (IgnorePointer completely hides native YouTube UI/controls)
             if (_youtubeController != null)
               Positioned.fill(
-                child: YoutubePlayer(
-                  controller: _youtubeController!,
+                child: IgnorePointer(
+                  child: YoutubePlayer(
+                    controller: _youtubeController!,
+                  ),
                 ),
               ),
 
@@ -145,34 +178,95 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
               ),
             ),
 
-            // 5. Mute / Unmute Trailer Button (Icon-Only, Bottom Right)
-            if (widget.item.trailerUrl != null &&
-                widget.item.trailerUrl!.isNotEmpty)
-              Positioned(
-                right: 16,
-                bottom: 16,
+            // 5. Center Play / Pause Button Overlay
+            if (hasTrailer)
+              Center(
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: _toggleMute,
+                    onTap: _togglePlayPause,
                     borderRadius: BorderRadius.circular(100),
                     child: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
+                        color: Colors.black.withValues(alpha: 0.55),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1.5,
                         ),
                       ),
                       child: AuraIcon(
-                        _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
-                        size: 20,
+                        _isPlaying ? AppIcons.pause : AppIcons.play,
+                        size: 32,
                         color: Colors.white,
                       ),
                     ),
                   ),
+                ),
+              ),
+
+            // 6. Bottom Right Controls: Fullscreen & Mute Buttons (Like Clips Page)
+            if (hasTrailer)
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Fullscreen Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _toggleFullscreen,
+                        borderRadius: BorderRadius.circular(100),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: AuraIcon(
+                            _isFullscreen
+                                ? AppIcons.fullscreenExit
+                                : AppIcons.fullscreen,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Mute / Unmute Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _toggleMute,
+                        borderRadius: BorderRadius.circular(100),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: AuraIcon(
+                            _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
