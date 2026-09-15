@@ -492,16 +492,16 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                   ),
                 ),
 
-              // Bottom Seamless Fade & Blur Gradient Overlay (Fades hero into page background with no hard line)
+              // Bottom Seamless Minified Fade & Blur Gradient Overlay (Short & subtle melt into AMOLED black)
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: 72,
+                height: 36,
                 child: ClipRect(
                   child: Stack(
                     children: [
-                      // Progressive Blur towards bottom edge
+                      // Progressive Subtle Blur towards bottom edge
                       Positioned.fill(
                         child: ShaderMask(
                           blendMode: BlendMode.dstIn,
@@ -511,19 +511,19 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                               end: Alignment.topCenter,
                               colors: [
                                 Color(0xFFFFFFFF),
-                                Color(0x99FFFFFF),
+                                Color(0x66FFFFFF),
                                 Color(0x00FFFFFF),
                               ],
-                              stops: [0.0, 0.60, 1.0],
+                              stops: [0.0, 0.50, 1.0],
                             ).createShader(bounds);
                           },
                           child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                            filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
                             child: const ColoredBox(color: Colors.black),
                           ),
                         ),
                       ),
-                      // Smooth Color Gradient Fade into surfaceBackground
+                      // Tight Color Gradient Fade into Pure AMOLED Black
                       Positioned.fill(
                         child: DecoratedBox(
                           decoration: BoxDecoration(
@@ -532,11 +532,10 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
                               end: Alignment.topCenter,
                               colors: [
                                 AppColors.surfaceBackground,
-                                AppColors.surfaceBackground.withValues(alpha: 0.80),
-                                AppColors.surfaceBackground.withValues(alpha: 0.40),
+                                AppColors.surfaceBackground.withValues(alpha: 0.60),
                                 AppColors.surfaceBackground.withValues(alpha: 0.0),
                               ],
-                              stops: const [0.0, 0.35, 0.70, 1.0],
+                              stops: const [0.0, 0.50, 1.0],
                             ),
                           ),
                         ),

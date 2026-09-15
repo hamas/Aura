@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Canvas / Scaffolds (Deep Netflix dark slate)
-  static const Color surfaceBackground = Color(0xFF141414);
+  // Canvas / Scaffolds (Pure AMOLED Black)
+  static const Color surfaceBackground = Color(0xFF000000);
   static const Color background = surfaceBackground;
 
   // Card & Container Fill
