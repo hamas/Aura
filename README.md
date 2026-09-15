@@ -15,13 +15,15 @@ A high-performance, modular cross-platform media client engineered with Flutter.
 
 ---
 
-## Highlights
-
 * 🎬 **Unified Catalog Discovery**: Powered by The Movie Database (TMDB) API for real-time trending releases, episode guides, high-res backdrops, and metadata lookups.
 * 🔌 **Decoupled Add-on Architecture**: Native compliance with the **Stremio v3 Protocol specification**. Resolves stream manifests dynamically over HTTP/JSON without bundling third-party scrapers or stream hosts.
 * ⚡ **Hardware-Accelerated Playback**: Built on `media_kit` (native `libmpv` bindings) for smooth 4K/HDR rendering, `.mkv`/HEVC/AV1 codec support, and styled ASS/SSA subtitle processing.
-* ☁️ **Cloud Continuity**: Built-in **Firebase Authentication** with **Google Sign-In** and user-scoped state synchronization across devices (watch progress timestamps, continue watching shelf, watchlists, and installed add-on manifests).
-* 🛡️ **App Store Compliant Footprint**: Native support for high-speed cloud debrid services (Real-Debrid, TorBox). P2P/BitTorrent modules are cleanly decoupled to allow direct iOS/App Store distribution.
+* 🔑 **Hybrid Authentication & Multi-Profile Household Management**:
+  - **Google Sign-In**: Account owners log in via Google to access system settings and manage custom household profiles.
+  - **Household Member Sign-In**: Family members log in using the owner's email and linked Household Password to land directly on their personalized *"Who's watching?"* profile selection screen.
+  - **Multi-Profiles**: Create up to 3 individual custom profiles with customizable glossy gradient avatars, PIN protection, and content rating filters.
+* ☁️ **Cloud Continuity**: User-scoped state synchronization across devices (watch progress timestamps, continue watching shelf, watchlists, and installed add-on manifests).
+* 🛡️ **App Store Compliant & 100% Dart-First Policy**: All app logic, state management, UI, and data handling are strictly implemented in pure Dart. High-speed cloud debrid integrations (Real-Debrid, TorBox) operate over secure HTTPS without requiring embedded scrapers.
 
 ---
 
@@ -46,17 +48,22 @@ lib/
 ## Getting Started
 
 ### Prerequisites
-* Flutter SDK (3.22+ recommended)
+* Flutter SDK (3.24+ recommended)
 * Xcode 15+ (for macOS / iOS compilation)
 * Android SDK 34+
 * TMDB API Key
+* Firebase Project (Google Authentication & Household Credential Linking enabled)
 
-### Environment Setup
-Create a `.env` file in the root directory:
+### Environment & Firebase Setup
+1. Create a `.env` file in the root directory:
 ```env
 TMDB_API_KEY=your_api_key_here
 TMDB_READ_ACCESS_TOKEN=your_v4_read_access_token_here
 ```
+2. Place your official Firebase configuration files:
+   - **Android**: Place `google-services.json` inside `android/app/`
+   - **iOS**: Place `GoogleService-Info.plist` inside `ios/Runner/`
+   - **macOS**: Place `GoogleService-Info.plist` inside `macos/Runner/`
 
 ### Installation & Run
 

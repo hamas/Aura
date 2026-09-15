@@ -1132,7 +1132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(color: Color(0x1AFFFFFF), height: 28),
           Text(
-            'Privacy Policy (Local-First)',
+            'Privacy Policy & Data Disclosures',
             style: context.auraText.bodyOverview.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -1141,7 +1141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            '1. Zero Telemetry & Tracking\nAura collects zero usage telemetry, zero activity logs, and zero tracking analytics. We operate no tracking servers.\n\n2. On-Device Credentials & Tokens\nAll API keys (Real-Debrid, Trakt.tv) and local profile PINs are encrypted and stored exclusively on your local device. Credentials are transmitted directly to official service endpoints over HTTPS with no intermediary proxying.\n\n3. Local Storage & Downloads\nOffline downloads and cache files are sandboxed strictly within your device\'s local storage filesystem.\n\n4. Data Wipe\nYou may instantly purge all locally stored credentials, settings, and cached data at any time via Settings.',
+            '1. Secure Authentication Endpoints\nUser sign-in and account verification requests (email address and assigned user UID) are transmitted directly to official Google Firebase Authentication endpoints over encrypted HTTPS connection.\n\n2. On-Device Local-First Privacy\nYour watch history, local profile PIN hashes, and debrid API tokens (Real-Debrid, TorBox) remain strictly local-first on your device. Credentials are never transmitted to third-party tracking servers.\n\n3. Account Management & Credential Unlinking\nYou can sign out of your Google session or unlink household credentials at any time directly through Settings. Purging application data instantly clears all stored local state.',
             style: context.auraText.caption.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
@@ -1186,7 +1186,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(color: Color(0x1AFFFFFF), height: 28),
           Text(
-            'Third-Party Service Attributions',
+            'Third-Party Service & Trademark Attributions',
             style: context.auraText.bodyOverview.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -1195,7 +1195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '• TMDB API Notice:\nThis product uses the TMDB API but is not endorsed or certified by TMDB.\n\n• Trakt.tv:\nScrobbling and watchlist synchronization powered by Trakt.tv API services.\n\n• Multimedia Engine:\nPlayback engine powered by MediaKit (libmpv wrapper), Flutter framework, and Material Symbols.',
+            '• Firebase & Google LLC Notice:\nFirebase and Google are trademarks of Google LLC. Aura is an independent client not endorsed or certified by Google LLC.\n\n• TMDB API Notice:\nThis product uses the TMDB API but is not endorsed or certified by TMDB.\n\n• Trakt.tv:\nScrobbling and watchlist synchronization powered by Trakt.tv API services.\n\n• Multimedia Engine:\nPlayback engine powered by MediaKit (libmpv wrapper), Flutter framework, and Material Symbols.',
             style: context.auraText.caption.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
