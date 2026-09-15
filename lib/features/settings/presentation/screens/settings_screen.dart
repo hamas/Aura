@@ -508,9 +508,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final user = state.user;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        return Material(
+          color: Colors.transparent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Manage Profiles Card
             Container(
               padding: const EdgeInsets.all(16),
@@ -748,7 +750,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ],
-        );
+        ),
+      );
       },
     );
   }
