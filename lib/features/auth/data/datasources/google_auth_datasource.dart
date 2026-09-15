@@ -35,12 +35,14 @@ class GoogleAuthDataSource {
 
   UserProfile? _mapFirebaseUser(User? user) {
     if (user == null) return null;
+    final isGoogle = user.providerData.any((p) => p.providerId == 'google.com');
     return UserProfile(
       id: user.uid,
       email: user.email ?? '',
       displayName: user.displayName ?? 'Google User',
       photoUrl: user.photoURL,
       createdAt: user.metadata.creationTime ?? DateTime.now(),
+      isGoogleAuth: isGoogle,
     );
   }
 
@@ -177,6 +179,7 @@ class GoogleAuthDataSource {
         displayName: googleAccount.displayName ?? 'Google User',
         photoUrl: googleAccount.photoUrl,
         createdAt: DateTime.now(),
+        isGoogleAuth: true,
       );
     }
 

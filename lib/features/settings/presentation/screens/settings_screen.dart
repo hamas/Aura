@@ -251,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
-                if (!authState.isAuthenticated) return const SizedBox.shrink();
+                if (!authState.isGoogleAuthenticated) return const SizedBox.shrink();
                 return Column(
                   children: [
                     _buildMenuItemPill(

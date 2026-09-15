@@ -6,6 +6,7 @@ class UserProfile extends Equatable {
   final String displayName;
   final String? photoUrl;
   final DateTime createdAt;
+  final bool isGoogleAuth;
 
   const UserProfile({
     required this.id,
@@ -13,6 +14,7 @@ class UserProfile extends Equatable {
     required this.displayName,
     this.photoUrl,
     required this.createdAt,
+    this.isGoogleAuth = false,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class UserProfile extends Equatable {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
+      isGoogleAuth: json['is_google_auth'] as bool? ?? false,
     );
   }
 
@@ -33,8 +36,9 @@ class UserProfile extends Equatable {
         'display_name': displayName,
         'photo_url': photoUrl,
         'created_at': createdAt.toIso8601String(),
+        'is_google_auth': isGoogleAuth,
       };
 
   @override
-  List<Object?> get props => [id, email, displayName, photoUrl, createdAt];
+  List<Object?> get props => [id, email, displayName, photoUrl, createdAt, isGoogleAuth];
 }

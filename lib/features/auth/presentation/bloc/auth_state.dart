@@ -17,6 +17,9 @@ class AuthState extends Equatable {
   bool get isAuthenticated =>
       status == AuthStatus.authenticated && user != null;
 
+  bool get isGoogleAuthenticated =>
+      status == AuthStatus.authenticated && user != null && user!.isGoogleAuth;
+
   AuthState copyWith({
     AuthStatus? status,
     UserProfile? user,

@@ -47,7 +47,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
 
   Future<void> _openManageProfiles() async {
     final authState = context.read<AuthBloc>().state;
-    if (!authState.isAuthenticated) {
+    if (!authState.isGoogleAuthenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profile creation and management requires signing in with your Google Account in Settings.'),
