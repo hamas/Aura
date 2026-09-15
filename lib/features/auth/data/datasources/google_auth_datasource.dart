@@ -146,10 +146,18 @@ class GoogleAuthDataSource {
   }
 
   Future<bool> isHouseholdPasswordLinked() async {
-    final user = _auth.currentUser;
-    if (user == null) return false;
-    return user.providerData
-        .any((p) => p.providerId == EmailAuthProvider.PROVIDER_ID);
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      try {
+        await user.reload();
+      } catch (_) {}
+      final refreshedUser = _auth.currentUser ?? user;
+      return refreshedUser.providerData
+          .any((p) => p.providerId == EmailAuthProvider.PROVIDER_ID);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> signOut() async {
