@@ -450,22 +450,35 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // 1. Top Ratings Row: IMDb & Rotten Tomatoes / Popcorn
+                                    // 1. Release Year (Top)
+                                    Text(
+                                      item.releaseYear.isNotEmpty
+                                          ? item.releaseYear
+                                          : 'N/A',
+                                      style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+
+                                    // 2. Ratings Row: IMDb & Rotten Tomatoes / Popcorn (Slightly Smaller)
                                     Row(
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 2),
+                                              horizontal: 5, vertical: 1.5),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFF5C518),
                                             borderRadius:
-                                                BorderRadius.circular(4),
+                                                BorderRadius.circular(3),
                                           ),
                                           child: const Text(
                                             'IMDb',
                                             style: TextStyle(
                                               color: Colors.black,
-                                              fontSize: 10,
+                                              fontSize: 9,
                                               fontWeight: FontWeight.w900,
                                             ),
                                           ),
@@ -477,31 +490,31 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                               : '8.4',
                                           style: const TextStyle(
                                             color: Colors.white,
-                                            fontSize: 12,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(width: 10),
                                         const Text('🍅',
-                                            style: TextStyle(fontSize: 12)),
-                                        const SizedBox(width: 3),
+                                            style: TextStyle(fontSize: 11)),
+                                        const SizedBox(width: 2),
                                         const Text(
                                           '88%',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 12,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                         const Text('🍿',
-                                            style: TextStyle(fontSize: 12)),
-                                        const SizedBox(width: 3),
+                                            style: TextStyle(fontSize: 11)),
+                                        const SizedBox(width: 2),
                                         const Text(
                                           '94%',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 12,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -509,7 +522,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                     ),
                                     const SizedBox(height: 6),
 
-                                    // 2. Title
+                                    // 3. Title
                                     Text(
                                       item.title,
                                       maxLines: 2,
@@ -521,7 +534,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                     ),
                                     const SizedBox(height: 4),
 
-                                    // 3. Genre Under Title
+                                    // 4. Genre Under Title
                                     Text(
                                       item.genres.isNotEmpty
                                           ? item.genres.map((g) => g.name).join(' • ')
@@ -534,18 +547,6 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-
-                                    // 4. Released Year Under Genre
-                                    Text(
-                                      item.releaseYear.isNotEmpty
-                                          ? item.releaseYear
-                                          : 'N/A',
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 12,
                                       ),
                                     ),
                                     const SizedBox(height: 10),
