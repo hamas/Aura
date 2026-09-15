@@ -7,22 +7,36 @@ class ProfileManager {
   static const String _profilesKey = 'aura_user_profiles_v1';
   static const String _activeProfileIdKey = 'aura_active_profile_id';
   static const int maxProfiles = 4;
-  final SharedPreferences _prefs;
+  static ProfileManager? _instance;
+  final SharedPreferences? _prefs;
 
-  ProfileManager(this._prefs);
+  ProfileManager([this._prefs]);
+
+  static Future<ProfileManager> getInstance() async {
+    if (_instance == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _instance = ProfileManager(prefs);
+    }
+    return _instance!;
+  }
+
+  SharedPreferences get prefs => _prefs!;
 
   List<UserProfile> getProfiles() {
-    final rawJson = _prefs.getString(_profilesKey);
+    final p = _prefs;
+    if (p == null) return [];
+    final rawJson = p.getString(_profilesKey);
     if (rawJson == null || rawJson.isEmpty) {
       final defaultProfile = UserProfile(
         id: 'default_adult',
         name: 'Primary Account',
         avatarPath: '',
+        isPrimary: true,
         isKids: false,
         createdAt: DateTime.now(),
       );
       _saveProfilesSync([defaultProfile]);
-      _prefs.setString(_activeProfileIdKey, defaultProfile.id);
+      p.setString(_activeProfileIdKey, defaultProfile.id);
       return [defaultProfile];
     }
 
@@ -34,19 +48,25 @@ class ProfileManager {
 
   UserProfile? getActiveProfile() {
     final profiles = getProfiles();
-    final activeId = _prefs.getString(_activeProfileIdKey);
+    final p = _prefs;
+    if (p == null) return profiles.firstOrNull;
+    final activeId = p.getString(_activeProfileIdKey);
     if (activeId == null) return profiles.firstOrNull;
-    return profiles.firstWhere((p) => p.id == activeId,
+    return profiles.firstWhere((prof) => prof.id == activeId,
         orElse: () => profiles.first);
   }
 
   Future<bool> setActiveProfile(String profileId) async {
-    return await _prefs.setString(_activeProfileIdKey, profileId);
+    final p = _prefs;
+    if (p == null) return false;
+    return await p.setString(_activeProfileIdKey, profileId);
   }
 
   Future<bool> saveProfile(UserProfile profile) async {
+    final p = _prefs;
+    if (p == null) return false;
     final profiles = getProfiles();
-    final index = profiles.indexWhere((p) => p.id == profile.id);
+    final index = profiles.indexWhere((prof) => prof.id == profile.id);
 
     if (index < 0 && profiles.length >= maxProfiles) {
       return false; // Reached max profile limit
@@ -60,24 +80,26 @@ class ProfileManager {
     }
 
     final jsonList = updatedList
-        .map((p) => UserProfileModel.fromEntity(p).toJson())
+        .map((prof) => UserProfileModel.fromEntity(prof).toJson())
         .toList();
-    return await _prefs.setString(_profilesKey, jsonEncode(jsonList));
+    return await p.setString(_profilesKey, jsonEncode(jsonList));
   }
 
   Future<bool> deleteProfile(String profileId) async {
+    final p = _prefs;
+    if (p == null) return false;
     final profiles = getProfiles();
     if (profiles.length <= 1) {
       return false;
     }
 
-    final updatedList = profiles.where((p) => p.id != profileId).toList();
+    final updatedList = profiles.where((prof) => prof.id != profileId).toList();
     final jsonList = updatedList
-        .map((p) => UserProfileModel.fromEntity(p).toJson())
+        .map((prof) => UserProfileModel.fromEntity(prof).toJson())
         .toList();
-    final res = await _prefs.setString(_profilesKey, jsonEncode(jsonList));
+    final res = await p.setString(_profilesKey, jsonEncode(jsonList));
 
-    final activeId = _prefs.getString(_activeProfileIdKey);
+    final activeId = p.getString(_activeProfileIdKey);
     if (activeId == profileId) {
       await setActiveProfile(updatedList.first.id);
     }
@@ -85,8 +107,10 @@ class ProfileManager {
   }
 
   void _saveProfilesSync(List<UserProfile> profiles) {
+    final p = _prefs;
+    if (p == null) return;
     final jsonList =
-        profiles.map((p) => UserProfileModel.fromEntity(p).toJson()).toList();
-    _prefs.setString(_profilesKey, jsonEncode(jsonList));
+        profiles.map((prof) => UserProfileModel.fromEntity(prof).toJson()).toList();
+    p.setString(_profilesKey, jsonEncode(jsonList));
   }
 }

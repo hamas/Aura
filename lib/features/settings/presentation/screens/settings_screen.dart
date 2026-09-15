@@ -15,6 +15,8 @@ import '../../../auth/data/datasources/google_auth_datasource.dart';
 import '../../../auth/presentation/widgets/household_password_sheet.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/entities/debrid_account.dart';
+import '../../../profiles/data/services/profile_manager.dart';
+import '../../../profiles/presentation/screens/manage_profiles_screen.dart';
 import '../widgets/components/settings_debrid_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -54,12 +56,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showDiscordActivity = false;
   bool _isHouseholdPasswordLinked = false;
 
-  // Debrid Repository
+  // Debrid & Profile Managers
   final DebridRepositoryImpl _debridRepo = DebridRepositoryImpl();
   final GoogleAuthDataSource _googleAuthDataSource = GoogleAuthDataSource();
+  final ProfileManager _profileManager = ProfileManager();
   DebridAccount? _debridAccount;
   bool _isLoadingDebrid = false;
   final TextEditingController _rdKeyController = TextEditingController();
+  int _usedProfilesCount = 1;
 
   @override
   void initState() {
@@ -68,6 +72,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadSettings();
     _loadDebridStatus();
     _checkHouseholdPasswordStatus();
+    _loadProfilesCount();
+  }
+
+  void _loadProfilesCount() {
+    setState(() {
+      _usedProfilesCount = _profileManager.getProfiles().length;
+    });
   }
 
   Future<void> _checkHouseholdPasswordStatus() async {
@@ -198,6 +209,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // 2. Minimal Navigation List using Pill Cards & Material Symbols
         Column(
           children: [
+            _buildMenuItemPill(
+              icon: AppIcons.person,
+              title: 'Manage Profiles',
+              subtitle: '$_usedProfilesCount of ${ProfileManager.maxProfiles} household slots used',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (ctx) => ManageProfilesScreen(
+                      profileManager: _profileManager,
+                      onProfilesUpdated: _loadProfilesCount,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
             _buildMenuItemPill(
               icon: AppIcons.person,
               title: 'Profile',
@@ -484,7 +511,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildAccountDetailsHeader(),
+            // Manage Profiles Card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0x1AFFFFFF)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Household Profiles',
+                        style: context.auraText.bodyOverview.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$_usedProfilesCount / ${ProfileManager.maxProfiles} Slots',
+                        style: context.auraText.caption.copyWith(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Create, edit, or set PIN locks for household profiles.',
+                    style: context.auraText.caption.copyWith(
+                      color: AppColors.textMuted,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (ctx) => ManageProfilesScreen(
+                              profileManager: _profileManager,
+                              onProfilesUpdated: _loadProfilesCount,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const AuraIcon(AppIcons.person, size: 16, color: Colors.black),
+                      label: const Text(
+                        'Manage Profiles',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: AppTokens.spacingLg),
 
             // Household Password Card

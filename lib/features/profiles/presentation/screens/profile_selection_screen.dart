@@ -9,6 +9,7 @@ import '../widgets/components/profile_card.dart';
 import '../widgets/components/pin_entry_dialog.dart';
 
 import '../../../../core/presentation/primitives/aura_adaptive_app_bar.dart';
+import 'manage_profiles_screen.dart';
 
 class ProfileSelectionScreen extends StatefulWidget {
   final ProfileManager? profileManager;
@@ -61,6 +62,20 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         _activeProfile = _profiles.first;
       });
     }
+  }
+
+  void _openManageProfiles() {
+    final manager = widget.profileManager ?? ProfileManager();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => ManageProfilesScreen(
+          profileManager: manager,
+          onProfilesUpdated: () {
+            _loadProfiles();
+          },
+        ),
+      ),
+    );
   }
 
   void _selectProfile(UserProfile profile) {
@@ -137,17 +152,45 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                       }),
                     ],
                   ),
+                  const SizedBox(height: 36),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                    ),
+                    onPressed: _openManageProfiles,
+                    icon: const Icon(Icons.edit, size: 16, color: Colors.white70),
+                    label: const Text('Manage Profiles', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  ),
                 ],
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: AuraAdaptiveAppBar(
               title: 'Profiles',
               opacity: 1.0,
+              actions: [
+                TextButton.icon(
+                  onPressed: _openManageProfiles,
+                  icon: const Icon(Icons.edit, size: 14, color: Colors.white70),
+                  label: const Text(
+                    'Manage',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
