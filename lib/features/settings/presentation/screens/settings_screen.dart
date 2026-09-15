@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -286,24 +287,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Row(
                           children: [
                             if (user != null) ...[
-                              Container(
+                              Image.asset(
+                                AppAssets.googleLogo,
                                 width: 14,
                                 height: 14,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'G',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 9,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ),
+                                fit: BoxFit.contain,
                               ),
                               const SizedBox(width: 6),
                             ],
@@ -379,24 +367,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
+                            Image.asset(
+                              AppAssets.googleLogo,
                               width: 16,
                               height: 16,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black,
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'G',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                    height: 1.1,
-                                  ),
-                                ),
-                              ),
+                              fit: BoxFit.contain,
                             ),
                             const SizedBox(width: 8),
                             const Text('Sign In with Google', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
