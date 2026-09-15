@@ -283,14 +283,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          user != null
-                              ? user.email
-                              : 'Sign in to sync watchlist & cloud preferences',
-                          style: context.auraText.caption.copyWith(
-                            color: AppColors.textMuted,
-                            fontSize: 13.0,
-                          ),
+                        Row(
+                          children: [
+                            if (user != null) ...[
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'G',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 9,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                user != null
+                                    ? user.email
+                                    : 'Sign in to sync watchlist & cloud preferences',
+                                style: context.auraText.caption.copyWith(
+                                  color: AppColors.textMuted,
+                                  fontSize: 13.0,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                         if (user != null) ...[
                           const SizedBox(height: 4),
@@ -319,35 +349,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
+              Align(
+                alignment: Alignment.centerLeft,
                 child: state.isAuthenticated
                     ? OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.statusError,
-                          side: const BorderSide(color: AppColors.statusError),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          side: const BorderSide(color: AppColors.statusError, width: 1.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),
                         ),
                         onPressed: () => context.read<AuthBloc>().add(SignOutEvent()),
-                        icon: const AuraIcon(AppIcons.logout, size: 16),
-                        label: const Text('Sign Out', style: TextStyle(fontSize: 13)),
+                        icon: const AuraIcon(AppIcons.logout, size: 15),
+                        label: const Text('Sign Out', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                       )
-                    : ElevatedButton.icon(
+                    : ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),
                         ),
                         onPressed: () => context.read<AuthBloc>().add(SignInWithGoogleEvent()),
-                        icon: const AuraIcon(AppIcons.login, size: 16, color: Colors.black),
-                        label: const Text('Sign In with Google', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black,
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'G',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Sign In with Google', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
               ),
             ],
