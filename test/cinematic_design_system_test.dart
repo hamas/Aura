@@ -13,7 +13,7 @@ void main() {
   });
   group('Cinematic Design System Tokens & Geometry', () {
     test('Aura theme tokens match Netflix dark aesthetic and brand accent', () {
-      expect(AppColors.surfaceBackground, equals(const Color(0xFF141414)));
+      expect(AppColors.surfaceBackground, equals(const Color(0xFF000000)));
       expect(AppColors.surfaceCard, equals(const Color(0xFF1F1F1F)));
       expect(AppColors.surfaceElevated, equals(const Color(0xFF262626)));
       expect(AppColors.accentPink, equals(const Color(0xFFB877FF)));
