@@ -5,6 +5,7 @@ import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../data/services/profile_manager.dart';
+import '../widgets/components/profile_avatar.dart';
 
 class EditProfileSubPage extends StatefulWidget {
   final UserProfile? initialProfile;
@@ -149,21 +150,8 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
     }
   }
 
-  List<Color> _getPaletteColors(String paletteId) {
-    final matches = ProfileAvatarPalette.curatedPalettes.where(
-      (p) => p['id'] == paletteId,
-    );
-    if (matches.isNotEmpty) {
-      final colors = (matches.first['colors'] as List).cast<int>();
-      return colors.map((c) => Color(c)).toList();
-    }
-    return [const Color(0xFF8A2BE2), const Color(0xFF4A00E0)];
-  }
-
   @override
   Widget build(BuildContext context) {
-    final avatarColors = _getPaletteColors(_selectedPaletteId);
-
     return Material(
       color: Colors.transparent,
       child: Form(
@@ -189,55 +177,19 @@ class _EditProfileSubPageState extends State<EditProfileSubPage> {
             Center(
               child: Column(
                 children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: avatarColors,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: avatarColors.first.withValues(alpha: 0.35),
-                              blurRadius: 16,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _nameController.text.trim().isNotEmpty
-                              ? UserProfile(
-                                  id: 'temp',
-                                  name: _nameController.text.trim(),
-                                  createdAt: DateTime.now(),
-                                ).initials
-                              : 'A',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                          child: const AuraIcon(AppIcons.edit, color: Colors.black, size: 14),
-                        ),
-                      ),
-                    ],
+                  ProfileAvatar(
+                    profile: UserProfile(
+                      id: widget.initialProfile?.id ?? 'preview',
+                      name: _nameController.text.trim().isNotEmpty
+                          ? _nameController.text.trim()
+                          : 'Profile',
+                      avatarPaletteId: _selectedPaletteId,
+                      isKids: _isKids,
+                      pinHash: _hasPin ? 'temp_pin' : null,
+                      createdAt: DateTime.now(),
+                    ),
+                    size: 104.0,
+                    showBadge: false,
                   ),
                   const SizedBox(height: 16),
                   // Name TextField matching design

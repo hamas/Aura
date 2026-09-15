@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../data/services/profile_manager.dart';
 import '../../domain/entities/user_profile.dart';
 import '../widgets/components/profile_editor_modal.dart';
+import '../widgets/components/profile_avatar.dart';
 
 class ManageProfilesScreen extends StatefulWidget {
   final ProfileManager profileManager;
@@ -55,16 +56,6 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
     );
   }
 
-  List<Color> _getPaletteColors(String paletteId) {
-    final matches = ProfileAvatarPalette.curatedPalettes.where(
-      (p) => p['id'] == paletteId,
-    );
-    if (matches.isNotEmpty) {
-      final colors = (matches.first['colors'] as List).cast<int>();
-      return colors.map((c) => Color(c)).toList();
-    }
-    return [const Color(0xFF8A2BE2), const Color(0xFF4A00E0)];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,111 +186,24 @@ class _ManageProfilesScreenState extends State<ManageProfilesScreen> {
   }
 
   Widget _buildProfileItem(UserProfile profile) {
-    final colors = _getPaletteColors(profile.avatarPaletteId);
-
     return GestureDetector(
       onTap: () => _openProfileEditor(profile),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: colors,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.first.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  profile.initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-
-              // Pencil Overlay Edit Badge
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withValues(alpha: 0.45),
-                ),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black54,
-                    ),
-                    child: const AuraIcon(
-                      AppIcons.edit,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Kids indicator badge
-              if (profile.isKids)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.orangeAccent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'KIDS',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          ProfileAvatar(
+            profile: profile,
+            size: 90.0,
+            onTap: () => _openProfileEditor(profile),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                profile.name,
-                style: context.auraText.itemTitle.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (profile.hasPin) ...[
-                const SizedBox(width: 4),
-                const AuraIcon(AppIcons.lock, size: 12, color: Colors.white54),
-              ],
-            ],
+          Text(
+            profile.name,
+            style: context.auraText.bodyOverview.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
