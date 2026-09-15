@@ -871,23 +871,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSubSectionTitle(AppIcons.shield, 'Privacy & Terms'),
-          const SizedBox(height: 12),
+          _buildSubSectionTitle(AppIcons.shield, 'Terms of Service & Privacy Policy'),
+          const SizedBox(height: 16),
           Text(
-            'Aura Privacy Policy',
+            'Terms of Service',
             style: context.auraText.bodyOverview.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
               fontSize: 15.0,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            'Aura respects your personal data privacy. We do not track or sell user watching metadata or personal search history to third parties.\n\nAll Debrid API tokens and account credentials are stored locally on your device using secure local storage.',
+            '1. Client Application Scope\nAura is strictly a local-first client-side user interface, media player, and catalog manager. Aura does NOT host, index, scrape, upload, or distribute any media files, video streams, or torrent files.\n\n2. Disclaimer of Content & Liability\nAura provides no video content. All metadata and images are retrieved directly from third-party APIs. Aura disclaims all liability for content accessed via user-provided credentials or third-party debrid resolvers.\n\n3. User Compliance & Copyright\nUsers agree to comply with all applicable local and international copyright laws. Users are solely responsible for ensuring they possess lawful authorization for any media accessed.\n\n4. "As-Is" Warranty Limitation\nAura is provided "AS IS" without warranty of any kind, express or implied, including merchantability or fitness for a particular purpose.',
             style: context.auraText.caption.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
-              fontSize: 13.0,
+              fontSize: 12.5,
+            ),
+          ),
+          const Divider(color: Color(0x1AFFFFFF), height: 28),
+          Text(
+            'Privacy Policy (Local-First)',
+            style: context.auraText.bodyOverview.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 15.0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '1. Zero Telemetry & Tracking\nAura collects zero usage telemetry, zero activity logs, and zero tracking analytics. We operate no tracking servers.\n\n2. On-Device Credentials & Tokens\nAll API keys (Real-Debrid, Trakt.tv) and local profile PINs are encrypted and stored exclusively on your local device. Credentials are transmitted directly to official service endpoints over HTTPS with no intermediary proxying.\n\n3. Local Storage & Downloads\nOffline downloads and cache files are sandboxed strictly within your device\'s local storage filesystem.\n\n4. Data Wipe\nYou may instantly purge all locally stored credentials, settings, and cached data at any time via Settings.',
+            style: context.auraText.caption.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.5,
+              fontSize: 12.5,
             ),
           ),
         ],
@@ -907,23 +925,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSubSectionTitle(AppIcons.infoOutline, 'Open Source Licences'),
-          const SizedBox(height: 12),
+          _buildSubSectionTitle(AppIcons.infoOutline, 'Open Source Licences & Attributions'),
+          const SizedBox(height: 16),
           Text(
-            'Aura Media Center v6.0.1-beta.09',
+            'Application License (MIT)',
             style: context.auraText.bodyOverview.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
+              fontSize: 15.0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Copyright (c) 2026 Aura Media Center\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.',
+            style: context.auraText.caption.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
+              fontSize: 12.0,
+            ),
+          ),
+          const Divider(color: Color(0x1AFFFFFF), height: 28),
+          Text(
+            'Third-Party Service Attributions',
+            style: context.auraText.bodyOverview.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
               fontSize: 15.0,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Built with Flutter, MediaKit (libmpv), Cloud Firestore, and Google Material Symbols.\n\nLicensed under the MIT License.',
+            '• TMDB API Notice:\nThis product uses the TMDB API but is not endorsed or certified by TMDB.\n\n• Trakt.tv:\nScrobbling and watchlist synchronization powered by Trakt.tv API services.\n\n• Multimedia Engine:\nPlayback engine powered by MediaKit (libmpv wrapper), Flutter framework, and Material Symbols.',
             style: context.auraText.caption.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,
-              fontSize: 13.0,
+              fontSize: 12.5,
             ),
           ),
         ],
