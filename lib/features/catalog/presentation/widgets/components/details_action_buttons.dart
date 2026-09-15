@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
-import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
 import 'package:aura/features/downloads/presentation/widgets/download_action_button.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
@@ -25,21 +24,23 @@ class DetailsActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Play Stream Button (Compact / Small)
+        // Play Stream Button (Compact / Small with 5% White background)
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accentPink,
-            foregroundColor: Colors.black,
+            backgroundColor: Colors.white.withValues(alpha: 0.05),
+            foregroundColor: Colors.white,
+            elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             minimumSize: const Size(0, 36),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(100),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
             ),
           ),
           onPressed: onPlayPressed,
           icon: const AuraIcon(
             AppIcons.play,
-            color: Colors.black,
+            color: Colors.white,
             size: 16,
           ),
           label: Text(
@@ -52,13 +53,24 @@ class DetailsActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 10),
 
-        // Download Action Button (Inline, directly after button)
-        DownloadActionButton(
-          mediaId: item.id,
-          mediaType: item.type,
-          iconSize: 20,
-          onStartDownload: onDownloadPressed,
-          onPlayOffline: onPlayOfflinePressed,
+        // Download Action Button wrapped in 5% white circle background
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Center(
+            child: DownloadActionButton(
+              mediaId: item.id,
+              mediaType: item.type,
+              iconSize: 18,
+              onStartDownload: onDownloadPressed,
+              onPlayOffline: onPlayOfflinePressed,
+            ),
+          ),
         ),
       ],
     );
