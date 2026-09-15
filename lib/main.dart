@@ -37,8 +37,8 @@ void main() async {
   // Initialize Hydrated BLoC Storage
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
-        ? HydratedStorage.webStorageDirectory
-        : await getApplicationDocumentsDirectory(),
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
   );
 
   runApp(AuraApp(prefs: prefs));
