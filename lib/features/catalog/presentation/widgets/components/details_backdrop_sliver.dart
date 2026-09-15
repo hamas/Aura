@@ -141,15 +141,20 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             else
               Container(color: AppColors.surfaceCard),
 
-            // 2. Active YouTube Trailer Player Layer (Cropped to remove top/bottom YouTube title & UI chrome)
+            // 2. Active YouTube Trailer Player Layer (Strictly contained inside hero area, zero bleed into poster)
             if (_youtubeController != null)
               Positioned.fill(
                 child: ClipRect(
-                  child: Transform.scale(
-                    scale: 1.35,
-                    child: IgnorePointer(
-                      child: YoutubePlayer(
-                        controller: _youtubeController!,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: 16,
+                      height: 9,
+                      child: IgnorePointer(
+                        child: YoutubePlayer(
+                          controller: _youtubeController!,
+                        ),
                       ),
                     ),
                   ),
@@ -182,29 +187,25 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
               ),
             ),
 
-            // 5. Center Play / Pause Button Overlay
+            // 5. Center Play / Pause Single Button Overlay
             if (hasTrailer)
               Center(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _togglePlayPause,
-                    borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          width: 1.5,
-                        ),
+                child: GestureDetector(
+                  onTap: _togglePlayPause,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        width: 1.5,
                       ),
-                      child: AuraIcon(
-                        _isPlaying ? AppIcons.pause : AppIcons.play,
-                        size: 32,
-                        color: Colors.white,
-                      ),
+                    ),
+                    child: AuraIcon(
+                      _isPlaying ? AppIcons.pause : AppIcons.play,
+                      size: 32,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -214,27 +215,23 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             if (hasTrailer)
               Positioned(
                 left: 16,
-                bottom: 16,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _toggleMute,
-                    borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
+                bottom: 24,
+                child: GestureDetector(
+                  onTap: _toggleMute,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
                       ),
-                      child: AuraIcon(
-                        _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
-                        size: 20,
-                        color: Colors.white,
-                      ),
+                    ),
+                    child: AuraIcon(
+                      _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                      size: 20,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -244,29 +241,25 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
             if (hasTrailer)
               Positioned(
                 right: 16,
-                bottom: 16,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _toggleFullscreen,
-                    borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
+                bottom: 24,
+                child: GestureDetector(
+                  onTap: _toggleFullscreen,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
                       ),
-                      child: AuraIcon(
-                        _isFullscreen
-                            ? AppIcons.fullscreenExit
-                            : AppIcons.fullscreen,
-                        size: 20,
-                        color: Colors.white,
-                      ),
+                    ),
+                    child: AuraIcon(
+                      _isFullscreen
+                          ? AppIcons.fullscreenExit
+                          : AppIcons.fullscreen,
+                      size: 20,
+                      color: Colors.white,
                     ),
                   ),
                 ),
