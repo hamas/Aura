@@ -340,7 +340,7 @@ class TmdbApiClient {
       final response = await _apiClient.get<Map<String, dynamic>>(
         endpoint,
         queryParameters: _buildParams({
-          'append_to_response': 'credits,external_ids,images',
+          'append_to_response': 'credits,external_ids,images,videos',
           'include_image_language': 'en,null',
         }),
       );

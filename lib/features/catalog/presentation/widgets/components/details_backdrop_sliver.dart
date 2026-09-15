@@ -9,7 +9,8 @@ import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/core/theme/app_typography.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 
-class DetailsBackdropSliver extends StatelessWidget {
+
+class DetailsBackdropSliver extends StatefulWidget {
   final MediaItem item;
   final bool isInWatchlist;
   final VoidCallback onToggleWatchlist;
@@ -24,19 +25,27 @@ class DetailsBackdropSliver extends StatelessWidget {
   });
 
   @override
+  State<DetailsBackdropSliver> createState() => _DetailsBackdropSliverState();
+}
+
+class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
+  bool _isMuted = true;
+
+  @override
   Widget build(BuildContext context) {
-    final backdropUrl = item.backdropPath != null
-        ? '${ApiConstants.tmdbImageBaseUrl}${item.backdropPath}'
+    final backdropUrl = widget.item.backdropPath != null
+        ? '${ApiConstants.tmdbImageBaseUrl}${widget.item.backdropPath}'
         : null;
 
     return SliverAppBar(
-      expandedHeight: 320.0,
+      expandedHeight: 340.0,
       pinned: true,
       backgroundColor: AppColors.surfaceBackground,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
           children: [
+            // Backdrop Image / Trailer Thumbnail Layer
             if (backdropUrl != null)
               CachedNetworkImage(
                 imageUrl: backdropUrl,
@@ -73,6 +82,47 @@ class DetailsBackdropSliver extends StatelessWidget {
               ),
             ),
 
+            // Mute / Unmute & Trailer indicator overlay
+            if (widget.item.trailerUrl != null)
+              Positioned(
+                right: 18,
+                top: 70,
+                child: InkWell(
+                  onTap: () => setState(() => _isMuted = !_isMuted),
+                  borderRadius: BorderRadius.circular(100),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AuraIcon(
+                          _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isMuted ? 'TRAILER MUTE' : 'TRAILER ON',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             // Floating Poster & Info Pill Overlay at base of backdrop
             Positioned(
               left: 18,
@@ -100,10 +150,10 @@ class DetailsBackdropSliver extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: AppTokens.borderRadiusSmall,
-                      child: item.posterPath != null
+                      child: widget.item.posterPath != null
                           ? CachedNetworkImage(
                               imageUrl:
-                                  '${ApiConstants.tmdbPosterW500}${item.posterPath}',
+                                  '${ApiConstants.tmdbPosterW500}${widget.item.posterPath}',
                               fit: BoxFit.cover,
                             )
                           : Container(color: AppColors.surfaceCard),
@@ -116,7 +166,7 @@ class DetailsBackdropSliver extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          item.title,
+                          widget.item.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: context.auraText.displayHero.copyWith(
@@ -129,11 +179,11 @@ class DetailsBackdropSliver extends StatelessWidget {
                           spacing: AppTokens.spacingSm,
                           runSpacing: AppTokens.spacingXs,
                           children: [
-                            AuraBadge(label: item.releaseYear.toString()),
+                            AuraBadge(label: widget.item.releaseYear.toString()),
                             AuraBadge(
-                                label: item.voteAverage.toStringAsFixed(1)),
+                                label: widget.item.voteAverage.toStringAsFixed(1)),
                             AuraBadge(
-                              label: item.type == MediaType.movie
+                              label: widget.item.type == MediaType.movie
                                   ? 'MOVIE'
                                   : 'SERIES',
                               backgroundColor:
@@ -154,14 +204,15 @@ class DetailsBackdropSliver extends StatelessWidget {
       actions: [
         IconButton(
           icon: AuraIcon(
-            isInWatchlist ? AppIcons.bookmark : AppIcons.bookmark,
-            color: isInWatchlist ? AppColors.accentPink : AppColors.textPrimary,
+            widget.isInWatchlist ? AppIcons.bookmark : AppIcons.bookmark,
+            color:
+                widget.isInWatchlist ? AppColors.accentPink : AppColors.textPrimary,
           ),
-          onPressed: onToggleWatchlist,
+          onPressed: widget.onToggleWatchlist,
         ),
         IconButton(
           icon: const AuraIcon(AppIcons.share, color: AppColors.textPrimary),
-          onPressed: onShare,
+          onPressed: widget.onShare,
         ),
       ],
     );

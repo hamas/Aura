@@ -254,7 +254,29 @@ class MediaItem extends Equatable {
       seasons: seasonsList,
       runtimeMinutes: json['runtime'] as int?,
       tagline: json['tagline'] as String?,
+      trailerUrl: _parseTrailerUrl(json),
     );
+  }
+
+  static String? _parseTrailerUrl(Map<String, dynamic> json) {
+    if (json['videos'] is Map && json['videos']['results'] is List) {
+      final videos = (json['videos']['results'] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+      final trailer = videos.firstWhere(
+        (v) =>
+            v['site'] == 'YouTube' &&
+            (v['type'] == 'Trailer' || v['type'] == 'Teaser'),
+        orElse: () => videos.firstWhere(
+          (v) => v['site'] == 'YouTube',
+          orElse: () => <String, dynamic>{},
+        ),
+      );
+      if (trailer['key'] != null) {
+        return 'https://www.youtube.com/watch?v=${trailer['key']}';
+      }
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() => {
