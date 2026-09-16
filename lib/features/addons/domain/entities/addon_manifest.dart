@@ -40,6 +40,8 @@ class AddonManifest extends Equatable {
   final List<AddonCatalog> catalogs;
   final String? icon;
   final String? background;
+  final List<String> idPrefixes;
+  final Map<String, dynamic>? behaviorHints;
   final bool isEnabled;
 
   const AddonManifest({
@@ -51,6 +53,8 @@ class AddonManifest extends Equatable {
     required this.resources,
     required this.types,
     this.catalogs = const [],
+    this.idPrefixes = const [],
+    this.behaviorHints,
     this.icon,
     this.background,
     this.isEnabled = true,
@@ -58,6 +62,8 @@ class AddonManifest extends Equatable {
 
   bool supportsResource(String resource) => resources.contains(resource);
   bool supportsType(String type) => types.contains(type);
+  bool supportsIdPrefix(String id) =>
+      idPrefixes.isEmpty || idPrefixes.any((prefix) => id.startsWith(prefix));
 
   factory AddonManifest.fromJson(Map<String, dynamic> json,
       {required String transportUrl}) {
@@ -88,6 +94,8 @@ class AddonManifest extends Equatable {
       types: (json['types'] as List<dynamic>? ?? ['movie', 'series'])
           .cast<String>(),
       catalogs: catalogsList,
+      idPrefixes: (json['idPrefixes'] as List<dynamic>? ?? []).cast<String>(),
+      behaviorHints: json['behaviorHints'] as Map<String, dynamic>?,
       icon: json['logo'] as String? ?? json['icon'] as String?,
       background: json['background'] as String?,
       isEnabled: true,
@@ -103,6 +111,8 @@ class AddonManifest extends Equatable {
         'resources': resources,
         'types': types,
         'catalogs': catalogs.map((c) => c.toJson()).toList(),
+        'idPrefixes': idPrefixes,
+        'behaviorHints': behaviorHints,
         'logo': icon,
         'background': background,
         'isEnabled': isEnabled,
@@ -117,6 +127,8 @@ class AddonManifest extends Equatable {
     List<String>? resources,
     List<String>? types,
     List<AddonCatalog>? catalogs,
+    List<String>? idPrefixes,
+    Map<String, dynamic>? behaviorHints,
     String? icon,
     String? background,
     bool? isEnabled,
@@ -130,6 +142,8 @@ class AddonManifest extends Equatable {
       resources: resources ?? this.resources,
       types: types ?? this.types,
       catalogs: catalogs ?? this.catalogs,
+      idPrefixes: idPrefixes ?? this.idPrefixes,
+      behaviorHints: behaviorHints ?? this.behaviorHints,
       icon: icon ?? this.icon,
       background: background ?? this.background,
       isEnabled: isEnabled ?? this.isEnabled,
@@ -146,6 +160,8 @@ class AddonManifest extends Equatable {
         resources,
         types,
         catalogs,
+        idPrefixes,
+        behaviorHints,
         icon,
         background,
         isEnabled,

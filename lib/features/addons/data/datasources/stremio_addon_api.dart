@@ -66,11 +66,11 @@ class StremioAddonApi {
           .get<Map<String, dynamic>>(
             streamUrl,
             options: Options(
-              sendTimeout: const Duration(seconds: 6),
-              receiveTimeout: const Duration(seconds: 6),
+              sendTimeout: const Duration(milliseconds: 3500),
+              receiveTimeout: const Duration(milliseconds: 3500),
             ),
           )
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(milliseconds: 3500));
 
       final streamsRaw = response.data?['streams'] as List<dynamic>? ?? [];
       return streamsRaw
@@ -78,7 +78,7 @@ class StremioAddonApi {
           .map((json) => AddonStream.fromJson(json, addonName: manifest.name))
           .toList();
     } catch (_) {
-      // Individual add-on timeouts or errors (aborting after 6s) fail gracefully
+      // Individual add-on timeouts (3.5s) or errors fail gracefully
       // without blocking other add-on stream aggregations
       return [];
     }

@@ -1,10 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/api_constants.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
@@ -48,6 +47,7 @@ class MediaDetailsScreen extends StatefulWidget {
 }
 
 class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
+  final ScrollController _scrollController = ScrollController();
   int _selectedSeasonNumber = 1;
   bool _isSynopsisExpanded = false;
 
@@ -57,6 +57,12 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     context.read<CatalogBloc>().add(
           LoadMediaDetailsEvent(id: widget.id, type: widget.type),
         );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _onSeasonChanged(int seasonNumber, int seriesId) {
@@ -440,8 +446,11 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               final isInWatchlist =
                   libraryState.watchlist.any((w) => w.id == item.id.toString());
 
-              return CustomScrollView(
-                physics: const BouncingScrollPhysics(),
+              return Stack(
+                children: [
+                  CustomScrollView(
+                    controller: _scrollController,
+                    physics: const ClampingScrollPhysics(),
                 slivers: [
                   DetailsBackdropSliver(
                     item: item,
@@ -456,172 +465,150 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                         ),
                       );
                     },
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppTokens.screenEdgeHorizontal),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 16),
-                          // Title & Poster Row below Hero Backdrop (Vertically Centered with Poster)
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                    overlappingHeader: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        MediaPosterCard(
+                          item: item,
+                          width: 95,
+                          showRating: false,
+                          showTitle: false,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Container(
-                                width: 95,
-                                height: 142,
-                                decoration: BoxDecoration(
-                                  borderRadius: AppTokens.borderRadiusSmall,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    width: 1,
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black54,
-                                      blurRadius: 12,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: AppTokens.borderRadiusSmall,
-                                  child: item.posterPath != null
-                                      ? CachedNetworkImage(
-                                          imageUrl:
-                                              '${ApiConstants.tmdbPosterW500}${item.posterPath}',
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(color: AppColors.surfaceCard),
+                              // 1. Year (Top)
+                              Text(
+                                item.releaseYear.isNotEmpty
+                                    ? item.releaseYear
+                                    : 'N/A',
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // 1. Year (Top)
-                                    Text(
-                                      item.releaseYear.isNotEmpty
-                                          ? item.releaseYear
-                                          : 'N/A',
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
+                              const SizedBox(height: 3),
 
-                                    // 2. Title
-                                    Text(
-                                      item.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: context.auraText.displayHero.copyWith(
-                                        fontSize: 19,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
-
-                                    // 3. Genre
-                                    Text(
-                                      item.genres.isNotEmpty
-                                          ? item.genres.map((g) => g.name).join(' • ')
-                                          : (item.type == MediaType.movie
-                                              ? 'Movie'
-                                              : 'TV Series'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-
-                                    // 4. Rating
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 5, vertical: 1.5),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF5C518),
-                                            borderRadius:
-                                                BorderRadius.circular(3),
-                                          ),
-                                          child: const Text(
-                                            'IMDb',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          item.voteAverage > 0
-                                              ? item.voteAverage.toStringAsFixed(1)
-                                              : '8.4',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        const Text('🍅',
-                                            style: TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 2),
-                                        const Text(
-                                          '88%',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        const Text('🍿',
-                                            style: TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 2),
-                                        const Text(
-                                          '94%',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-
-                                    // 5. Buttons
-                                    DetailsActionButtons(
-                                      item: item,
-                                      isInWatchlist: isInWatchlist,
-                                      onPlayPressed: () =>
-                                          _openStreamPicker(context, item),
-                                      onDownloadPressed: () =>
-                                          _initiateDownload(context, item),
-                                      onPlayOfflinePressed: () =>
-                                          _playOfflineDirect(context, item),
-                                    ),
-                                  ],
+                              // 2. Title
+                              Text(
+                                item.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.auraText.displayHero.copyWith(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                              const SizedBox(height: 3),
+
+                              // 3. Genre
+                              Text(
+                                item.genres.isNotEmpty
+                                    ? item.genres.map((g) => g.name).join(' • ')
+                                    : (item.type == MediaType.movie
+                                        ? 'Movie'
+                                        : 'TV Series'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+
+                              // 4. Rating
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF5C518),
+                                      borderRadius:
+                                          BorderRadius.circular(3),
+                                    ),
+                                    child: const Text(
+                                      'IMDb',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    item.voteAverage > 0
+                                        ? item.voteAverage.toStringAsFixed(1)
+                                        : '8.4',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text('🍅',
+                                      style: TextStyle(fontSize: 11)),
+                                  const SizedBox(width: 2),
+                                  const Text(
+                                    '88%',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text('🍿',
+                                      style: TextStyle(fontSize: 11)),
+                                  const SizedBox(width: 2),
+                                  const Text(
+                                    '94%',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // 5. Buttons
+                              DetailsActionButtons(
+                                item: item,
+                                isInWatchlist: isInWatchlist,
+                                onPlayPressed: () =>
+                                    _openStreamPicker(context, item),
+                                onDownloadPressed: () =>
+                                    _initiateDownload(context, item),
+                                onPlayOfflinePressed: () =>
+                                    _playOfflineDirect(context, item),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
-
+                        ),
+                      ],
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: AppTokens.screenEdgeHorizontal,
+                        right: AppTokens.screenEdgeHorizontal,
+                        top: 20.0,
+                        bottom: 48.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           // Synopsis
                           GestureDetector(
                             onTap: () => setState(() =>
@@ -680,6 +667,11 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           ],
 
                           if (recommendations.isNotEmpty) ...[
+                            const AuraSectionHeader(
+                              title: 'More Like This',
+                              showChevron: false,
+                            ),
+                            const SizedBox(height: AppTokens.spacingSm),
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -692,30 +684,103 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                               ),
                               itemCount: recommendations.take(12).length,
                               itemBuilder: (context, index) {
-                                final item = recommendations[index];
+                                final recItem = recommendations[index];
                                 return MediaPosterCard(
-                                  item: item,
+                                  item: recItem,
                                   onTap: () {
                                     context.push(
-                                      '/detail/${item.type.name}/${item.id}',
-                                      extra: item,
+                                      '/detail/${recItem.type.name}/${recItem.id}',
+                                      extra: recItem,
                                     );
                                   },
                                 );
                               },
                             ),
-                            const SizedBox(height: 48),
+                            const SizedBox(height: 24),
                           ],
                         ],
                       ),
                     ),
                   ),
                 ],
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+              ),
+
+            // Pinned Sticky Top Bar (Identical to Category / Discovery Screen top bar)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: AuraAdaptiveAppBar(
+                    scrollController: _scrollController,
+                    forceCanPop: true,
+                    onBackPressed: () => Navigator.of(context).pop(),
+                    actions: [
+                      // Watchlist / Heart Action
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: AuraIcon(
+                            AppIcons.favorite,
+                            fill: isInWatchlist ? 1.0 : 0.0,
+                            color: isInWatchlist
+                                ? AppColors.accentPink
+                                : Colors.white,
+                            size: 18,
+                          ),
+                          onPressed: () =>
+                              _toggleWatchlist(item, isInWatchlist),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Share Action
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const AuraIcon(
+                            AppIcons.share,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: AppColors.surfaceCard,
+                                content: Text('Sharing "${item.title}"...'),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  );
+}
 }

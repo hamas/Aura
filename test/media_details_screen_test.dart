@@ -257,7 +257,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Stranger Things'), findsOneWidget);
       expect(find.text('8.7'), findsOneWidget);
@@ -268,7 +269,8 @@ void main() {
 
     testWidgets('Renders synopsis text', (tester) async {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.textContaining('When a young boy vanishes'), findsOneWidget);
     });
@@ -277,7 +279,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Millie Bobby Brown'), findsOneWidget);
       expect(find.text('Eleven'), findsOneWidget);
@@ -289,7 +292,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget(item: testMediaItem));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Episodes'), findsOneWidget);
       expect(find.text('Season 1'), findsOneWidget);

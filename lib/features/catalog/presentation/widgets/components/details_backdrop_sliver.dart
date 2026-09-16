@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:aura/core/constants/api_constants.dart';
-import 'package:aura/core/constants/app_assets.dart';
 import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
 import 'package:aura/core/theme/app_icons.dart';
-import 'package:aura/core/theme/app_tokens.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/ambient_backdrop_fallback.dart';
 import 'package:aura/features/player/data/services/trailer_stream_resolver.dart';
@@ -19,6 +17,7 @@ class DetailsBackdropSliver extends StatefulWidget {
   final bool isInWatchlist;
   final VoidCallback onToggleWatchlist;
   final VoidCallback onShare;
+  final Widget? overlappingHeader;
 
   const DetailsBackdropSliver({
     super.key,
@@ -26,6 +25,7 @@ class DetailsBackdropSliver extends StatefulWidget {
     required this.isInWatchlist,
     required this.onToggleWatchlist,
     required this.onShare,
+    this.overlappingHeader,
   });
 
   @override
@@ -193,360 +193,198 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     // Hide control icons while playing unless user explicitly tapped the screen to reveal controls
     final shouldShowControls = hasNativeTrailer && (!_isPlaying || _showControlsOverlay);
 
-    final topPadding = MediaQuery.of(context).padding.top;
+    return SliverToBoxAdapter(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          SizedBox(
+            height: widget.overlappingHeader != null ? 440.0 : 400.0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: hasNativeTrailer ? _onBackdropTap : null,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // 1. Base Ambient / TMDB Image Backdrop
+                  if (backdropUrl != null)
+                    CachedNetworkImage(
+                      imageUrl: backdropUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => AmbientBackdropFallback(
+                        backdropUrl: null,
+                        title: widget.item.title,
+                      ),
+                    )
+                  else
+                    AmbientBackdropFallback(
+                      backdropUrl: null,
+                      title: widget.item.title,
+                    ),
 
-    return SliverAppBar(
-      expandedHeight: 280.0,
-      pinned: true,
-      backgroundColor: AppColors.surfaceBackground,
-      automaticallyImplyLeading: false,
-      leadingWidth: 0,
-      titleSpacing: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        background: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: hasNativeTrailer ? _onBackdropTap : null,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // 1. Base Ambient / TMDB Image Backdrop (stays underneath video for instant placeholder transition)
-              if (backdropUrl != null)
-                CachedNetworkImage(
-                  imageUrl: backdropUrl,
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) => AmbientBackdropFallback(
-                    backdropUrl: null,
-                    title: widget.item.title,
-                  ),
-                )
-              else
-                AmbientBackdropFallback(
-                  backdropUrl: null,
-                  title: widget.item.title,
-                ),
-
-              // 2. Active Native MediaKit Video Player (Zoomed & Cropped with BoxFit.cover to eliminate letterboxing)
-              if (hasNativeTrailer)
-                Positioned.fill(
-                  child: ClipRect(
-                    child: SizedBox.expand(
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        clipBehavior: Clip.hardEdge,
-                        child: SizedBox(
-                          width: _player?.state.width?.toDouble() ?? 16,
-                          height: _player?.state.height?.toDouble() ?? 9,
-                          child: Video(
-                            controller: _videoController!,
+                  // 2. Active Native MediaKit Video Player
+                  if (hasNativeTrailer)
+                    Positioned.fill(
+                      child: ClipRect(
+                        child: SizedBox.expand(
+                          child: FittedBox(
                             fit: BoxFit.cover,
-                            controls: (state) => const SizedBox.shrink(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // 3. Homepage Top Bar Style Blur & Scrim Gradient Background at Top
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: topPadding + 64,
-                child: ClipRect(
-                  child: Stack(
-                    children: [
-                      // Progressive Blur
-                      Positioned.fill(
-                        child: ShaderMask(
-                          blendMode: BlendMode.dstIn,
-                          shaderCallback: (Rect bounds) {
-                            return const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0xFFFFFFFF),
-                                Color(0x99FFFFFF),
-                                Color(0x00FFFFFF),
-                              ],
-                              stops: [0.0, 0.55, 1.0],
-                            ).createShader(bounds);
-                          },
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
-                            child: const ColoredBox(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                      // Scrim Gradient
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                AppColors.surfaceBackground.withValues(alpha: 0.65),
-                                AppColors.surfaceBackground.withValues(alpha: 0.30),
-                                AppColors.surfaceBackground.withValues(alpha: 0.0),
-                              ],
-                              stops: const [0.0, 0.60, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 4. Custom Homepage Style Top Bar Row (Back button left, Heart -> Share -> App Logo right)
-              Positioned(
-                top: topPadding + 4,
-                left: AppTokens.screenEdgeHorizontal,
-                right: AppTokens.screenEdgeHorizontal,
-                height: 36,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Left Back Button
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const AuraIcon(
-                          AppIcons.back,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Right Actions: 1. Like / Watchlist Icon (Heart)
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: AuraIcon(
-                          AppIcons.favorite,
-                          fill: widget.isInWatchlist ? 1.0 : 0.0,
-                          color: widget.isInWatchlist
-                              ? AppColors.accentPink
-                              : Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: widget.onToggleWatchlist,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Right Actions: 2. Share Icon
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const AuraIcon(
-                          AppIcons.share,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: widget.onShare,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Right Actions: 3. App Logo
-                    ClipOval(
-                      child: Image.asset(
-                        AppAssets.appIcon,
-                        width: 32,
-                        height: 32,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 32,
-                          height: 32,
-                          decoration: const BoxDecoration(
-                            color: AppColors.accentPink,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'A',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            clipBehavior: Clip.hardEdge,
+                            child: SizedBox(
+                              width: _player?.state.width?.toDouble() ?? 16,
+                              height: _player?.state.height?.toDouble() ?? 9,
+                              child: Video(
+                                controller: _videoController!,
+                                fit: BoxFit.cover,
+                                controls: (state) => const SizedBox.shrink(),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              // Center Play / Pause Single Button Overlay
-              if (shouldShowControls)
-                Center(
-                  child: GestureDetector(
-                    onTap: _togglePlayPause,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: AuraIcon(
-                        _isPlaying ? AppIcons.pause : AppIcons.play,
-                        size: 26,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Bottom Left Control: Mute / Unmute Button (Reduced size by 30%: 20px -> 14px icon, padding 10 -> 7)
-              if (shouldShowControls)
-                Positioned(
-                  left: 16,
-                  bottom: 36,
-                  child: GestureDetector(
-                    onTap: _toggleMute,
-                    child: Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: AuraIcon(
-                        _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Bottom Right Control: Fullscreen Button (Reduced size by 30%: 20px -> 14px icon, padding 10 -> 7)
-              if (shouldShowControls)
-                Positioned(
-                  right: 16,
-                  bottom: 36,
-                  child: GestureDetector(
-                    onTap: _toggleFullscreen,
-                    child: Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: const AuraIcon(
-                        AppIcons.fullscreen,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Bottom Seamless Minified Fade & Blur Gradient Overlay (Short & subtle melt into AMOLED black)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 36,
-                child: ClipRect(
-                  child: Stack(
-                    children: [
-                      // Progressive Subtle Blur towards bottom edge
-                      Positioned.fill(
-                        child: ShaderMask(
-                          blendMode: BlendMode.dstIn,
-                          shaderCallback: (Rect bounds) {
-                            return const LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Color(0xFFFFFFFF),
-                                Color(0x66FFFFFF),
-                                Color(0x00FFFFFF),
-                              ],
-                              stops: [0.0, 0.50, 1.0],
-                            ).createShader(bounds);
-                          },
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
-                            child: const ColoredBox(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                      // Tight Color Gradient Fade into Pure AMOLED Black
-                      Positioned.fill(
-                        child: DecoratedBox(
+                  // Center Play / Pause Single Button Overlay
+                  if (shouldShowControls)
+                    Center(
+                      child: GestureDetector(
+                        onTap: _togglePlayPause,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                AppColors.surfaceBackground,
-                                AppColors.surfaceBackground.withValues(alpha: 0.60),
-                                AppColors.surfaceBackground.withValues(alpha: 0.0),
-                              ],
-                              stops: const [0.0, 0.50, 1.0],
+                            color: Colors.black.withValues(alpha: 0.55),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              width: 1.5,
                             ),
                           ),
+                          child: AuraIcon(
+                            _isPlaying ? AppIcons.pause : AppIcons.play,
+                            size: 26,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ],
+                    ),
+
+                  // Bottom Left Control: Mute / Unmute Button
+                  if (shouldShowControls)
+                    Positioned(
+                      left: 16,
+                      bottom: widget.overlappingHeader != null ? 160 : 36,
+                      child: GestureDetector(
+                        onTap: _toggleMute,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: AuraIcon(
+                            _isMuted ? AppIcons.volumeOff : AppIcons.volumeUp,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Bottom Right Control: Fullscreen Button
+                  if (shouldShowControls)
+                    Positioned(
+                      right: 16,
+                      bottom: widget.overlappingHeader != null ? 160 : 36,
+                      child: GestureDetector(
+                        onTap: _toggleFullscreen,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: const AuraIcon(
+                            AppIcons.fullscreen,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Bottom Seamless Blur & Scrim Gradient Overlay
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 200,
+                    child: ClipRect(
+                      child: Stack(
+                        children: [
+                          // Progressive Blur
+                          Positioned.fill(
+                            child: ShaderMask(
+                              blendMode: BlendMode.dstIn,
+                              shaderCallback: (Rect bounds) {
+                                return const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0x00FFFFFF),
+                                    Color(0x99FFFFFF),
+                                    Color(0xFFFFFFFF),
+                                  ],
+                                  stops: [0.0, 0.45, 1.0],
+                                ).createShader(bounds);
+                              },
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                                child: const ColoredBox(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                          // Scrim Gradient fading into surface background
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.2),
+                                    Colors.black.withValues(alpha: 0.85),
+                                    AppColors.surfaceBackground,
+                                  ],
+                                  stops: const [0.35, 0.60, 0.82, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          // Overlapping Poster & Metadata Row directly inside backdrop Stack
+          if (widget.overlappingHeader != null)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: widget.overlappingHeader!,
+            ),
+        ],
       ),
     );
   }
