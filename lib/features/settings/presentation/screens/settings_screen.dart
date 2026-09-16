@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../addons/presentation/screens/addons_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -289,6 +290,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             _buildMenuItemPill(
+              icon: AppIcons.extension,
+              title: 'Add-ons & Engine Hub',
+              subtitle: 'Stream engines, background downloaders & manifests',
+              onTap: () => setState(() => _currentSubPage = 'Addons'),
+            ),
+            const SizedBox(height: 8),
+            _buildMenuItemPill(
               icon: AppIcons.shield,
               title: 'Policies',
               subtitle: 'Privacy policy & terms of service',
@@ -565,6 +573,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return _buildPlayerSubPage();
       case 'Streaming':
         return _buildStreamingSubPage();
+      case 'Addons':
+        return const SizedBox(
+          height: 600,
+          child: AddonsScreen(),
+        );
       case 'Policies':
         return _buildPoliciesSubPage();
       case 'Licence':
