@@ -1,3 +1,4 @@
+import 'package:aura/core/errors/exceptions.dart';
 import 'package:aura/features/debrid/data/datasources/real_debrid_api_client.dart';
 import 'package:aura/features/debrid/data/repositories/debrid_repository_impl.dart';
 import 'package:aura/features/debrid/domain/entities/debrid_account.dart';
@@ -47,6 +48,27 @@ class MockRealDebridApiClient extends RealDebridApiClient {
         'https://real-debrid.com/d/FILE_2',
         'https://real-debrid.com/d/FILE_3',
       ],
+    };
+  }
+}
+
+// Mock Uncached RealDebridApiClient (status: downloading)
+class MockUncachedRealDebridApiClient extends RealDebridApiClient {
+  @override
+  Future<String> addMagnet(String token, String magnet) async => 'UNCACHED_ID';
+
+  @override
+  Future<void> selectFiles(String token, String torrentId,
+      {String fileIds = 'all'}) async {}
+
+  @override
+  Future<Map<String, dynamic>> getTorrentInfo(
+      String token, String torrentId) async {
+    return {
+      'id': torrentId,
+      'status': 'downloading',
+      'progress': 12,
+      'links': <dynamic>[],
     };
   }
 }
@@ -137,6 +159,26 @@ void main() {
       expect(mockClient.lastSelectedFiles, equals('2'));
       expect(mockClient.lastUnrestrictedLink, equals('https://real-debrid.com/d/FILE_2'));
       expect(result, equals('https://s12.download.real-debrid.com/d/XYZ123/video.mp4'));
+    });
+
+    test('DebridRepositoryImpl fails fast when torrent status is downloading (uncached)',
+        () async {
+      final mockClient = MockUncachedRealDebridApiClient();
+      final mockStorage = MockSecureStorageService();
+      final repo = DebridRepositoryImpl(
+        apiClient: mockClient,
+        secureStorage: mockStorage,
+      );
+
+      const magnet = 'magnet:?xt=urn:btih:UNCACHED123';
+      expect(
+        () => repo.unrestrictMagnetOrHash(magnet),
+        throwsA(isA<DebridException>().having(
+          (e) => e.message,
+          'message',
+          contains('not cached on Real-Debrid yet'),
+        )),
+      );
     });
 
     test('HttpDebridEngine unrestricts Debrid landing URLs to direct CDN links',

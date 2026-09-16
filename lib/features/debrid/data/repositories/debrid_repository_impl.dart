@@ -55,14 +55,29 @@ class DebridRepositoryImpl implements DebridRepository {
     await _apiClient.selectFiles(token, torrentId,
         fileIds: fileIndex != null ? '$fileIndex' : 'all');
 
-    // 3. Poll/Get torrent info for links with retry loop (15 attempts x 600ms = 9s total)
+    // 3. Poll/Get torrent info for links with retry loop and instant uncached detection
     Map<String, dynamic> info = {};
     List<dynamic>? links;
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 8; i++) {
       info = await _apiClient.getTorrentInfo(token, torrentId);
+      final status = (info['status'] as String?)?.toLowerCase();
+
+      // If status indicates the file is not instantly cached on Real-Debrid, fail fast
+      if (status == 'downloading' ||
+          status == 'queued' ||
+          status == 'compressing' ||
+          status == 'magnet_conversion' ||
+          status == 'waiting_files_selection') {
+        throw const DebridException(
+            'This file is not cached on Real-Debrid yet. Please select an [RD+] instant stream.');
+      } else if (status == 'dead' || status == 'error' || status == 'virus') {
+        throw const DebridException(
+            'Torrent is dead or returned an error on Real-Debrid.');
+      }
+
       links = info['links'] as List<dynamic>?;
       if (links != null && links.isNotEmpty) break;
-      await Future<void>.delayed(const Duration(milliseconds: 600));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
     }
 
     if (links != null && links.isNotEmpty) {

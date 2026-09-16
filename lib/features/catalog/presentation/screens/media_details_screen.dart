@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -152,10 +153,12 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
     
     // Show loading dialog while resolving stream link via Debrid
+    bool dialogShowing = false;
     if (context.mounted) {
+      dialogShowing = true;
       unawaited(showDialog<void>(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: true,
         builder: (ctx) => const Center(
           child: Card(
             color: AppColors.surfaceElevated,
@@ -178,6 +181,16 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       ));
     }
 
+    bool dialogDismissed = false;
+    void dismissDialog() {
+      if (dialogShowing && !dialogDismissed && context.mounted) {
+        dialogDismissed = true;
+        try {
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (_) {}
+      }
+    }
+
     try {
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
@@ -190,10 +203,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         },
       );
 
-      if (context.mounted) {
-        // Pop loading dialog
-        Navigator.of(context, rootNavigator: true).pop();
+      dismissDialog();
 
+      if (context.mounted) {
         context.read<LibraryBloc>().add(
               UpdateProgressEvent(
                 mediaId: item.id.toString(),
@@ -230,15 +242,23 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         );
       }
     } catch (e) {
+      dismissDialog();
       if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
+        final errorMsg = e is DebridException ? e.message : 'Could not resolve stream: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: AppColors.errorAccent,
-            content: Text('Failed to start stream: $e'),
+            backgroundColor: AppColors.statusError,
+            behavior: SnackBarBehavior.floating,
+            content: Text(
+              errorMsg,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
+    } finally {
+      dismissDialog();
     }
   }
 

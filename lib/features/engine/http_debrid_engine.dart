@@ -12,8 +12,9 @@ class HttpDebridEngine implements StreamEngine {
       : _debridRepository = debridRepository,
         _dio = dio ??
             Dio(BaseOptions(
-              connectTimeout: const Duration(seconds: 12),
-              receiveTimeout: const Duration(seconds: 12),
+              connectTimeout: const Duration(seconds: 4),
+              receiveTimeout: const Duration(seconds: 4),
+              sendTimeout: const Duration(seconds: 4),
               headers: {
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -54,7 +55,7 @@ class HttpDebridEngine implements StreamEngine {
           url,
           options: Options(
             followRedirects: true,
-            maxRedirects: 8,
+            maxRedirects: 6,
             headers: headers,
             validateStatus: (status) => status != null && status < 500,
           ),
@@ -65,7 +66,7 @@ class HttpDebridEngine implements StreamEngine {
           options: Options(
             responseType: ResponseType.stream,
             followRedirects: true,
-            maxRedirects: 8,
+            maxRedirects: 6,
             headers: headers,
             validateStatus: (status) => status != null && status < 500,
           ),
@@ -104,6 +105,10 @@ class HttpDebridEngine implements StreamEngine {
         targetUrl = await _debridRepository.unrestrictMagnetOrHash(
           rawUrlOrInfoHash,
           fileIndex: fileIdx,
+        ).timeout(
+          const Duration(seconds: 7),
+          onTimeout: () => throw const DebridException(
+              'Real-Debrid stream resolution timed out. Please try another stream.'),
         );
       } else {
         throw const DebridException(
@@ -112,12 +117,19 @@ class HttpDebridEngine implements StreamEngine {
     } else {
       // 2. HTTP(S) input: Could be a direct link, Stremio proxy redirect, or Debrid landing page (/d/...)
       if (hasDebrid && _isDebridLandingUrl(rawUrlOrInfoHash)) {
-        targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash);
+        targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash).timeout(
+          const Duration(seconds: 4),
+          onTimeout: () => rawUrlOrInfoHash,
+        );
       } else {
-        // Resolve redirects to see if it leads to a Real-Debrid landing page or CDN link
-        final redirectedUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
+        // Resolve redirects with a 3-second timeout fallback so network stalls never hang playback
+        final redirectedUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers)
+            .timeout(const Duration(seconds: 3), onTimeout: () => rawUrlOrInfoHash);
         if (hasDebrid && _isDebridLandingUrl(redirectedUrl)) {
-          targetUrl = await _debridRepository.unrestrictLink(redirectedUrl);
+          targetUrl = await _debridRepository.unrestrictLink(redirectedUrl).timeout(
+            const Duration(seconds: 4),
+            onTimeout: () => redirectedUrl,
+          );
         } else {
           targetUrl = redirectedUrl;
         }
