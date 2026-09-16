@@ -125,33 +125,17 @@ class HttpDebridEngine implements StreamEngine {
             'Unable to resolve torrent stream: Configured Real-Debrid account required.');
       }
     } else {
-    // 2. HTTP(S) input: Direct HTTP/HLS stream or Debrid landing page (/d/...)
-    final isDirectHttpVideo = rawUrlOrInfoHash.toLowerCase().contains('.m3u8') ||
-        rawUrlOrInfoHash.toLowerCase().contains('.mp4') ||
-        rawUrlOrInfoHash.toLowerCase().contains('.mkv');
-
-    if (!hasDebrid && isDirectHttpVideo) {
-      debugPrint('DEBUG: [3] Free Community direct stream detected, bypassing Debrid checks...');
-      targetUrl = rawUrlOrInfoHash;
-    } else if (hasDebrid && _isDebridLandingUrl(rawUrlOrInfoHash)) {
-      debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
-      targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash).timeout(
-        const Duration(seconds: 4),
-        onTimeout: () => rawUrlOrInfoHash,
-      );
-    } else {
-      debugPrint('DEBUG: [3] HTTP stream input, resolving redirects...');
-      final redirectedUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers)
-          .timeout(const Duration(seconds: 3), onTimeout: () => rawUrlOrInfoHash);
-      debugPrint('DEBUG: [3.1] Resolved redirectedUrl: $redirectedUrl');
-      if (hasDebrid && _isDebridLandingUrl(redirectedUrl)) {
-        debugPrint('DEBUG: [3.2] Redirected target is Debrid landing page, unrestricting link...');
-        targetUrl = await _debridRepository.unrestrictLink(redirectedUrl).timeout(
-          const Duration(seconds: 4),
-          onTimeout: () => redirectedUrl,
-        );
+    // 2. HTTP(S) input: Could be a direct link, Stremio proxy redirect, or Debrid landing page (/d/...)
+    if (rawUrlOrInfoHash.startsWith('http://') || rawUrlOrInfoHash.startsWith('https://')) {
+      if (!hasDebrid || !_isDebridLandingUrl(rawUrlOrInfoHash)) {
+        debugPrint('DEBUG: [3] Direct HTTP stream URL detected, resolving redirects...');
+        targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
       } else {
-        targetUrl = redirectedUrl;
+        debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
+        targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash).timeout(
+          const Duration(seconds: 4),
+          onTimeout: () => rawUrlOrInfoHash,
+        );
       }
     }
     }

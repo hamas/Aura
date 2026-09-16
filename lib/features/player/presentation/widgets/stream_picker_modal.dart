@@ -243,10 +243,94 @@ class StreamPickerModal extends StatelessWidget {
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
-                  itemCount: streams.length,
+                  itemCount: streams.length + 1,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final stream = streams[index];
+                    // Inject sample instant HLS test stream at top of list
+                    if (index == 0) {
+                      const sampleStream = AddonStream(
+                        url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+                        name: '⚡ Free Sample HD Stream 1080p',
+                        title: '⚡ Free Sample HD Stream (Instant HLS Playback)',
+                        addonName: 'Free Community Engine',
+                      );
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            onStreamSelected(sampleStream);
+                          },
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF143026),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: AppTheme.successAccent.withAlpha((0.5 * 255).round()),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 64,
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.successAccent.withAlpha((0.2 * 255).round()),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: AppTheme.successAccent),
+                                  ),
+                                  child: const Text(
+                                    '1080p',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppTheme.successAccent,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '⚡ Free Sample HD Stream',
+                                        style: TextStyle(
+                                          color: AppTheme.textPrimary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Direct HLS • No Account Required',
+                                        style: TextStyle(
+                                          color: AppTheme.successAccent,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const AuraIcon(
+                                  AppIcons.playCircle,
+                                  color: AppTheme.successAccent,
+                                  size: 26,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final stream = streams[index - 1];
                     final isTorrent = stream.isTorrent;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
