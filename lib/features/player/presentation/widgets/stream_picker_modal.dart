@@ -246,12 +246,12 @@ class StreamPickerModal extends StatelessWidget {
                   itemCount: streams.length + 1,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    // Inject sample instant HLS test stream at top of list
+                    // Inject sample instant test stream at top of list
                     if (index == 0) {
                       const sampleStream = AddonStream(
-                        url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-                        name: '⚡ Free Sample HD Stream 1080p',
-                        title: '⚡ Free Sample HD Stream (Instant HLS Playback)',
+                        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        name: '⚡ Demo Free HD Stream 1080p',
+                        title: '⚡ Demo Free HD Stream (Instant 1-Tap Playback)',
                         addonName: 'Free Community Engine',
                       );
 
@@ -299,7 +299,7 @@ class StreamPickerModal extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '⚡ Free Sample HD Stream',
+                                        '⚡ Demo Free HD Stream (1080p)',
                                         style: TextStyle(
                                           color: AppTheme.textPrimary,
                                           fontSize: 13,
@@ -308,11 +308,11 @@ class StreamPickerModal extends StatelessWidget {
                                       ),
                                       SizedBox(height: 4),
                                       Text(
-                                        'Direct HLS • No Account Required',
+                                        '[1-TAP FREE STREAM] • Instant Playback',
                                         style: TextStyle(
                                           color: AppTheme.successAccent,
                                           fontSize: 10,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ],
