@@ -418,6 +418,31 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
+                                        if (!isTorrent)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF143026),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: AppTheme.successAccent
+                                                    .withAlpha(
+                                                        (0.4 * 255).round()),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'FREE HTTP',
+                                              style: TextStyle(
+                                                color: AppTheme.successAccent,
+                                                fontSize: 9.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
                                         if (isTorrent)
                                           const Row(
                                             mainAxisSize: MainAxisSize.min,

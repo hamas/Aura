@@ -7,7 +7,7 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../debrid/domain/repositories/debrid_repository.dart';
-import '../../domain/entities/addon_manifest.dart';
+import '../../domain/entities/addon_preset.dart';
 import '../../data/datasources/stremio_addon_api.dart';
 import '../bloc/addon_bloc.dart';
 import '../bloc/addon_event.dart';
@@ -27,14 +27,6 @@ class _AddonsScreenState extends State<AddonsScreen> {
   final StremioAddonApi _addonApi = StremioAddonApi();
   final DebridRepository _debridRepository = DebridRepositoryImpl();
 
-  // Engine installation endpoints
-  static const String _defaultHdEngineUrl =
-      'https://torrentio.strem.fun/manifest.json';
-  static const String _defaultStreamEngineUrl =
-      'https://v3-cinemeta.strem.io/manifest.json';
-  static const String _defaultDownloadEngineUrl =
-      'https://opensubtitles-v3.strem.io/manifest.json';
-
   @override
   void initState() {
     super.initState();
@@ -51,8 +43,10 @@ class _AddonsScreenState extends State<AddonsScreen> {
     );
   }
 
-  void _installEngine(String manifestUrl) {
-    context.read<AddonBloc>().add(InstallAddonFromUrlEvent(manifestUrl));
+  void _installPreset(CommunityAddonPreset preset) {
+    context.read<AddonBloc>().add(
+          InstallDirectAddonManifestEvent(preset.manifest),
+        );
   }
 
   @override
@@ -75,21 +69,28 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     final isLoading = state.status == AddonStatus.loading;
                     final hasError = state.status == AddonStatus.failure;
 
-                    // Stream engine check (addons with 'stream' resource or stream-capable)
-                    final streamEngines = state.installedAddons
-                        .where((a) => a.supportsResource('stream') || a.id.contains('torrentio') || a.id.contains('stream'))
-                        .toList();
-                    final hasStreamEngine = streamEngines.isNotEmpty;
-                    final activeStreamEngine = hasStreamEngine ? streamEngines.first : null;
+                    // Presets status
+                    final freeEngineInstalled = state.installedAddons
+                        .any((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id);
+                    final freeEngineActive = freeEngineInstalled &&
+                        state.installedAddons
+                            .firstWhere((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id)
+                            .isEnabled;
 
-                    // Download engine check
-                    final downloadEngines = state.installedAddons
-                        .where((a) => a.id.contains('download') || a.supportsResource('subtitles') || a.supportsResource('stream'))
-                        .toList();
-                    final hasDownloadEngine = downloadEngines.isNotEmpty;
-                    final activeDownloadEngine = hasDownloadEngine ? downloadEngines.first : null;
+                    final debridEngineInstalled = state.installedAddons
+                        .any((a) => a.id == CommunityAddonPreset.debridHdEngine.id);
+                    final debridEngineActive = debridEngineInstalled &&
+                        state.installedAddons
+                            .firstWhere((a) => a.id == CommunityAddonPreset.debridHdEngine.id)
+                            .isEnabled;
 
-                    // Custom / external third-party add-ons
+                    final subtitlesEngineInstalled = state.installedAddons
+                        .any((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id);
+                    final subtitlesEngineActive = subtitlesEngineInstalled &&
+                        state.installedAddons
+                            .firstWhere((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id)
+                            .isEnabled;
+
                     final customAddons = state.installedAddons;
 
                     return Padding(
@@ -111,110 +112,129 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Install streaming and download engine manifests on demand to unblock media resolution.',
+                            'Install 1-click community engines and utility manifests on demand to resolve media sources.',
                             style: context.auraText.caption.copyWith(
                               color: AppColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: AppTokens.spacingMd),
 
-                          // Section 1: HD Engine Card (Real-Debrid Stream & Download Accelerator)
-                          EngineHubStatusCard(
-                            title: 'HD Engine',
-                            description:
-                                'Pre-configured High-Definition stream resolver for 4K UHD and 1080p stream unrestriction.',
-                            icon: AppIcons.extension,
-                            status: isLoading
-                                ? EngineStatus.downloading
-                                : (state.installedAddons.any((a) => a.id == 'hd_engine')
-                                    ? EngineStatus.installed
-                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
-                            errorMessage: hasError ? state.errorMessage : null,
-                            isActive: state.installedAddons.firstWhere((a) => a.id == 'hd_engine', orElse: () => const AddonManifest(id: '', name: '', version: '', description: '', transportUrl: '', resources: [], types: [])).isEnabled,
-                            onInstallOrUpdate: () async {
-                              await _debridRepository.saveApiToken('7WMQBOBDSULI2VJ32GRDEV5K6TODKRNBYXLHEFWT2DZLXGJAYRHA');
-                              if (context.mounted) {
-                                context.read<AddonBloc>().add(
-                                      const InstallDirectAddonManifestEvent(
-                                        AddonManifest(
-                                          id: 'hd_engine',
-                                          name: 'HD Engine',
-                                          version: '1.0.0',
-                                          description:
-                                              'High-Definition 4K and 1080p stream resolution engine',
-                                          transportUrl: _defaultHdEngineUrl,
-                                          resources: ['stream', 'catalog'],
-                                          types: ['movie', 'series'],
-                                        ),
-                                      ),
-                                    );
-                              }
-                            },
-                            onUninstall: state.installedAddons.any((a) => a.id == 'hd_engine')
-                                ? () => context
-                                    .read<AddonBloc>()
-                                    .add(const UninstallAddonEvent('hd_engine'))
-                                : null,
-                            onToggleActive: state.installedAddons.any((a) => a.id == 'hd_engine')
-                                ? (val) => context.read<AddonBloc>().add(
-                                    const ToggleAddonStatusEvent('hd_engine', true))
-                                : null,
+                          // SECTION 1: CORE STREAM ENGINES
+                          Text(
+                            'SECTION 1: CORE STREAM ENGINES',
+                            style: context.auraText.caption.copyWith(
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
                           ),
-                          const SizedBox(height: AppTokens.spacingMd),
+                          const SizedBox(height: AppTokens.spacingSm),
 
-                          // Section 2: Stream Engine Card
+                          // Free Community Stream Engine Card
                           EngineHubStatusCard(
-                            title: 'Stream Engine',
+                            title: CommunityAddonPreset.freeCommunityEngine.name,
                             description:
-                                'Enables Stremio v3 protocol stream manifest resolution and HTTP/P2P link parsing.',
+                                CommunityAddonPreset.freeCommunityEngine.description,
                             icon: AppIcons.play,
                             status: isLoading
                                 ? EngineStatus.downloading
-                                : (hasStreamEngine
+                                : (freeEngineInstalled
                                     ? EngineStatus.installed
                                     : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
                             errorMessage: hasError ? state.errorMessage : null,
-                            isActive: activeStreamEngine?.isEnabled ?? true,
-                            onInstallOrUpdate: () => _installEngine(_defaultStreamEngineUrl),
-                            onUninstall: activeStreamEngine != null
-                                ? () => context
-                                    .read<AddonBloc>()
-                                    .add(UninstallAddonEvent(activeStreamEngine.id))
+                            isActive: freeEngineActive,
+                            onInstallOrUpdate: () => _installPreset(
+                                CommunityAddonPreset.freeCommunityEngine),
+                            onUninstall: freeEngineInstalled
+                                ? () => context.read<AddonBloc>().add(
+                                      UninstallAddonEvent(
+                                          CommunityAddonPreset.freeCommunityEngine.id),
+                                    )
                                 : null,
-                            onToggleActive: activeStreamEngine != null
+                            onToggleActive: freeEngineInstalled
                                 ? (val) => context.read<AddonBloc>().add(
-                                    ToggleAddonStatusEvent(activeStreamEngine.id, val))
+                                      ToggleAddonStatusEvent(
+                                          CommunityAddonPreset.freeCommunityEngine.id, val),
+                                    )
                                 : null,
                           ),
                           const SizedBox(height: AppTokens.spacingMd),
 
-                          // Section 3: Download Engine Card
+                          // Accelerated Debrid Engine Card
                           EngineHubStatusCard(
-                            title: 'Download Engine',
+                            title: CommunityAddonPreset.debridHdEngine.name,
                             description:
-                                'Enables background media fetching, offline storage caching, and subtitle indexing.',
-                            icon: AppIcons.download,
+                                CommunityAddonPreset.debridHdEngine.description,
+                            icon: AppIcons.extension,
                             status: isLoading
                                 ? EngineStatus.downloading
-                                : (hasDownloadEngine
+                                : (debridEngineInstalled
                                     ? EngineStatus.installed
                                     : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
                             errorMessage: hasError ? state.errorMessage : null,
-                            isActive: activeDownloadEngine?.isEnabled ?? true,
-                            onInstallOrUpdate: () => _installEngine(_defaultDownloadEngineUrl),
-                            onUninstall: activeDownloadEngine != null
-                                ? () => context
-                                    .read<AddonBloc>()
-                                    .add(UninstallAddonEvent(activeDownloadEngine.id))
+                            isActive: debridEngineActive,
+                            onInstallOrUpdate: () async {
+                              await _debridRepository.saveApiToken('7WMQBOBDSULI2VJ32GRDEV5K6TODKRNBYXLHEFWT2DZLXGJAYRHA');
+                              if (context.mounted) {
+                                _installPreset(CommunityAddonPreset.debridHdEngine);
+                              }
+                            },
+                            onUninstall: debridEngineInstalled
+                                ? () => context.read<AddonBloc>().add(
+                                      UninstallAddonEvent(
+                                          CommunityAddonPreset.debridHdEngine.id),
+                                    )
                                 : null,
-                            onToggleActive: activeDownloadEngine != null
+                            onToggleActive: debridEngineInstalled
                                 ? (val) => context.read<AddonBloc>().add(
-                                    ToggleAddonStatusEvent(activeDownloadEngine.id, val))
+                                      ToggleAddonStatusEvent(
+                                          CommunityAddonPreset.debridHdEngine.id, val),
+                                    )
                                 : null,
                           ),
                           const SizedBox(height: AppTokens.spacingLg),
 
-                          // Section 3: Installed Add-ons List & Custom Manifest Paste
+                          // SECTION 2: UTILITY & SUBTITLES
+                          Text(
+                            'SECTION 2: UTILITY & SUBTITLES',
+                            style: context.auraText.caption.copyWith(
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: AppTokens.spacingSm),
+
+                          EngineHubStatusCard(
+                            title: CommunityAddonPreset.openSubtitlesEngine.name,
+                            description:
+                                CommunityAddonPreset.openSubtitlesEngine.description,
+                            icon: AppIcons.download,
+                            status: isLoading
+                                ? EngineStatus.downloading
+                                : (subtitlesEngineInstalled
+                                    ? EngineStatus.installed
+                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
+                            errorMessage: hasError ? state.errorMessage : null,
+                            isActive: subtitlesEngineActive,
+                            onInstallOrUpdate: () => _installPreset(
+                                CommunityAddonPreset.openSubtitlesEngine),
+                            onUninstall: subtitlesEngineInstalled
+                                ? () => context.read<AddonBloc>().add(
+                                      UninstallAddonEvent(
+                                          CommunityAddonPreset.openSubtitlesEngine.id),
+                                    )
+                                : null,
+                            onToggleActive: subtitlesEngineInstalled
+                                ? (val) => context.read<AddonBloc>().add(
+                                      ToggleAddonStatusEvent(
+                                          CommunityAddonPreset.openSubtitlesEngine.id, val),
+                                    )
+                                : null,
+                          ),
+                          const SizedBox(height: AppTokens.spacingLg),
+
+                          // SECTION 3: INSTALLED ADD-ONS & CUSTOM MANIFEST
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
