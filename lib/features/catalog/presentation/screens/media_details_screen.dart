@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -149,6 +150,34 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     String? episodeTitle,
   }) async {
     final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
+    
+    // Show loading dialog while resolving stream link via Debrid
+    if (context.mounted) {
+      unawaited(showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(
+          child: Card(
+            color: AppColors.surfaceElevated,
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: AppColors.accentPink),
+                  SizedBox(height: 14),
+                  Text(
+                    'Resolving HD Stream...',
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ));
+    }
+
     try {
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
@@ -161,6 +190,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       );
 
       if (context.mounted) {
+        // Pop loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
+
         context.read<LibraryBloc>().add(
               UpdateProgressEvent(
                 mediaId: item.id.toString(),
@@ -198,6 +230,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       }
     } catch (e) {
       if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.errorAccent,
