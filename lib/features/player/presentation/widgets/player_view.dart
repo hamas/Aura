@@ -184,11 +184,16 @@ class _PlayerViewState extends State<PlayerView> {
               ),
 
               // Hardware-accelerated Video Surface
-              Center(
-                child: Video(
-                  controller: widget.playerService.controller,
-                  fit: state.fit,
-                  controls: (state) => const SizedBox.shrink(),
+              SizedBox.expand(
+                child: ColoredBox(
+                  color: Colors.black,
+                  child: Center(
+                    child: Video(
+                      controller: widget.playerService.controller,
+                      fit: state.fit,
+                      controls: (state) => const SizedBox.shrink(),
+                    ),
+                  ),
                 ),
               ),
 

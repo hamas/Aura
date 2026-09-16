@@ -26,6 +26,8 @@ class MediaKitPlayerService {
       player,
       configuration: const VideoControllerConfiguration(
         enableHardwareAcceleration: true,
+        androidAttachSurfaceAfterVideoParameters: true,
+        hwdec: 'auto-safe',
       ),
     );
 
