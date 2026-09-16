@@ -48,8 +48,24 @@ class HttpDebridEngine implements StreamEngine {
       );
     }
 
-    // Check if infoHash provided and Debrid is configured
-    if (_debridRepository != null && _isHexInfoHash(rawUrlOrInfoHash)) {
+    if (rawUrlOrInfoHash.isEmpty) {
+      throw const DebridException(
+          'Stream source is missing or invalid. Please select another stream result.');
+    }
+
+    // Check if infoHash provided but Debrid is missing token
+    if (_isHexInfoHash(rawUrlOrInfoHash)) {
+      if (_debridRepository == null) {
+        throw const DebridException(
+            'Debrid account not linked. Please configure Real-Debrid in Settings > Streaming.');
+      }
+
+      final hasToken = await _debridRepository.hasValidToken();
+      if (!hasToken) {
+        throw const DebridException(
+            'Debrid API key missing. Please enter your Real-Debrid API token in Settings > Streaming.');
+      }
+
       final unrestrictedUrl = await _debridRepository.unrestrictMagnetOrHash(
         rawUrlOrInfoHash,
         fileIndex: extraParams?['fileIdx'] as int?,
@@ -65,7 +81,7 @@ class HttpDebridEngine implements StreamEngine {
     }
 
     throw const DebridException(
-        'Unable to resolve stream: Direct HTTP URL or Debrid service required.');
+        'Unable to resolve stream: Direct HTTP URL or configured Debrid account required.');
   }
 
   bool _isHexInfoHash(String str) {

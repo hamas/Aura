@@ -13,6 +13,7 @@ import '../../../addons/presentation/bloc/addon_state.dart';
 import '../../../downloads/domain/entities/download_task.dart';
 import '../../../downloads/presentation/bloc/downloads_bloc.dart';
 import '../../../downloads/presentation/bloc/downloads_event.dart';
+import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../engine/http_debrid_engine.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
@@ -147,7 +148,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     int? episodeNumber,
     String? episodeTitle,
   }) async {
-    final engine = HttpDebridEngine();
+    final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
     try {
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
@@ -278,7 +279,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     int? episodeNumber,
     String? episodeTitle,
   }) async {
-    final engine = HttpDebridEngine();
+    final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
     try {
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
