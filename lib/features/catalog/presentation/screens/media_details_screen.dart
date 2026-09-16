@@ -111,6 +111,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       return;
     }
 
+    final parentContext = context;
     addonBloc.add(FetchStreamsForMediaEvent(
       type: item.type == MediaType.movie ? 'movie' : 'series',
       id: stremioId,
@@ -127,14 +128,18 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             return StreamPickerModal(
               streams: addonState.resolvedStreams,
               isLoading: addonState.isLoadingStreams,
-              onStreamSelected: (stream) => _launchPlayerWithStream(
-                context,
-                item,
-                stream,
-                seasonNumber: effectiveSeason,
-                episodeNumber: effectiveEpisode,
-                episodeTitle: episodeTitle,
-              ),
+              onStreamSelected: (stream) {
+                // Dismiss StreamPickerModal bottom sheet first
+                Navigator.of(modalContext).pop();
+                _launchPlayerWithStream(
+                  parentContext,
+                  item,
+                  stream,
+                  seasonNumber: effectiveSeason,
+                  episodeNumber: effectiveEpisode,
+                  episodeTitle: episodeTitle,
+                );
+              },
             );
           },
         );
@@ -153,45 +158,49 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
     
     // Show loading dialog while resolving stream link via Debrid
-    bool dialogShowing = false;
+    BuildContext? dialogContext;
     if (context.mounted) {
-      dialogShowing = true;
       unawaited(showDialog<void>(
         context: context,
         barrierDismissible: true,
-        builder: (ctx) => const Center(
-          child: Card(
-            color: AppColors.surfaceElevated,
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: AppColors.accentPink),
-                  SizedBox(height: 14),
-                  Text(
-                    'Resolving HD Stream...',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                  ),
-                ],
+        builder: (ctx) {
+          dialogContext = ctx;
+          return const Center(
+            child: Card(
+              color: AppColors.surfaceElevated,
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppColors.accentPink),
+                    SizedBox(height: 14),
+                    Text(
+                      'Resolving HD Stream...',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ));
     }
 
-    bool dialogDismissed = false;
     void dismissDialog() {
-      if (dialogShowing && !dialogDismissed && context.mounted) {
-        dialogDismissed = true;
+      if (dialogContext != null && dialogContext!.mounted) {
         try {
-          Navigator.of(context, rootNavigator: true).pop();
+          if (Navigator.of(dialogContext!, rootNavigator: true).canPop()) {
+            Navigator.of(dialogContext!, rootNavigator: true).pop();
+          }
         } catch (_) {}
+        dialogContext = null;
       }
     }
 
     try {
+      debugPrint('DEBUG: [1] Launching player stream resolution for: ${stream.title ?? item.title}');
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
         rawUrlOrInfoHash: rawTarget,
@@ -203,6 +212,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         },
       );
 
+      debugPrint('DEBUG: [5] Dismissing loading HUD and pushing player with URL: ${resolved.streamUrl}');
       dismissDialog();
 
       if (context.mounted) {
@@ -242,6 +252,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         );
       }
     } catch (e) {
+      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
       dismissDialog();
       if (context.mounted) {
         final errorMsg = e is DebridException ? e.message : 'Could not resolve stream: $e';

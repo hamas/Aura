@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'common/stream_engine.dart';
 import '../../core/errors/exceptions.dart';
 import '../debrid/domain/repositories/debrid_repository.dart';
@@ -71,6 +72,10 @@ class HttpDebridEngine implements StreamEngine {
             validateStatus: (status) => status != null && status < 500,
           ),
         );
+        if (response.data is ResponseBody) {
+          final resBody = response.data as ResponseBody;
+          unawaited(resBody.stream.drain<dynamic>().catchError((_) {}));
+        }
       }
       return response.realUri.toString();
     } catch (_) {
@@ -83,6 +88,7 @@ class HttpDebridEngine implements StreamEngine {
     required String rawUrlOrInfoHash,
     Map<String, dynamic>? extraParams,
   }) async {
+    debugPrint('DEBUG: [1] Entering resolveStream with: $rawUrlOrInfoHash');
     final title = extraParams?['title'] as String?;
     final quality = extraParams?['quality'] as String?;
     final headers = extraParams?['headers'] as Map<String, String>?;
@@ -93,8 +99,10 @@ class HttpDebridEngine implements StreamEngine {
           'Stream source is missing or invalid. Please select another stream result.');
     }
 
+    debugPrint('DEBUG: [2] Checking Debrid token...');
     final hasDebrid =
         _debridRepository != null && await _debridRepository.hasValidToken();
+    debugPrint('DEBUG: [2.1] Debrid token valid: $hasDebrid');
 
     String targetUrl = rawUrlOrInfoHash;
 
@@ -102,6 +110,7 @@ class HttpDebridEngine implements StreamEngine {
     if (!rawUrlOrInfoHash.startsWith('http://') &&
         !rawUrlOrInfoHash.startsWith('https://')) {
       if (hasDebrid) {
+        debugPrint('DEBUG: [3] Unrestricting magnet/infoHash via Debrid repository...');
         targetUrl = await _debridRepository.unrestrictMagnetOrHash(
           rawUrlOrInfoHash,
           fileIndex: fileIdx,
@@ -110,6 +119,7 @@ class HttpDebridEngine implements StreamEngine {
           onTimeout: () => throw const DebridException(
               'Real-Debrid stream resolution timed out. Please try another stream.'),
         );
+        debugPrint('DEBUG: [4] Magnet un-restricted targetUrl: $targetUrl');
       } else {
         throw const DebridException(
             'Unable to resolve torrent stream: Configured Real-Debrid account required.');
@@ -117,15 +127,18 @@ class HttpDebridEngine implements StreamEngine {
     } else {
       // 2. HTTP(S) input: Could be a direct link, Stremio proxy redirect, or Debrid landing page (/d/...)
       if (hasDebrid && _isDebridLandingUrl(rawUrlOrInfoHash)) {
+        debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
         targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash).timeout(
           const Duration(seconds: 4),
           onTimeout: () => rawUrlOrInfoHash,
         );
       } else {
-        // Resolve redirects with a 3-second timeout fallback so network stalls never hang playback
+        debugPrint('DEBUG: [3] HTTP stream input, resolving redirects...');
         final redirectedUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers)
             .timeout(const Duration(seconds: 3), onTimeout: () => rawUrlOrInfoHash);
+        debugPrint('DEBUG: [3.1] Resolved redirectedUrl: $redirectedUrl');
         if (hasDebrid && _isDebridLandingUrl(redirectedUrl)) {
+          debugPrint('DEBUG: [3.2] Redirected target is Debrid landing page, unrestricting link...');
           targetUrl = await _debridRepository.unrestrictLink(redirectedUrl).timeout(
             const Duration(seconds: 4),
             onTimeout: () => redirectedUrl,
@@ -135,6 +148,7 @@ class HttpDebridEngine implements StreamEngine {
         }
       }
     }
+    debugPrint('DEBUG: [4] Final resolved stream URL: $targetUrl');
 
     final isHls = targetUrl.contains('.m3u8');
     final isDash = targetUrl.contains('.mpd');
