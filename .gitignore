@@ -58,7 +58,7 @@ android/.gradle/
 ios/Pods/
 macos/Pods/
 *.xcworkspace
-!.vscode/settings.json
+.vscode/
 
 # Symbolication related
 app.*.symbols
