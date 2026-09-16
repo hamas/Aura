@@ -5,6 +5,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../debrid/data/repositories/debrid_repository_impl.dart';
+import '../../../debrid/domain/repositories/debrid_repository.dart';
+import '../../domain/entities/addon_manifest.dart';
 import '../../data/datasources/stremio_addon_api.dart';
 import '../bloc/addon_bloc.dart';
 import '../bloc/addon_event.dart';
@@ -22,10 +25,13 @@ class AddonsScreen extends StatefulWidget {
 
 class _AddonsScreenState extends State<AddonsScreen> {
   final StremioAddonApi _addonApi = StremioAddonApi();
+  final DebridRepository _debridRepository = DebridRepositoryImpl();
 
   // Engine installation endpoints
-  static const String _defaultStreamEngineUrl =
+  static const String _defaultHdEngineUrl =
       'https://torrentio.strem.fun/manifest.json';
+  static const String _defaultStreamEngineUrl =
+      'https://v3-cinemeta.strem.io/manifest.json';
   static const String _defaultDownloadEngineUrl =
       'https://opensubtitles-v3.strem.io/manifest.json';
 
@@ -112,7 +118,36 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           ),
                           const SizedBox(height: AppTokens.spacingMd),
 
-                          // Section 1: Stream Engine Card
+                          // Section 1: HD Engine Card (Real-Debrid Stream & Download Accelerator)
+                          EngineHubStatusCard(
+                            title: 'HD Engine',
+                            description:
+                                'Pre-configured High-Definition stream resolver for 4K UHD and 1080p stream unrestriction.',
+                            icon: AppIcons.extension,
+                            status: isLoading
+                                ? EngineStatus.downloading
+                                : (state.installedAddons.any((a) => a.id == 'hd_engine')
+                                    ? EngineStatus.installed
+                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
+                            errorMessage: hasError ? state.errorMessage : null,
+                            isActive: state.installedAddons.firstWhere((a) => a.id == 'hd_engine', orElse: () => const AddonManifest(id: '', name: '', version: '', description: '', transportUrl: '', resources: [], types: [])).isEnabled,
+                            onInstallOrUpdate: () async {
+                              await _debridRepository.saveApiToken('7WMQBOBDSULI2VJ32GRDEV5K6TODKRNBYXLHEFWT2DZLXGJAYRHA');
+                              _installEngine(_defaultHdEngineUrl);
+                            },
+                            onUninstall: state.installedAddons.any((a) => a.id == 'hd_engine')
+                                ? () => context
+                                    .read<AddonBloc>()
+                                    .add(const UninstallAddonEvent('hd_engine'))
+                                : null,
+                            onToggleActive: state.installedAddons.any((a) => a.id == 'hd_engine')
+                                ? (val) => context.read<AddonBloc>().add(
+                                    const ToggleAddonStatusEvent('hd_engine', true))
+                                : null,
+                          ),
+                          const SizedBox(height: AppTokens.spacingMd),
+
+                          // Section 2: Stream Engine Card
                           EngineHubStatusCard(
                             title: 'Stream Engine',
                             description:
@@ -138,7 +173,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           ),
                           const SizedBox(height: AppTokens.spacingMd),
 
-                          // Section 2: Download Engine Card
+                          // Section 3: Download Engine Card
                           EngineHubStatusCard(
                             title: 'Download Engine',
                             description:
