@@ -50,9 +50,15 @@ class DebridRepositoryImpl implements DebridRepository {
     await _apiClient.selectFiles(token, torrentId,
         fileIds: fileIndex != null ? '$fileIndex' : 'all');
 
-    // 3. Poll/Get torrent info for links
-    final info = await _apiClient.getTorrentInfo(token, torrentId);
-    final links = info['links'] as List<dynamic>?;
+    // 3. Poll/Get torrent info for links with brief retry loop
+    Map<String, dynamic> info = {};
+    List<dynamic>? links;
+    for (int i = 0; i < 5; i++) {
+      info = await _apiClient.getTorrentInfo(token, torrentId);
+      links = info['links'] as List<dynamic>?;
+      if (links != null && links.isNotEmpty) break;
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+    }
 
     if (links != null && links.isNotEmpty) {
       final downloadLink = links.first as String;
