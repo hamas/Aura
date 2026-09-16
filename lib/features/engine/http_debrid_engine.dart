@@ -99,19 +99,54 @@ class HttpDebridEngine implements StreamEngine {
           'Stream source is missing or invalid. Please select another stream result.');
     }
 
-    debugPrint('DEBUG: [2] Checking Debrid token...');
-    final hasDebrid =
-        _debridRepository != null && await _debridRepository.hasValidToken();
+    // 1. ABSOLUTE BYPASS: Direct Web, Demo, or HLS streams NEVER touch Debrid or token storage
+    final isHttp = rawUrlOrInfoHash.startsWith('http://') ||
+        rawUrlOrInfoHash.startsWith('https://');
+    final isDirectMedia =
+        rawUrlOrInfoHash.contains('commondatastorage.googleapis.com') ||
+            rawUrlOrInfoHash.endsWith('.mp4') ||
+            rawUrlOrInfoHash.endsWith('.mkv') ||
+            rawUrlOrInfoHash.contains('.m3u8');
+
+    // 2. Debrid Evaluation for Magnet/InfoHash or explicit Debrid Landing URLs
+    debugPrint('DEBUG: [2] Evaluating Debrid token for torrent/unrestrict link...');
+    bool hasDebrid = false;
+    try {
+      hasDebrid = _debridRepository != null && await _debridRepository.hasValidToken();
+    } catch (_) {
+      hasDebrid = false;
+    }
     debugPrint('DEBUG: [2.1] Debrid token valid: $hasDebrid');
+
+    if (isHttp && (!hasDebrid || (!isHttp && !hasDebrid) || (isDirectMedia && !_isDebridLandingUrl(rawUrlOrInfoHash)) || !_isDebridLandingUrl(rawUrlOrInfoHash))) {
+      debugPrint('DEBUG: [Direct Bypass] Direct HTTP stream URL detected, skipping Debrid validation...');
+      final targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
+      final isHls = targetUrl.contains('.m3u8');
+      final isDash = targetUrl.contains('.mpd');
+
+      return ResolvedStream(
+        streamUrl: targetUrl,
+        sourceType: isHls
+            ? StreamSourceType.hls
+            : isDash
+                ? StreamSourceType.dash
+                : StreamSourceType.directHttp,
+        httpHeaders: {
+          'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          if (headers != null) ...headers,
+        },
+        title: title ?? 'Direct Stream',
+        quality: quality,
+      );
+    }
 
     String targetUrl = rawUrlOrInfoHash;
 
-    // 1. Non-HTTP inputs: Torrent InfoHash or Magnet URI
-    if (!rawUrlOrInfoHash.startsWith('http://') &&
-        !rawUrlOrInfoHash.startsWith('https://')) {
+    if (!isHttp) {
       if (hasDebrid) {
         debugPrint('DEBUG: [3] Unrestricting magnet/infoHash via Debrid repository...');
-        targetUrl = await _debridRepository.unrestrictMagnetOrHash(
+        targetUrl = await _debridRepository!.unrestrictMagnetOrHash(
           rawUrlOrInfoHash,
           fileIndex: fileIdx,
         ).timeout(
@@ -119,26 +154,18 @@ class HttpDebridEngine implements StreamEngine {
           onTimeout: () => throw const DebridException(
               'Real-Debrid stream resolution timed out. Please try another stream.'),
         );
-        debugPrint('DEBUG: [4] Magnet un-restricted targetUrl: $targetUrl');
       } else {
         throw const DebridException(
             'Unable to resolve torrent stream: Configured Real-Debrid account required.');
       }
-    } else {
-    // 2. HTTP(S) input: Could be a direct link, Stremio proxy redirect, or Debrid landing page (/d/...)
-    if (rawUrlOrInfoHash.startsWith('http://') || rawUrlOrInfoHash.startsWith('https://')) {
-      if (!hasDebrid || !_isDebridLandingUrl(rawUrlOrInfoHash)) {
-        debugPrint('DEBUG: [3] Direct HTTP stream URL detected, resolving redirects...');
-        targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
-      } else {
-        debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
-        targetUrl = await _debridRepository.unrestrictLink(rawUrlOrInfoHash).timeout(
-          const Duration(seconds: 4),
-          onTimeout: () => rawUrlOrInfoHash,
-        );
-      }
+    } else if (hasDebrid && _isDebridLandingUrl(rawUrlOrInfoHash)) {
+      debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
+      targetUrl = await _debridRepository!.unrestrictLink(rawUrlOrInfoHash).timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => rawUrlOrInfoHash,
+      );
     }
-    }
+
     debugPrint('DEBUG: [4] Final resolved stream URL: $targetUrl');
 
     final isHls = targetUrl.contains('.m3u8');
