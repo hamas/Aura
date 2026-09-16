@@ -217,6 +217,15 @@ class _PlayerViewState extends State<PlayerView> {
                     bloc.add(const SkipCurrentIntervalEvent()),
                 onNextEpisode: widget.onNextEpisode,
                 onWatchTogether: _openWatchTogetherDialog,
+                onRetryStream: () {
+                  if (state.currentStreamUrl != null) {
+                    bloc.add(PlayStreamEvent(
+                      streamUrl: state.currentStreamUrl!,
+                      title: state.title,
+                      subtitle: state.subtitle,
+                    ));
+                  }
+                },
                 onBack: widget.onBack,
               ),
 

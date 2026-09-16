@@ -43,6 +43,11 @@ class DebridRepositoryImpl implements DebridRepository {
           'Real-Debrid API token is required to unrestrict streams.');
     }
 
+    if (magnetOrInfoHash.startsWith('http://') ||
+        magnetOrInfoHash.startsWith('https://')) {
+      return _apiClient.unrestrictLink(token, magnetOrInfoHash);
+    }
+
     // 1. Add magnet to Real-Debrid
     final torrentId = await _apiClient.addMagnet(token, magnetOrInfoHash);
 
@@ -61,13 +66,30 @@ class DebridRepositoryImpl implements DebridRepository {
     }
 
     if (links != null && links.isNotEmpty) {
-      final downloadLink = links.first as String;
+      String downloadLink = links.first as String;
+      if (fileIndex != null) {
+        if (fileIndex > 0 && fileIndex <= links.length) {
+          downloadLink = links[fileIndex - 1] as String;
+        } else if (fileIndex >= 0 && fileIndex < links.length) {
+          downloadLink = links[fileIndex] as String;
+        }
+      }
       // 4. Unrestrict link
       return _apiClient.unrestrictLink(token, downloadLink);
     }
 
     throw const DebridException(
         'Real-Debrid could not resolve instant download links for this torrent.');
+  }
+
+  @override
+  Future<String> unrestrictLink(String link) async {
+    final token = await _secureStorage.getRealDebridApiKey();
+    if (token == null) {
+      throw const DebridException(
+          'Real-Debrid API token is required to unrestrict streams.');
+    }
+    return _apiClient.unrestrictLink(token, link);
   }
 
   @override

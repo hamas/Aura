@@ -8,6 +8,8 @@ import '../../../../../core/theme/app_typography.dart';
 class PlayerGestureFeedbackOverlay extends StatelessWidget {
   final bool showLeftSeekRipple;
   final bool showRightSeekRipple;
+  final int leftSeekSeconds;
+  final int rightSeekSeconds;
   final bool showBrightnessHud;
   final double currentBrightness;
   final bool showVolumeHud;
@@ -15,6 +17,7 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
   final bool isScrubbing;
   final Duration scrubOffset;
   final Duration scrubTarget;
+  final String? zoomToastMessage;
   final Size size;
   final String Function(Duration) formatDuration;
 
@@ -22,6 +25,8 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
     super.key,
     required this.showLeftSeekRipple,
     required this.showRightSeekRipple,
+    this.leftSeekSeconds = 10,
+    this.rightSeekSeconds = 10,
     required this.showBrightnessHud,
     required this.currentBrightness,
     required this.showVolumeHud,
@@ -29,6 +34,7 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
     required this.isScrubbing,
     required this.scrubOffset,
     required this.scrubTarget,
+    this.zoomToastMessage,
     required this.size,
     required this.formatDuration,
   });
@@ -37,73 +43,118 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Left Double-Tap Seek Animation Ripple
+        // Left Double-Tap Seek Animation Ripple (YouTube style circular badge + ripple)
         if (showLeftSeekRipple)
           Positioned(
             left: 0,
             top: 0,
             bottom: 0,
-            width: size.width * 0.4,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.centerLeft,
-                  radius: 1.0,
-                  colors: [
-                    AppColors.accentPink.withAlpha((0.25 * 255).round()),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AuraIcon(AppIcons.replay10,
-                        color: AppColors.textPrimary, size: 48),
-                    const SizedBox(height: AppTokens.spacingXs),
-                    Text(
-                      '-10s',
-                      style: context.auraText.itemTitle.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
+            width: size.width * 0.42,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.horizontal(right: Radius.circular(100)),
+              child: Container(
+                color: Colors.white.withAlpha(25),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppTokens.spacingMd),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(140),
+                      shape: BoxShape.circle,
                     ),
-                  ],
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AuraIcon(
+                          AppIcons.replay10,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '-${leftSeekSeconds}s',
+                          style: context.auraText.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
 
-        // Right Double-Tap Seek Animation Ripple
+        // Right Double-Tap Seek Animation Ripple (YouTube style circular badge + ripple)
         if (showRightSeekRipple)
           Positioned(
             right: 0,
             top: 0,
             bottom: 0,
-            width: size.width * 0.4,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.centerRight,
-                  radius: 1.0,
-                  colors: [
-                    AppColors.accentPink.withAlpha((0.25 * 255).round()),
-                    Colors.transparent,
-                  ],
+            width: size.width * 0.42,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(100)),
+              child: Container(
+                color: Colors.white.withAlpha(25),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppTokens.spacingMd),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(140),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AuraIcon(
+                          AppIcons.forward10,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '+${rightSeekSeconds}s',
+                          style: context.auraText.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              child: Center(
-                child: Column(
+            ),
+          ),
+
+        // Zoom-to-Fill / Original Aspect Ratio Toast (Centered)
+        if (zoomToastMessage != null)
+          Positioned(
+            top: 48,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTokens.spacingMd,
+                  vertical: AppTokens.spacingSm,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withAlpha(200),
+                  borderRadius: BorderRadius.circular(AppTokens.radiusPill),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const AuraIcon(AppIcons.forward10,
-                        color: AppColors.textPrimary, size: 48),
-                    const SizedBox(height: AppTokens.spacingXs),
+                    const AuraIcon(AppIcons.aspectRatio, color: Colors.white, size: 16),
+                    const SizedBox(width: AppTokens.spacingSm),
                     Text(
-                      '+10s',
-                      style: context.auraText.itemTitle.copyWith(
-                        color: AppColors.textPrimary,
+                      zoomToastMessage!,
+                      style: context.auraText.caption.copyWith(
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -113,10 +164,10 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
             ),
           ),
 
-        // Brightness HUD Overlay (Left Vertical)
+        // Brightness HUD Overlay (Left Vertical slider)
         if (showBrightnessHud)
           Positioned(
-            left: AppTokens.spacingXl,
+            left: AppTokens.spacingLg,
             top: 0,
             bottom: 0,
             child: Center(
@@ -131,10 +182,10 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
             ),
           ),
 
-        // Volume HUD Overlay (Right Vertical)
+        // Volume HUD Overlay (Right Vertical slider)
         if (showVolumeHud)
           Positioned(
-            right: AppTokens.spacingXl,
+            right: AppTokens.spacingLg,
             top: 0,
             bottom: 0,
             child: Center(
@@ -161,15 +212,14 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
                   vertical: AppTokens.spacingSm,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceBackground
-                      .withAlpha((0.85 * 255).round()),
+                  color: Colors.black.withAlpha(210),
                   borderRadius: BorderRadius.circular(AppTokens.radiusLarge),
                   border: Border.all(
-                    color: AppColors.accentPink.withAlpha((0.5 * 255).round()),
+                    color: AppColors.accentPink.withAlpha(140),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha((0.5 * 255).round()),
+                      color: Colors.black.withAlpha(120),
                       blurRadius: 16,
                     ),
                   ],
@@ -185,7 +235,7 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
                               ? AppIcons.fastRewind
                               : AppIcons.fastForward,
                           color: AppColors.accentPink,
-                          size: 24,
+                          size: 20,
                         ),
                         const SizedBox(width: AppTokens.spacingSm),
                         Text(
@@ -195,6 +245,7 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
                                 ? AppColors.statusError
                                 : AppColors.statusSuccess,
                             fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -203,8 +254,9 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
                     Text(
                       formatDuration(scrubTarget),
                       style: context.auraText.sectionTitle.copyWith(
-                        color: AppColors.textPrimary,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
                     ),
                   ],
@@ -223,17 +275,17 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
     required String label,
   }) {
     return Container(
-      width: 44,
-      height: 160,
+      width: 42,
+      height: 150,
       padding: const EdgeInsets.symmetric(vertical: AppTokens.spacingSm),
       decoration: BoxDecoration(
-        color: AppColors.surfaceBackground.withAlpha((0.8 * 255).round()),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.borderSubtle),
+        color: Colors.black.withAlpha(190),
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: Colors.white12),
       ),
       child: Column(
         children: [
-          AuraIcon(icon, color: AppColors.textPrimary, size: 20),
+          AuraIcon(icon, color: Colors.white, size: 18),
           const SizedBox(height: AppTokens.spacingSm),
           Expanded(
             child: RotatedBox(
@@ -242,9 +294,8 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
                 child: LinearProgressIndicator(
                   value: percent.clamp(0.0, 1.0),
-                  backgroundColor: AppColors.borderSubtle,
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(AppColors.accentPink),
+                  backgroundColor: Colors.white24,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentPink),
                 ),
               ),
             ),
@@ -253,8 +304,9 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
           Text(
             label,
             style: context.auraText.caption.copyWith(
-              color: AppColors.textPrimary,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
+              fontSize: 10,
             ),
           ),
         ],

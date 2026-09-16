@@ -14,6 +14,9 @@ abstract class DebridRepository {
   Future<String> unrestrictMagnetOrHash(String magnetOrInfoHash,
       {int? fileIndex});
 
+  /// Unrestrict a direct link or hoster URL to a direct CDN video stream.
+  Future<String> unrestrictLink(String link);
+
   /// Remove stored API token.
   Future<void> removeToken();
 }

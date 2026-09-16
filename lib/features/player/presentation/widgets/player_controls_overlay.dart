@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/media_interval.dart';
@@ -29,6 +28,7 @@ class PlayerControlsOverlay extends StatefulWidget {
   final VoidCallback? onSkipInterval;
   final VoidCallback? onNextEpisode;
   final VoidCallback? onWatchTogether;
+  final VoidCallback? onRetryStream;
   final VoidCallback onBack;
 
   const PlayerControlsOverlay({
@@ -49,6 +49,7 @@ class PlayerControlsOverlay extends StatefulWidget {
     this.onSkipInterval,
     this.onNextEpisode,
     this.onWatchTogether,
+    this.onRetryStream,
     required this.onBack,
   });
 
@@ -77,9 +78,13 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   Timer? _volumeHudTimer;
 
   // Horizontal scrub gesture state
-  bool _isScrubbing = false;
-  Duration _scrubTarget = Duration.zero;
-  Duration _scrubOffset = Duration.zero;
+  final bool _isScrubbing = false;
+  final Duration _scrubTarget = Duration.zero;
+  final Duration _scrubOffset = Duration.zero;
+
+  // Pinch-to-zoom toast state
+  String? _zoomToastMessage;
+  Timer? _zoomToastTimer;
 
   @override
   void initState() {
@@ -91,7 +96,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   void _startHideTimer() {
     _hideTimer?.cancel();
     if (widget.state.isPlaying) {
-      _hideTimer = Timer(const Duration(seconds: 4), () {
+      _hideTimer = Timer(const Duration(milliseconds: 3500), () {
         if (mounted) {
           setState(() => _isVisible = false);
         }
@@ -110,7 +115,11 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
     }
   }
 
+  int _leftSeekAmount = 0;
+  int _rightSeekAmount = 0;
+
   void _handleDoubleTapLeft() {
+    _leftSeekAmount += 10;
     final target = widget.state.position - const Duration(seconds: 10);
     widget.onSeek(target < Duration.zero ? Duration.zero : target);
 
@@ -118,14 +127,18 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
       _showLeftSeekRipple = true;
     });
     _leftSeekTimer?.cancel();
-    _leftSeekTimer = Timer(const Duration(milliseconds: 650), () {
+    _leftSeekTimer = Timer(const Duration(milliseconds: 700), () {
       if (mounted) {
-        setState(() => _showLeftSeekRipple = false);
+        setState(() {
+          _showLeftSeekRipple = false;
+          _leftSeekAmount = 0;
+        });
       }
     });
   }
 
   void _handleDoubleTapRight() {
+    _rightSeekAmount += 10;
     final target = widget.state.position + const Duration(seconds: 10);
     widget.onSeek(
         target > widget.state.duration ? widget.state.duration : target);
@@ -134,77 +147,68 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
       _showRightSeekRipple = true;
     });
     _rightSeekTimer?.cancel();
-    _rightSeekTimer = Timer(const Duration(milliseconds: 650), () {
+    _rightSeekTimer = Timer(const Duration(milliseconds: 700), () {
       if (mounted) {
-        setState(() => _showRightSeekRipple = false);
+        setState(() {
+          _showRightSeekRipple = false;
+          _rightSeekAmount = 0;
+        });
       }
     });
   }
 
-  void _onVerticalDragUpdate(
-      DragUpdateDetails details, double screenWidth, double screenHeight) {
-    final isLeft = details.globalPosition.dx < screenWidth / 2;
-    final delta =
-        -details.primaryDelta! / screenHeight; // inverted drag: up = increase
+  void _onScaleStart(ScaleStartDetails details) {}
 
-    if (isLeft) {
-      setState(() {
-        _currentBrightness = (_currentBrightness + delta).clamp(0.0, 1.0);
-        _showBrightnessHud = true;
-      });
-      _brightnessHudTimer?.cancel();
-      _brightnessHudTimer = Timer(const Duration(milliseconds: 1200), () {
-        if (mounted) setState(() => _showBrightnessHud = false);
-      });
-    } else {
-      setState(() {
-        _currentVolume = (_currentVolume + (delta * 100)).clamp(0.0, 100.0);
-        _showVolumeHud = true;
-      });
-      widget.onVolumeChange?.call(_currentVolume);
-      _volumeHudTimer?.cancel();
-      _volumeHudTimer = Timer(const Duration(milliseconds: 1200), () {
-        if (mounted) setState(() => _showVolumeHud = false);
-      });
+  void _onScaleUpdate(ScaleUpdateDetails details, double screenWidth, double screenHeight) {
+    if (details.pointerCount == 2) {
+      // Pinch to zoom gesture detected
+      final scale = details.scale;
+      if (scale > 1.25 && widget.state.fit != BoxFit.cover) {
+        widget.onAspectRatioChange(BoxFit.cover);
+        _showZoomToast('Zoomed to fill');
+      } else if (scale < 0.8 && widget.state.fit != BoxFit.contain) {
+        widget.onAspectRatioChange(BoxFit.contain);
+        _showZoomToast('Original aspect ratio');
+      }
+      return;
+    }
+
+    // Single pointer vertical drag: Left = Brightness, Right = Volume
+    if (details.pointerCount == 1 && details.localFocalPoint.dx.isFinite) {
+      final isLeft = details.localFocalPoint.dx < screenWidth / 2;
+      final delta = -details.focalPointDelta.dy / screenHeight; // up = increase
+
+      if (delta.abs() > 0.002) {
+        if (isLeft) {
+          setState(() {
+            _currentBrightness = (_currentBrightness + delta).clamp(0.0, 1.0);
+            _showBrightnessHud = true;
+          });
+          _brightnessHudTimer?.cancel();
+          _brightnessHudTimer = Timer(const Duration(milliseconds: 1200), () {
+            if (mounted) setState(() => _showBrightnessHud = false);
+          });
+        } else {
+          setState(() {
+            _currentVolume = (_currentVolume + (delta * 100)).clamp(0.0, 100.0);
+            _showVolumeHud = true;
+          });
+          widget.onVolumeChange?.call(_currentVolume);
+          _volumeHudTimer?.cancel();
+          _volumeHudTimer = Timer(const Duration(milliseconds: 1200), () {
+            if (mounted) setState(() => _showVolumeHud = false);
+          });
+        }
+      }
     }
   }
 
-  void _onHorizontalDragStart(DragStartDetails details) {
-    setState(() {
-      _isScrubbing = true;
-      _scrubTarget = widget.state.position;
-      _scrubOffset = Duration.zero;
+  void _showZoomToast(String message) {
+    setState(() => _zoomToastMessage = message);
+    _zoomToastTimer?.cancel();
+    _zoomToastTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _zoomToastMessage = null);
     });
-    _hideTimer?.cancel();
-  }
-
-  void _onHorizontalDragUpdate(DragUpdateDetails details, double screenWidth) {
-    final totalSeconds = widget.state.duration.inSeconds > 0
-        ? widget.state.duration.inSeconds
-        : 7200;
-    final scrubDeltaSeconds = (details.primaryDelta! / screenWidth) * 90;
-    final newOffsetSeconds = _scrubOffset.inSeconds + scrubDeltaSeconds;
-
-    final newTargetSeconds =
-        (widget.state.position.inSeconds + newOffsetSeconds).clamp(
-      0.0,
-      totalSeconds.toDouble(),
-    );
-
-    setState(() {
-      _scrubOffset = Duration(seconds: newOffsetSeconds.toInt());
-      _scrubTarget = Duration(seconds: newTargetSeconds.toInt());
-    });
-  }
-
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    if (_isScrubbing) {
-      widget.onSeek(_scrubTarget);
-      setState(() {
-        _isScrubbing = false;
-      });
-      _startHideTimer();
-    }
   }
 
   @override
@@ -214,6 +218,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
     _rightSeekTimer?.cancel();
     _brightnessHudTimer?.cancel();
     _volumeHudTimer?.cancel();
+    _zoomToastTimer?.cancel();
     super.dispose();
   }
 
@@ -223,17 +228,14 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
 
     return Stack(
       children: [
-        // Gesture Detector Zone
+        // Gesture Detector Zone (Scale, Pinch-to-zoom, Vertical Drags, Double-Taps)
         Positioned.fill(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _toggleVisibility,
-            onVerticalDragUpdate: (details) =>
-                _onVerticalDragUpdate(details, size.width, size.height),
-            onHorizontalDragStart: _onHorizontalDragStart,
-            onHorizontalDragUpdate: (details) =>
-                _onHorizontalDragUpdate(details, size.width),
-            onHorizontalDragEnd: _onHorizontalDragEnd,
+            onScaleStart: _onScaleStart,
+            onScaleUpdate: (details) =>
+                _onScaleUpdate(details, size.width, size.height),
             child: Row(
               children: [
                 Expanded(
@@ -256,10 +258,12 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
         ),
 
-        // Visual Feedback for Gestures (Seek ripples, Volume/Brightness HUDs, Scrub preview)
+        // Visual Feedback for Gestures (Seek ripples, Volume/Brightness HUDs, Zoom toast, Scrub preview)
         PlayerGestureFeedbackOverlay(
           showLeftSeekRipple: _showLeftSeekRipple,
           showRightSeekRipple: _showRightSeekRipple,
+          leftSeekSeconds: _leftSeekAmount > 0 ? _leftSeekAmount : 10,
+          rightSeekSeconds: _rightSeekAmount > 0 ? _rightSeekAmount : 10,
           showBrightnessHud: _showBrightnessHud,
           currentBrightness: _currentBrightness,
           showVolumeHud: _showVolumeHud,
@@ -267,6 +271,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           isScrubbing: _isScrubbing,
           scrubOffset: _scrubOffset,
           scrubTarget: _scrubTarget,
+          zoomToastMessage: _zoomToastMessage,
           size: size,
           formatDuration: Formatters.formatDuration,
         ),
@@ -297,7 +302,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
             ),
           ),
 
-        // Top, Center & Bottom Overlay Controls (Faded on Inactivity)
+        // Top, Center & Bottom Overlay Controls (YouTube style fade on inactivity)
         AnimatedOpacity(
           opacity: _isVisible ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 250),
@@ -309,18 +314,18 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.surfaceBackground.withAlpha((0.75 * 255).round()),
+                    Colors.black.withAlpha(200),
                     Colors.transparent,
                     Colors.transparent,
-                    AppColors.surfaceBackground.withAlpha((0.85 * 255).round()),
+                    Colors.black.withAlpha(220),
                   ],
-                  stops: const [0.0, 0.25, 0.7, 1.0],
+                  stops: const [0.0, 0.25, 0.65, 1.0],
                 ),
               ),
               child: SafeArea(
                 child: Stack(
                   children: [
-                    // Top Controls (Back, Title, Subtitle, AspectRatio, Tracks)
+                    // Top Controls (Back, Title, Subtitle, AspectRatio, Speed, Tracks)
                     Align(
                       alignment: Alignment.topCenter,
                       child: PlayerTopControlBar(
@@ -329,6 +334,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                         onWatchTogether: widget.onWatchTogether,
                         onPictureInPicture: widget.onPictureInPicture,
                         onAspectRatioChange: widget.onAspectRatioChange,
+                        onSpeedChange: widget.onSpeedChange,
                         onToggleAuraGlow: widget.onToggleAuraGlow,
                         onShowSubtitlePicker: () =>
                             PlayerTrackPickers.showSubtitlePicker(
@@ -350,7 +356,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                       ),
                     ),
 
-                    // Center Controls (Play, Pause, Buffering)
+                    // Center Controls (Play, Pause, Buffering with 20s timeout & retry)
                     Align(
                       alignment: Alignment.center,
                       child: PlayerCenterControls(
@@ -358,16 +364,28 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
                         onPlayPause: widget.onPlayPause,
                         onSeek: widget.onSeek,
                         onUserInteraction: _startHideTimer,
+                        onRetry: widget.onRetryStream,
                       ),
                     ),
 
-                    // Bottom Controls (Timeline, Aspect Ratio, Tracks)
+                    // Bottom Controls (Timecode, YouTube Red/Accent Scrubber, Fullscreen)
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: PlayerBottomControlBar(
                         state: widget.state,
                         onSeek: widget.onSeek,
                         onUserInteraction: _startHideTimer,
+                        onNextEpisode: widget.onNextEpisode,
+                        onToggleFullscreen: () {
+                          // Toggle aspect ratio / fill as fullscreen shortcut
+                          final nextFit = widget.state.fit == BoxFit.contain
+                              ? BoxFit.cover
+                              : BoxFit.contain;
+                          widget.onAspectRatioChange(nextFit);
+                          _showZoomToast(nextFit == BoxFit.cover
+                              ? 'Zoomed to fill'
+                              : 'Original aspect ratio');
+                        },
                       ),
                     ),
                   ],

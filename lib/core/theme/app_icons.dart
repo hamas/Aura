@@ -24,6 +24,9 @@ abstract final class AppIcons {
   static const IconData forward10 = Symbols.forward_10_rounded;
   static const IconData fastRewind = Symbols.fast_rewind_rounded;
   static const IconData fastForward = Symbols.fast_forward_rounded;
+  static const IconData skipNext = Symbols.skip_next_rounded;
+  static const IconData skipPrevious = Symbols.skip_previous_rounded;
+  static const IconData moreVert = Symbols.more_vert_rounded;
   static const IconData cast = Symbols.cast_rounded;
   static const IconData info = Symbols.info_rounded;
   static const IconData infoOutline = Symbols.info_rounded;

@@ -19,7 +19,10 @@ class PlayerTrackPickers {
   }) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surfaceCard,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusLarge)),
+      ),
       isScrollControlled: true,
       builder: (context) {
         return StatefulBuilder(
@@ -28,11 +31,21 @@ class PlayerTrackPickers {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * 0.8,
               ),
-              padding:
-                  const EdgeInsets.symmetric(vertical: AppTokens.spacingMd),
+              padding: const EdgeInsets.symmetric(vertical: AppTokens.spacingMd),
               child: ListView(
                 shrinkWrap: true,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.borderSubtle,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTokens.spacingSm),
                   // Subtitle Sync Offset HUD
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -64,7 +77,7 @@ class PlayerTrackPickers {
                       vertical: AppTokens.spacingSm,
                     ),
                     child: Text(
-                      'Primary Subtitle (Bottom)',
+                      'Primary Subtitles',
                       style: context.auraText.itemTitle.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -78,8 +91,7 @@ class PlayerTrackPickers {
                           .copyWith(color: AppColors.textPrimary),
                     ),
                     trailing: state.selectedSubtitleTrack == null
-                        ? const AuraIcon(AppIcons.check,
-                            color: AppColors.accentPink)
+                        ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
                         : null,
                     onTap: () {
                       onSelectSubtitleTrack(null);
@@ -95,8 +107,7 @@ class PlayerTrackPickers {
                             .copyWith(color: AppColors.textPrimary),
                       ),
                       trailing: isSelected
-                          ? const AuraIcon(AppIcons.check,
-                              color: AppColors.accentPink)
+                          ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
                           : null,
                       onTap: () {
                         onSelectSubtitleTrack(s);
@@ -128,8 +139,7 @@ class PlayerTrackPickers {
                           .copyWith(color: AppColors.textPrimary),
                     ),
                     trailing: state.selectedSecondarySubtitleTrack == null
-                        ? const AuraIcon(AppIcons.check,
-                            color: AppColors.accentPink)
+                        ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
                         : null,
                     onTap: () {
                       onSelectSecondarySubtitleTrack?.call(null);
@@ -146,8 +156,7 @@ class PlayerTrackPickers {
                             .copyWith(color: AppColors.textPrimary),
                       ),
                       trailing: isSelected
-                          ? const AuraIcon(AppIcons.check,
-                              color: AppColors.accentPink)
+                          ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
                           : null,
                       onTap: () {
                         onSelectSecondarySubtitleTrack?.call(s);
@@ -171,42 +180,216 @@ class PlayerTrackPickers {
   }) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surfaceCard,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusLarge)),
+      ),
       builder: (context) {
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppTokens.spacingMd),
-              child: Text(
-                'Audio Tracks',
-                style: context.auraText.itemTitle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: AppTokens.spacingSm),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSubtle,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            ...state.audioTracks.map((a) {
-              final isSelected = state.selectedAudioTrack?.id == a.id;
-              return ListTile(
-                title: Text(
-                  a.title ?? a.language ?? 'Audio Track ${a.id}',
-                  style: context.auraText.bodyOverview
-                      .copyWith(color: AppColors.textPrimary),
+              Padding(
+                padding: const EdgeInsets.all(AppTokens.spacingMd),
+                child: Text(
+                  'Audio Tracks',
+                  style: context.auraText.itemTitle.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                trailing: isSelected
-                    ? const AuraIcon(AppIcons.check,
-                        color: AppColors.accentPink)
-                    : null,
-                onTap: () {
-                  onSelectAudioTrack(a);
-                  Navigator.pop(context);
-                },
-              );
-            }),
+              ),
+              ...state.audioTracks.map((a) {
+                final isSelected = state.selectedAudioTrack?.id == a.id;
+                return ListTile(
+                  title: Text(
+                    a.title ?? a.language ?? 'Audio Track ${a.id}',
+                    style: context.auraText.bodyOverview
+                        .copyWith(color: AppColors.textPrimary),
+                  ),
+                  trailing: isSelected
+                      ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
+                      : null,
+                  onTap: () {
+                    onSelectAudioTrack(a);
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static void showPlaybackSpeedPicker({
+    required BuildContext context,
+    required double currentSpeed,
+    required ValueChanged<double> onSelectSpeed,
+  }) {
+    final speeds = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusLarge)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: AppTokens.spacingSm),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSubtle,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppTokens.spacingMd),
+                child: Text(
+                  'Playback Speed',
+                  style: context.auraText.itemTitle.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              ...speeds.map((speed) {
+                final isSelected = (currentSpeed - speed).abs() < 0.01;
+                final label = speed == 1.0 ? 'Normal (1.0x)' : '${speed}x';
+                return ListTile(
+                  title: Text(
+                    label,
+                    style: context.auraText.bodyOverview.copyWith(
+                      color: isSelected ? AppColors.accentPink : AppColors.textPrimary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
+                      : null,
+                  onTap: () {
+                    onSelectSpeed(speed);
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static void showStatsForNerds({
+    required BuildContext context,
+    required AuraPlayerState state,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTokens.radiusLarge),
+          ),
+          title: Text(
+            'Stats for Nerds',
+            style: context.auraText.itemTitle.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildStatRow(context, 'Title', state.title ?? 'N/A'),
+                _buildStatRow(context, 'Engine', 'Direct HTTP Debrid Engine'),
+                _buildStatRow(context, 'Status', state.status.name.toUpperCase()),
+                _buildStatRow(context, 'Speed', '${state.rate}x'),
+                _buildStatRow(context, 'Volume', '${state.volume.toInt()}%'),
+                _buildStatRow(context, 'Aspect Ratio', state.fit.name),
+                _buildStatRow(context, 'Hardware Accel', 'Active (libmpv / Impeller)'),
+                _buildStatRow(
+                  context,
+                  'Audio Track',
+                  state.selectedAudioTrack?.title ??
+                      state.selectedAudioTrack?.language ??
+                      'Default',
+                ),
+                _buildStatRow(
+                  context,
+                  'Subtitles',
+                  state.selectedSubtitleTrack?.title ??
+                      state.selectedSubtitleTrack?.language ??
+                      'None',
+                ),
+                _buildStatRow(
+                  context,
+                  'Stream URL',
+                  state.currentStreamUrl ?? 'N/A',
+                  isUrl: true,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close', style: TextStyle(color: AppColors.accentPink)),
+            ),
           ],
         );
       },
+    );
+  }
+
+  static Widget _buildStatRow(BuildContext context, String key, String value,
+      {bool isUrl = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            key,
+            style: context.auraText.caption.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: context.auraText.bodyOverview.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: isUrl ? 11 : 13,
+            ),
+            maxLines: isUrl ? 2 : 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

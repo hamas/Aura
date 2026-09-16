@@ -186,6 +186,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           'title': stream.title ?? item.title,
           'quality': stream.resolution,
           'headers': stream.headers,
+          'fileIdx': stream.fileIdx,
         },
       );
 
@@ -321,6 +322,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           'title': stream.title ?? item.title,
           'quality': stream.resolution,
           'headers': stream.headers,
+          'fileIdx': stream.fileIdx,
         },
       );
 
