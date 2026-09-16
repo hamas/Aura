@@ -5,7 +5,7 @@ import '../../core/presentation/primitives/primitives.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/category_screen.dart';
-import '../../features/catalog/presentation/screens/detail_screen.dart';
+import '../../features/catalog/presentation/screens/media_details_screen.dart';
 import '../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
 import '../../features/clips/presentation/screens/clips_screen.dart';
@@ -157,7 +157,7 @@ class AppRouter {
 
           return NoTransitionPage(
             key: state.pageKey,
-            child: DetailScreen(
+            child: MediaDetailsScreen(
               id: id,
               type: type,
               initialItem: initialItem,
