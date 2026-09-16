@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/addon_manifest.dart';
 
 abstract class AddonEvent extends Equatable {
   const AddonEvent();
@@ -41,4 +42,12 @@ class FetchStreamsForMediaEvent extends AddonEvent {
 
   @override
   List<Object?> get props => [type, id];
+}
+
+class InstallDirectAddonManifestEvent extends AddonEvent {
+  final AddonManifest manifest;
+  const InstallDirectAddonManifestEvent(this.manifest);
+
+  @override
+  List<Object?> get props => [manifest];
 }

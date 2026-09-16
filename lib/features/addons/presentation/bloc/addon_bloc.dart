@@ -11,6 +11,7 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
         super(const AddonState()) {
     on<LoadAddonsEvent>(_onLoadAddons);
     on<InstallAddonFromUrlEvent>(_onInstallAddonFromUrl);
+    on<InstallDirectAddonManifestEvent>(_onInstallDirectAddonManifest);
     on<UninstallAddonEvent>(_onUninstallAddon);
     on<ToggleAddonStatusEvent>(_onToggleAddonStatus);
     on<FetchStreamsForMediaEvent>(_onFetchStreamsForMedia);
@@ -40,6 +41,25 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
         status: AddonStatus.success,
         installedAddons: updatedList,
         successMessage: 'Successfully installed ${manifest.name}',
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: AddonStatus.failure,
+        errorMessage: 'Failed to install add-on: $e',
+      ));
+    }
+  }
+
+  Future<void> _onInstallDirectAddonManifest(
+      InstallDirectAddonManifestEvent event, Emitter<AddonState> emit) async {
+    emit(state.copyWith(status: AddonStatus.loading));
+    try {
+      await _addonRepository.installAddon(event.manifest);
+      final updatedList = await _addonRepository.getInstalledAddons();
+      emit(state.copyWith(
+        status: AddonStatus.success,
+        installedAddons: updatedList,
+        successMessage: 'Successfully installed ${event.manifest.name}',
       ));
     } catch (e) {
       emit(state.copyWith(

@@ -133,7 +133,22 @@ class _AddonsScreenState extends State<AddonsScreen> {
                             isActive: state.installedAddons.firstWhere((a) => a.id == 'hd_engine', orElse: () => const AddonManifest(id: '', name: '', version: '', description: '', transportUrl: '', resources: [], types: [])).isEnabled,
                             onInstallOrUpdate: () async {
                               await _debridRepository.saveApiToken('7WMQBOBDSULI2VJ32GRDEV5K6TODKRNBYXLHEFWT2DZLXGJAYRHA');
-                              _installEngine(_defaultHdEngineUrl);
+                              if (context.mounted) {
+                                context.read<AddonBloc>().add(
+                                      const InstallDirectAddonManifestEvent(
+                                        AddonManifest(
+                                          id: 'hd_engine',
+                                          name: 'HD Engine',
+                                          version: '1.0.0',
+                                          description:
+                                              'High-Definition 4K and 1080p stream resolution engine',
+                                          transportUrl: _defaultHdEngineUrl,
+                                          resources: ['stream', 'catalog'],
+                                          types: ['movie', 'series'],
+                                        ),
+                                      ),
+                                    );
+                              }
                             },
                             onUninstall: state.installedAddons.any((a) => a.id == 'hd_engine')
                                 ? () => context
