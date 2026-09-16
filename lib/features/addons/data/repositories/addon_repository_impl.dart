@@ -31,33 +31,7 @@ class AddonRepositoryImpl implements AddonRepository {
   Future<List<AddonManifest>> getInstalledAddons() async {
     final rawList = _prefs.getStringList(_keyInstalledAddons);
     if (rawList == null || rawList.isEmpty) {
-      // Setup default official community add-ons if none installed
-      const defaultCinemeta = AddonManifest(
-        id: 'com.linvo.cinemeta',
-        name: 'Cinemeta (Official)',
-        version: '3.0.12',
-        description: 'Official movie & TV show metadata catalog',
-        transportUrl: ApiConstants.defaultCinemetaUrl,
-        resources: ['catalog', 'meta'],
-        types: ['movie', 'series'],
-        isEnabled: true,
-      );
-
-      const defaultOpenSubtitles = AddonManifest(
-        id: 'org.stremio.opensubtitles-v3',
-        name: 'OpenSubtitles v3 (Official)',
-        version: '1.0.0',
-        description: 'Official OpenSubtitles v3 community subtitle provider',
-        transportUrl: 'https://opensubtitles-v3.strem.io/manifest.json',
-        resources: ['subtitles'],
-        types: ['movie', 'series'],
-        isEnabled: true,
-      );
-
-      final defaults = [defaultCinemeta, defaultOpenSubtitles];
-      final rawJsonList = defaults.map((a) => jsonEncode(a.toJson())).toList();
-      await _prefs.setStringList(_keyInstalledAddons, rawJsonList);
-      return defaults;
+      return [];
     }
 
     return rawList.map((str) {

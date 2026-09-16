@@ -28,6 +28,7 @@ import 'package:aura/features/catalog/presentation/widgets/components/details_ac
 import 'package:aura/features/catalog/presentation/widgets/components/details_backdrop_sliver.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_cast_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_series_episodic_section.dart';
+import 'package:aura/features/catalog/presentation/widgets/modals/engine_required_modal.dart';
 
 /// Modularized Netflix-style Media Details screen for Aura (< 250 lines).
 class MediaDetailsScreen extends StatefulWidget {
@@ -94,6 +95,19 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     );
 
     final addonBloc = context.read<AddonBloc>();
+    final installedAddons = addonBloc.state.installedAddons.where((a) => a.isEnabled).toList();
+
+    if (installedAddons.isEmpty) {
+      EngineRequiredModal.show(
+        context: context,
+        title: 'Stream Engine Required',
+        message:
+            'Install a Stream Engine from the Add-on Hub to resolve streaming sources for this title.',
+        onGoToAddons: () => context.push('/addons'),
+      );
+      return;
+    }
+
     addonBloc.add(FetchStreamsForMediaEvent(
       type: item.type == MediaType.movie ? 'movie' : 'series',
       id: stremioId,
@@ -212,6 +226,19 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     );
 
     final addonBloc = context.read<AddonBloc>();
+    final installedAddons = addonBloc.state.installedAddons.where((a) => a.isEnabled).toList();
+
+    if (installedAddons.isEmpty) {
+      EngineRequiredModal.show(
+        context: context,
+        title: 'Download Engine Required',
+        message:
+            'Install a Download Engine from the Add-on Hub to parse streams and cache offline downloads.',
+        onGoToAddons: () => context.push('/addons'),
+      );
+      return;
+    }
+
     addonBloc.add(FetchStreamsForMediaEvent(
       type: item.type == MediaType.movie ? 'movie' : 'series',
       id: stremioId,
