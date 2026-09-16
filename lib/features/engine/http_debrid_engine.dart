@@ -3,15 +3,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'common/stream_engine.dart';
 import '../../core/errors/exceptions.dart';
-import '../debrid/domain/repositories/debrid_repository.dart';
 
 class HttpDebridEngine implements StreamEngine {
-  final DebridRepository? _debridRepository;
   final Dio _dio;
 
-  HttpDebridEngine({DebridRepository? debridRepository, Dio? dio})
-      : _debridRepository = debridRepository,
-        _dio = dio ??
+  HttpDebridEngine({dynamic debridRepository, Dio? dio})
+      : _dio = dio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 4),
               receiveTimeout: const Duration(seconds: 4),
@@ -31,25 +28,8 @@ class HttpDebridEngine implements StreamEngine {
   @override
   Future<void> initialize() async {}
 
-  bool _isDebridLandingUrl(String url) {
-    final lower = url.toLowerCase();
-    return lower.contains('real-debrid.com/d/') ||
-        lower.contains('1fichier.com') ||
-        lower.contains('rapidgator.net') ||
-        lower.contains('uploaded.net') ||
-        lower.contains('turbobit.net') ||
-        lower.contains('filefactory.com') ||
-        lower.contains('mega.nz') ||
-        lower.contains('nitroflare.com') ||
-        lower.contains('katfile.com') ||
-        lower.contains('ddownload.com') ||
-        lower.contains('alfafile.net') ||
-        lower.contains('uptobox.com');
-  }
-
   Future<String> _resolveRedirects(String url, {Map<String, String>? headers}) async {
     try {
-      // Use HEAD or streaming GET to follow redirects without downloading entire media
       Response<dynamic> response;
       try {
         response = await _dio.head(
@@ -92,100 +72,37 @@ class HttpDebridEngine implements StreamEngine {
     final title = extraParams?['title'] as String?;
     final quality = extraParams?['quality'] as String?;
     final headers = extraParams?['headers'] as Map<String, String>?;
-    final fileIdx = (extraParams?['fileIdx'] ?? extraParams?['fileIndex']) as int?;
 
     if (rawUrlOrInfoHash.isEmpty) {
-      throw const DebridException(
+      throw const ServerException(
           'Stream source is missing or invalid. Please select another stream result.');
     }
 
-    // 1. ABSOLUTE BYPASS: Direct Web, Demo, or HLS streams NEVER touch Debrid or token storage
     final isHttp = rawUrlOrInfoHash.startsWith('http://') ||
         rawUrlOrInfoHash.startsWith('https://');
-    final isDirectMedia =
-        rawUrlOrInfoHash.contains('commondatastorage.googleapis.com') ||
-            rawUrlOrInfoHash.endsWith('.mp4') ||
-            rawUrlOrInfoHash.endsWith('.mkv') ||
-            rawUrlOrInfoHash.contains('.m3u8');
-
-    // 2. Debrid Evaluation for Magnet/InfoHash or explicit Debrid Landing URLs
-    debugPrint('DEBUG: [2] Evaluating Debrid token for torrent/unrestrict link...');
-    bool hasDebrid = false;
-    try {
-      hasDebrid = _debridRepository != null && await _debridRepository.hasValidToken();
-    } catch (_) {
-      hasDebrid = false;
-    }
-    debugPrint('DEBUG: [2.1] Debrid token valid: $hasDebrid');
-
-    if (isHttp && (!hasDebrid || (!isHttp && !hasDebrid) || (isDirectMedia && !_isDebridLandingUrl(rawUrlOrInfoHash)) || !_isDebridLandingUrl(rawUrlOrInfoHash))) {
-      debugPrint('DEBUG: [Direct Bypass] Direct HTTP stream URL detected, skipping Debrid validation...');
-      final targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
-      final isHls = targetUrl.contains('.m3u8');
-      final isDash = targetUrl.contains('.mpd');
-
-      return ResolvedStream(
-        streamUrl: targetUrl,
-        sourceType: isHls
-            ? StreamSourceType.hls
-            : isDash
-                ? StreamSourceType.dash
-                : StreamSourceType.directHttp,
-        httpHeaders: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          if (headers != null) ...headers,
-        },
-        title: title ?? 'Direct Stream',
-        quality: quality,
-      );
-    }
-
-    String targetUrl = rawUrlOrInfoHash;
 
     if (!isHttp) {
-      if (hasDebrid) {
-        debugPrint('DEBUG: [3] Unrestricting magnet/infoHash via Debrid repository...');
-        targetUrl = await _debridRepository!.unrestrictMagnetOrHash(
-          rawUrlOrInfoHash,
-          fileIndex: fileIdx,
-        ).timeout(
-          const Duration(seconds: 7),
-          onTimeout: () => throw const DebridException(
-              'Real-Debrid stream resolution timed out. Please try another stream.'),
-        );
-      } else {
-        throw const DebridException(
-            'Unable to resolve torrent stream: Configured Real-Debrid account required.');
-      }
-    } else if (hasDebrid && _isDebridLandingUrl(rawUrlOrInfoHash)) {
-      debugPrint('DEBUG: [3] Direct Debrid landing URL, unrestricting link...');
-      targetUrl = await _debridRepository!.unrestrictLink(rawUrlOrInfoHash).timeout(
-        const Duration(seconds: 4),
-        onTimeout: () => rawUrlOrInfoHash,
-      );
+      throw const ServerException(
+          'Direct stream URL required. Magnet links require a direct web streaming gateway.');
     }
 
-    debugPrint('DEBUG: [4] Final resolved stream URL: $targetUrl');
-
+    final targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
     final isHls = targetUrl.contains('.m3u8');
     final isDash = targetUrl.contains('.mpd');
 
     return ResolvedStream(
       streamUrl: targetUrl,
-      sourceType: (hasDebrid || targetUrl.contains('real-debrid'))
-          ? StreamSourceType.debrid
-          : (isHls
-              ? StreamSourceType.hls
-              : isDash
-                  ? StreamSourceType.dash
-                  : StreamSourceType.directHttp),
+      sourceType: isHls
+          ? StreamSourceType.hls
+          : isDash
+              ? StreamSourceType.dash
+              : StreamSourceType.directHttp,
       httpHeaders: {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         if (headers != null) ...headers,
       },
-      title: title ?? 'HD Stream',
+      title: title ?? 'Direct Stream',
       quality: quality,
     );
   }

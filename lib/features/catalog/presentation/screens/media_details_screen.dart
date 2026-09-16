@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -15,7 +14,6 @@ import '../../../addons/presentation/bloc/addon_state.dart';
 import '../../../downloads/domain/entities/download_task.dart';
 import '../../../downloads/presentation/bloc/downloads_bloc.dart';
 import '../../../downloads/presentation/bloc/downloads_event.dart';
-import '../../../debrid/data/repositories/debrid_repository_impl.dart';
 import '../../../engine/http_debrid_engine.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
@@ -155,7 +153,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     int? episodeNumber,
     String? episodeTitle,
   }) async {
-    final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
+    final engine = HttpDebridEngine();
     
     // Show loading dialog while resolving stream link via Debrid
     BuildContext? dialogContext;
@@ -213,7 +211,13 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       );
 
       debugPrint('DEBUG: [5] Dismissing loading HUD and pushing player with URL: ${resolved.streamUrl}');
-      dismissDialog();
+      if (dialogContext != null && dialogContext!.mounted) {
+        final nav = Navigator.of(dialogContext!, rootNavigator: true);
+        if (nav.canPop()) {
+          nav.pop();
+        }
+        dialogContext = null;
+      }
 
       if (context.mounted) {
         context.read<LibraryBloc>().add(
@@ -255,7 +259,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
       dismissDialog();
       if (context.mounted) {
-        final errorMsg = e is DebridException ? e.message : 'Could not resolve stream: $e';
+        final errorMsg = 'Could not resolve stream: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.statusError,
@@ -344,7 +348,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     int? episodeNumber,
     String? episodeTitle,
   }) async {
-    final engine = HttpDebridEngine(debridRepository: DebridRepositoryImpl());
+    final engine = HttpDebridEngine();
     try {
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(

@@ -178,7 +178,7 @@ class StreamPickerModal extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Resolving streams via Stremio v3 protocol & Debrid endpoints',
+                      'Resolving streams via Stremio v3 community protocol',
                       style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
@@ -210,7 +210,7 @@ class StreamPickerModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'No active add-ons returned streams for this media. Install additional Stremio add-ons or verify your Debrid token in Settings.',
+                      'No active engines returned streams for this title. Install additional Stremio community add-ons from the Add-on Hub.',
                       style: TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 12,

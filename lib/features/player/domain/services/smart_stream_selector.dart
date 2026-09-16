@@ -22,7 +22,7 @@ class SmartStreamSelector {
   /// Calculates a heuristic score for an [AddonStream].
   ///
   /// Heuristics applied:
-  /// - Debrid Caching (`isCached == true` -> +1000 pts). Non-cached torrents drop significantly (-500 pts).
+  /// - Direct HTTP / HLS Stream (`isDirectHttp == true` -> +1000 pts).
   /// - Resolution Matching: 4K (+500), 1080p (+300), 720p (+100). Respects [options.maxResolution].
   /// - Codec & Efficiency: HEVC / AV1 / H.265 (+200 pts).
   /// - Audio Fidelity: Spatial audio / Multichannel (Atmos / 5.1 / 7.1) (+100 pts).
@@ -33,10 +33,10 @@ class SmartStreamSelector {
   }) {
     int score = 0;
 
-    // 1. Debrid Cache Status (+1000 pts)
-    if (stream.isCached) {
+    // 1. Direct Stream Status (+1000 pts)
+    if (stream.isDirectHttp) {
       score += 1000;
-    } else if (stream.isDirectHttp) {
+    } else if (stream.isCached) {
       score += 800;
     } else {
       score -= 500;

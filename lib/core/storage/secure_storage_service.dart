@@ -11,20 +11,7 @@ class SecureStorageService {
                   IOSOptions(accessibility: KeychainAccessibility.first_unlock),
             );
 
-  static const String _keyRealDebridApiKey = 'rd_api_key';
   static const String _keyUserAuthToken = 'user_auth_token';
-
-  Future<void> saveRealDebridApiKey(String key) async {
-    await _storage.write(key: _keyRealDebridApiKey, value: key);
-  }
-
-  Future<String?> getRealDebridApiKey() async {
-    return _storage.read(key: _keyRealDebridApiKey);
-  }
-
-  Future<void> deleteRealDebridApiKey() async {
-    await _storage.delete(key: _keyRealDebridApiKey);
-  }
 
   Future<void> saveAuthToken(String token) async {
     await _storage.write(key: _keyUserAuthToken, value: token);

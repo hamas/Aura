@@ -21,13 +21,5 @@ void main() {
       expect(preset.name, equals('OpenSubtitles v3'));
       expect(preset.manifest.supportsResource('subtitles'), isTrue);
     });
-
-    test('debridHdEngine properties are correct', () {
-      const preset = CommunityAddonPreset.debridHdEngine;
-
-      expect(preset.id, equals('hd_engine'));
-      expect(preset.isFreeNoAccount, isFalse);
-      expect(preset.badgeText, contains('Debrid'));
-    });
   });
 }

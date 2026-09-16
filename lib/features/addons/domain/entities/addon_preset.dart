@@ -4,7 +4,6 @@ import 'addon_manifest.dart';
 enum AddonPresetType {
   freeCommunity,
   openSubtitles,
-  debridAccelerator,
 }
 
 class CommunityAddonPreset extends Equatable {
@@ -64,27 +63,6 @@ class CommunityAddonPreset extends Equatable {
       description: 'Multilingual subtitles for movies and TV series.',
       transportUrl: 'https://v3-subtitles.strem.io/manifest.json',
       resources: ['subtitles'],
-      types: ['movie', 'series'],
-    ),
-  );
-
-  static const CommunityAddonPreset debridHdEngine = CommunityAddonPreset(
-    id: 'hd_engine',
-    name: 'Debrid High-Speed Engine',
-    description:
-        'Accelerated 4K Remux & High-Bitrate stream resolution using Real-Debrid / TorBox credentials.',
-    manifestUrl: 'https://torrentio.strem.fun/manifest.json',
-    type: AddonPresetType.debridAccelerator,
-    badgeText: '4K Remux • Debrid',
-    isFreeNoAccount: false,
-    manifest: AddonManifest(
-      id: 'hd_engine',
-      name: 'Debrid High-Speed Engine',
-      version: '1.0.0',
-      description:
-          'High-Definition 4K and 1080p stream resolution engine with Debrid support.',
-      transportUrl: 'https://torrentio.strem.fun/manifest.json',
-      resources: ['stream', 'catalog'],
       types: ['movie', 'series'],
     ),
   );

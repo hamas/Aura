@@ -175,9 +175,23 @@ class _DetailsBackdropSliverState extends State<DetailsBackdropSliver> {
     }
   }
 
+  void pauseTrailerPlayer() {
+    try {
+      _player?.pause();
+    } catch (_) {}
+  }
+
+  void disposeTrailerPlayer() {
+    try {
+      _player?.dispose();
+      _player = null;
+      _videoController = null;
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
-    _player?.dispose();
+    disposeTrailerPlayer();
     super.dispose();
   }
 

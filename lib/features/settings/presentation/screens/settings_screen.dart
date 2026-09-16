@@ -15,13 +15,10 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/data/datasources/google_auth_datasource.dart';
 import '../../../auth/presentation/widgets/household_password_sheet.dart';
 import '../../../auth/presentation/widgets/sign_in_modal.dart';
-import '../../../debrid/data/repositories/debrid_repository_impl.dart';
-import '../../../debrid/domain/entities/debrid_account.dart';
 import '../../../profiles/data/services/profile_manager.dart';
 import '../../../profiles/domain/entities/user_profile.dart';
 import '../../../profiles/presentation/screens/edit_profile_sub_page.dart';
 import '../../../profiles/presentation/widgets/components/profile_avatar.dart';
-import '../widgets/components/settings_debrid_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? initialSubPage;
@@ -62,21 +59,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showDiscordActivity = false;
   bool _isHouseholdPasswordLinked = false;
 
-  // Debrid & Profile Managers
-  final DebridRepositoryImpl _debridRepo = DebridRepositoryImpl();
+  // Profile Manager
   final GoogleAuthDataSource _googleAuthDataSource = GoogleAuthDataSource();
   ProfileManager? _profileManager;
   List<UserProfile> _profiles = [];
-  DebridAccount? _debridAccount;
-  bool _isLoadingDebrid = false;
-  final TextEditingController _rdKeyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _currentSubPage = widget.initialSubPage;
     _loadSettings();
-    _loadDebridStatus();
     _checkHouseholdPasswordStatus();
     _initProfiles();
   }
@@ -104,17 +96,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       setState(() => _isHouseholdPasswordLinked = linked);
     }
-  }
-
-  Future<void> _loadDebridStatus() async {
-    setState(() => _isLoadingDebrid = true);
-    try {
-      if (await _debridRepo.hasValidToken()) {
-        final acc = await _debridRepo.getAccountDetails();
-        setState(() => _debridAccount = acc);
-      }
-    } catch (_) {}
-    if (mounted) setState(() => _isLoadingDebrid = false);
   }
 
   Future<void> _loadSettings() async {
@@ -154,7 +135,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-    _rdKeyController.dispose();
     super.dispose();
   }
 
@@ -1054,24 +1034,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildStreamingSubPage() {
     return Column(
       children: [
-        SettingsDebridCard(
-          isLoadingDebrid: _isLoadingDebrid,
-          debridAccount: _debridAccount,
-          rdKeyController: _rdKeyController,
-          onSaveDebridKey: () async {
-            final key = _rdKeyController.text.trim();
-            if (key.isNotEmpty) {
-              await _debridRepo.saveApiToken(key);
-              _rdKeyController.clear();
-              await _loadDebridStatus();
-            }
-          },
-          onDisconnectDebrid: () async {
-            await _debridRepo.removeToken();
-            setState(() => _debridAccount = null);
-          },
-        ),
-        const SizedBox(height: AppTokens.spacingMd),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(

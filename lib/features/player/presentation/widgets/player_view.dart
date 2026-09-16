@@ -61,6 +61,17 @@ class _PlayerViewState extends State<PlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
+    debugPrint('DEBUG: [PLAYER_VIEW] Mounted successfully with streamUrl: ${widget.playerService.state.currentStreamUrl}');
+
+    try {
+      widget.playerService.player.stream.error.listen((e) {
+        debugPrint('DEBUG: [PLAYER_VIEW] Error: $e');
+      });
+      widget.playerService.player.stream.completed.listen((c) {
+        debugPrint('DEBUG: [PLAYER_VIEW] Completed: $c');
+      });
+    } catch (_) {}
+
     _startProgressSyncTimer();
     _fetchIntervals();
   }

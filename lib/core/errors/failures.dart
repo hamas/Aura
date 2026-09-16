@@ -34,7 +34,3 @@ class PlaybackFailure extends Failure {
 class AuthFailure extends Failure {
   const AuthFailure(super.message);
 }
-
-class DebridFailure extends Failure {
-  const DebridFailure(super.message, {super.statusCode});
-}

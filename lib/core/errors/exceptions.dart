@@ -23,12 +23,3 @@ class AddonProtocolException implements Exception {
   @override
   String toString() => 'AddonProtocolException: $message';
 }
-
-class DebridException implements Exception {
-  final String message;
-  final int? statusCode;
-  const DebridException(this.message, {this.statusCode});
-
-  @override
-  String toString() => 'DebridException: $message (code: $statusCode)';
-}

@@ -5,8 +5,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../debrid/data/repositories/debrid_repository_impl.dart';
-import '../../../debrid/domain/repositories/debrid_repository.dart';
 import '../../domain/entities/addon_preset.dart';
 import '../../data/datasources/stremio_addon_api.dart';
 import '../bloc/addon_bloc.dart';
@@ -25,7 +23,6 @@ class AddonsScreen extends StatefulWidget {
 
 class _AddonsScreenState extends State<AddonsScreen> {
   final StremioAddonApi _addonApi = StremioAddonApi();
-  final DebridRepository _debridRepository = DebridRepositoryImpl();
 
   @override
   void initState() {
@@ -75,13 +72,6 @@ class _AddonsScreenState extends State<AddonsScreen> {
                     final freeEngineActive = freeEngineInstalled &&
                         state.installedAddons
                             .firstWhere((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id)
-                            .isEnabled;
-
-                    final debridEngineInstalled = state.installedAddons
-                        .any((a) => a.id == CommunityAddonPreset.debridHdEngine.id);
-                    final debridEngineActive = debridEngineInstalled &&
-                        state.installedAddons
-                            .firstWhere((a) => a.id == CommunityAddonPreset.debridHdEngine.id)
                             .isEnabled;
 
                     final subtitlesEngineInstalled = state.installedAddons
@@ -155,40 +145,6 @@ class _AddonsScreenState extends State<AddonsScreen> {
                                 ? (val) => context.read<AddonBloc>().add(
                                       ToggleAddonStatusEvent(
                                           CommunityAddonPreset.freeCommunityEngine.id, val),
-                                    )
-                                : null,
-                          ),
-                          const SizedBox(height: AppTokens.spacingMd),
-
-                          // Accelerated Debrid Engine Card
-                          EngineHubStatusCard(
-                            title: CommunityAddonPreset.debridHdEngine.name,
-                            description:
-                                CommunityAddonPreset.debridHdEngine.description,
-                            icon: AppIcons.extension,
-                            status: isLoading
-                                ? EngineStatus.downloading
-                                : (debridEngineInstalled
-                                    ? EngineStatus.installed
-                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
-                            errorMessage: hasError ? state.errorMessage : null,
-                            isActive: debridEngineActive,
-                            onInstallOrUpdate: () async {
-                              await _debridRepository.saveApiToken('7WMQBOBDSULI2VJ32GRDEV5K6TODKRNBYXLHEFWT2DZLXGJAYRHA');
-                              if (context.mounted) {
-                                _installPreset(CommunityAddonPreset.debridHdEngine);
-                              }
-                            },
-                            onUninstall: debridEngineInstalled
-                                ? () => context.read<AddonBloc>().add(
-                                      UninstallAddonEvent(
-                                          CommunityAddonPreset.debridHdEngine.id),
-                                    )
-                                : null,
-                            onToggleActive: debridEngineInstalled
-                                ? (val) => context.read<AddonBloc>().add(
-                                      ToggleAddonStatusEvent(
-                                          CommunityAddonPreset.debridHdEngine.id, val),
                                     )
                                 : null,
                           ),
