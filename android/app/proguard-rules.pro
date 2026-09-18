@@ -20,12 +20,18 @@
 -keep class io.flutter.plugins.GeneratedPluginRegistrant { *; }
 
 # 2. MediaKit & Native libmpv Bindings
+-keep class com.alexmercerind.media_kit.** { *; }
+-keep class com.alexmercerind.media_kit_video.** { *; }
 -keep class com.alexmercerind.mediakit.** { *; }
 -keep class com.alexmercerind.mediakit_video.** { *; }
 -keep class * implements com.alexmercerind.mediakit.** { *; }
 -keepclassmembers class com.alexmercerind.mediakit.** {
     native <methods>;
 }
+-dontwarn com.alexmercerind.media_kit.**
+-dontwarn com.alexmercerind.media_kit_video.**
+-dontwarn com.alexmercerind.mediakit.**
+-dontwarn com.alexmercerind.mediakit_video.**
 
 # 3. Firebase Auth & Google Sign-In
 -keep class com.google.firebase.** { *; }

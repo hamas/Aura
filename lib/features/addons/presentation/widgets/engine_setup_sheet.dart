@@ -170,6 +170,29 @@ class _EngineSetupSheetState extends State<EngineSetupSheet> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    context.read<AddonBloc>().add(
+                          const InstallAddonFromUrlEvent(
+                              'https://hamas.github.io/Aura/'),
+                        );
+                    Navigator.of(context).pop();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: const Icon(Icons.language, size: 18),
+                  label: const Text(
+                    'Explore Community Web Directory',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+                const SizedBox(height: 12),
               ],
             ),
           ),

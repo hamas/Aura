@@ -71,6 +71,10 @@ class CommunityAddonPreset extends Equatable {
   static const String fallbackOpenHlsStreamUrl =
       'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
 
+  /// Live hosted Stremio community add-on web directory
+  static const String communityDirectoryUrl =
+      'https://hamas.github.io/Aura/';
+
   @override
   List<Object?> get props => [
         id,
