@@ -40,12 +40,18 @@ class MediaKitPlayerService {
     try {
       final platform = player.platform;
       if (platform != null) {
+        (platform as dynamic).setProperty(
+          'user-agent',
+          'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36',
+        );
+        (platform as dynamic).setProperty('demuxer-max-bytes', '33554432'); // 32MB
+        (platform as dynamic).setProperty('demuxer-max-back-bytes', '16777216'); // 16MB
+        (platform as dynamic).setProperty('network-timeout', '15');
+        (platform as dynamic).setProperty('http-header-fields', 'User-Agent: Mozilla/5.0');
         (platform as dynamic).setProperty('reconnect', 'yes');
         (platform as dynamic).setProperty('reconnect-delay-max', '5');
         (platform as dynamic).setProperty('reconnect-streamed', 'yes');
         (platform as dynamic).setProperty('demuxer-readahead-secs', '25');
-        (platform as dynamic).setProperty('demuxer-max-bytes', '33554432'); // 32MiB
-        (platform as dynamic).setProperty('demuxer-max-back-bytes', '16777216'); // 16MiB
       }
     } catch (_) {}
   }
