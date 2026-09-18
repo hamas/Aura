@@ -80,6 +80,12 @@
       </div>
     </div>
 
+    <!-- CORS Notice Banner (Hidden by default, shown if network fetch fails) -->
+    <div id="cors-notice" class="hidden max-w-3xl mx-auto mb-6 p-4 rounded-xl bg-auraSurface/80 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between">
+      <span>Showing curated community presets (live registry endpoint constrained by browser CORS).</span>
+      <button onclick="document.getElementById('cors-notice').classList.add('hidden')" class="text-amber-400 font-bold ml-2">&times;</button>
+    </div>
+
     <!-- Addon Cards Grid -->
     <div id="addon-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
       <!-- Dynamic and Preset Cards Render Here -->
@@ -117,7 +123,7 @@
   </div>
 
   <script>
-    // Curated Preset Manifests (Instant Load)
+    // Curated Preset Manifests (Instant Load Guaranteed)
     const presetAddons = [
       {
         id: 'opensubtitles-v3',
@@ -175,54 +181,18 @@
     let activeCategory = 'all';
     let searchQuery = '';
 
-    // Fetch dynamic community list asynchronously
-    async function fetchCommunityRegistry() {
-      try {
-        const response = await fetch('https://stremio-addons.net/api/addons');
-        if (response.ok) {
-          const remoteList = await response.json();
-          if (Array.isArray(remoteList)) {
-            const parsedRemote = remoteList.map(item => {
-              const manifest = item.manifest || {};
-              const resList = manifest.resources || [];
-              const types = [];
-              if (resList.includes('stream') || manifest.types?.includes('movie')) types.push('stream');
-              if (resList.includes('subtitles')) types.push('subtitles');
-              if (resList.includes('catalog')) types.push('catalog');
-              if ((manifest.name || '').toLowerCase().includes('anime') || (manifest.description || '').toLowerCase().includes('anime')) types.push('anime');
-              if (types.length === 0) types.push('catalog');
-
-              return {
-                id: manifest.id || item.transportUrl,
-                name: manifest.name || 'Community Addon',
-                version: manifest.version || '1.0.0',
-                description: manifest.description || 'Community Stremio addon manifest.',
-                types: types,
-                icon: manifest.icon || '🧩',
-                manifestUrl: item.transportUrl || item.manifestUrl,
-                badge: types[0].toUpperCase(),
-              };
-            });
-
-            // Merge avoiding duplicates with presets
-            const existingIds = new Set(presetAddons.map(a => a.id));
-            const filteredRemote = parsedRemote.filter(a => a.manifestUrl && !existingIds.has(a.id));
-            allAddons = [...presetAddons, ...filteredRemote];
-            renderFilteredAddons();
-          }
-        }
-      } catch (err) {
-        console.warn('Dynamic community registry fallback active:', err);
-      }
-    }
-
+    // Render Filtered Addons (Hardened Optional Chaining)
     function renderFilteredAddons() {
       const grid = document.getElementById('addon-grid');
-      const filtered = allAddons.filter(a => {
-        const matchesCategory = activeCategory === 'all' || a.types.includes(activeCategory);
-        const matchesQuery = searchQuery === '' || 
-          a.name.toLowerCase().includes(searchQuery) || 
-          a.description.toLowerCase().includes(searchQuery);
+      if (!grid) return;
+
+      const filtered = (allAddons || []).filter(a => {
+        if (!a) return false;
+        const types = a.types || [];
+        const matchesCategory = activeCategory === 'all' || types.includes(activeCategory);
+        const name = (a.name || '').toLowerCase();
+        const desc = (a.description || '').toLowerCase();
+        const matchesQuery = searchQuery === '' || name.includes(searchQuery) || desc.includes(searchQuery);
         return matchesCategory && matchesQuery;
       });
 
@@ -236,9 +206,16 @@
       }
 
       grid.innerHTML = filtered.map(a => {
-        const iconHtml = a.icon.startsWith('http') 
-          ? `<img src="${a.icon}" alt="${a.name}" class="w-8 h-8 rounded-lg object-cover" onerror="this.onerror=null; this.src=''; this.innerText='🧩';">`
-          : `<span class="text-3xl">${a.icon}</span>`;
+        const iconVal = a?.icon || '🧩';
+        const iconHtml = (typeof iconVal === 'string' && iconVal.startsWith('http'))
+          ? `<img src="${iconVal}" alt="${a?.name || ''}" class="w-8 h-8 rounded-lg object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-3xl\\'>🧩</span>';">`
+          : `<span class="text-3xl">${iconVal}</span>`;
+
+        const nameStr = a?.name || 'Community Addon';
+        const versionStr = a?.version || '1.0.0';
+        const descStr = a?.description || 'Community Stremio manifest extension.';
+        const badgeStr = a?.badge || 'ADDON';
+        const urlStr = a?.manifestUrl || '';
 
         return `
           <div class="bg-auraSurface border border-auraBorder hover:border-auraPink/50 transition-all rounded-2xl p-6 flex flex-col justify-between shadow-lg">
@@ -246,19 +223,19 @@
               <div class="flex items-center justify-between mb-4">
                 ${iconHtml}
                 <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-auraPink/15 text-auraPink border border-auraPink/30 uppercase tracking-wider">
-                  ${a.badge}
+                  ${badgeStr}
                 </span>
               </div>
-              <h3 class="text-xl font-bold text-white mb-1">${a.name}</h3>
-              <span class="text-xs text-gray-500 block mb-3">v${a.version}</span>
-              <p class="text-sm text-gray-300 mb-6 line-clamp-2">${a.description}</p>
+              <h3 class="text-xl font-bold text-white mb-1">${nameStr}</h3>
+              <span class="text-xs text-gray-500 block mb-3">v${versionStr}</span>
+              <p class="text-sm text-gray-300 mb-6 line-clamp-2">${descStr}</p>
             </div>
             <div class="space-y-2">
-              <a href="aura://addon/install?url=${encodeURIComponent(a.manifestUrl)}" 
+              <a href="aura://addon/install?url=${encodeURIComponent(urlStr)}" 
                  class="w-full bg-auraPink hover:bg-auraPink/90 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center transition shadow-md shadow-auraPink/20">
                 Install to Aura
               </a>
-              <button onclick="copyManifest('${a.manifestUrl}')" 
+              <button onclick="copyManifest('${urlStr.replace(/'/g, "\\'")}')" 
                       class="w-full bg-auraDark hover:bg-auraBorder text-gray-400 font-medium py-2 rounded-xl text-xs border border-auraBorder transition">
                 Copy Manifest URL
               </button>
@@ -266,6 +243,52 @@
           </div>
         `;
       }).join('');
+    }
+
+    // Dynamic API fetcher with CORS & network fallback
+    async function fetchCommunityRegistry() {
+      try {
+        const response = await fetch('https://stremio-addons.net/api/addons', { signal: AbortSignal.timeout(4000) });
+        if (response.ok) {
+          const remoteList = await response.json();
+          if (Array.isArray(remoteList)) {
+            const parsedRemote = remoteList.map(item => {
+              const manifest = item?.manifest || {};
+              const resList = manifest?.resources || [];
+              const types = [];
+              if (resList.includes('stream') || manifest?.types?.includes('movie')) types.push('stream');
+              if (resList.includes('subtitles')) types.push('subtitles');
+              if (resList.includes('catalog')) types.push('catalog');
+              if ((manifest?.name || '').toLowerCase().includes('anime') || (manifest?.description || '').toLowerCase().includes('anime')) types.push('anime');
+              if (types.length === 0) types.push('catalog');
+
+              const transport = item?.transportUrl || item?.manifestUrl || '';
+              return {
+                id: manifest?.id || transport,
+                name: manifest?.name || 'Community Addon',
+                version: manifest?.version || '1.0.0',
+                description: manifest?.description || 'Community Stremio addon manifest.',
+                types: types,
+                icon: manifest?.icon || '🧩',
+                manifestUrl: transport,
+                badge: (types[0] || 'ADDON').toUpperCase(),
+              };
+            });
+
+            const existingIds = new Set(presetAddons.map(a => a.id));
+            const filteredRemote = parsedRemote.filter(a => a.manifestUrl && !existingIds.has(a.id));
+            if (filteredRemote.length > 0) {
+              allAddons = [...presetAddons, ...filteredRemote];
+              renderFilteredAddons();
+            }
+          }
+        } else {
+          document.getElementById('cors-notice')?.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.warn('Dynamic community registry CORS fallback active:', err);
+        document.getElementById('cors-notice')?.classList.remove('hidden');
+      }
     }
 
     function setCategory(category) {
@@ -283,28 +306,36 @@
     }
 
     function handleSearch() {
-      searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      searchQuery = document.getElementById('search-input')?.value?.toLowerCase()?.trim() || '';
       renderFilteredAddons();
     }
 
     function copyManifest(url) {
-      navigator.clipboard.writeText(url);
-      showToast('Manifest URL copied to clipboard!');
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Manifest URL copied to clipboard!');
+      }).catch(() => {
+        showToast('Manifest URL: ' + url);
+      });
     }
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toast-message');
-      toastMsg.innerText = msg;
-      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-      }, 3000);
+      if (toast && toastMsg) {
+        toastMsg.innerText = msg;
+        toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+        }, 3000);
+      }
     }
 
-    // Initial Render & Fetch
-    renderFilteredAddons();
-    fetchCommunityRegistry();
+    // Instant DOM Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      renderFilteredAddons();
+      fetchCommunityRegistry();
+    });
   </script>
 </body>
 </html>
