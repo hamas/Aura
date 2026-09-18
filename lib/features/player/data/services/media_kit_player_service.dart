@@ -44,6 +44,8 @@ class MediaKitPlayerService {
         (platform as dynamic).setProperty('reconnect-delay-max', '5');
         (platform as dynamic).setProperty('reconnect-streamed', 'yes');
         (platform as dynamic).setProperty('demuxer-readahead-secs', '25');
+        (platform as dynamic).setProperty('demuxer-max-bytes', '33554432'); // 32MiB
+        (platform as dynamic).setProperty('demuxer-max-back-bytes', '16777216'); // 16MiB
       }
     } catch (_) {}
   }
@@ -73,6 +75,10 @@ class MediaKitPlayerService {
     _subscriptions.add(
       player.stream.buffering.listen((buffering) {
         if (buffering) {
+          // If already playing and position is active, ignore transient buffering signals
+          if (player.state.playing && player.state.position > Duration.zero) {
+            return;
+          }
           _emit(_currentState.copyWith(status: PlaybackStatus.buffering));
         } else if (_currentState.status == PlaybackStatus.buffering) {
           _emit(_currentState.copyWith(
@@ -86,7 +92,15 @@ class MediaKitPlayerService {
 
     _subscriptions.add(
       player.stream.position.listen((pos) {
-        _emit(_currentState.copyWith(position: pos));
+        final isCurrentlyBuffering = _currentState.status == PlaybackStatus.buffering;
+        final shouldDismissBuffering = isCurrentlyBuffering && (pos > Duration.zero || player.state.playing);
+        
+        _emit(_currentState.copyWith(
+          position: pos,
+          status: shouldDismissBuffering
+              ? (player.state.playing ? PlaybackStatus.playing : PlaybackStatus.paused)
+              : _currentState.status,
+        ));
       }),
     );
 

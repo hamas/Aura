@@ -108,6 +108,14 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
 
     final isRetryingState = state.status == PlaybackStatus.retrying && newState.status == PlaybackStatus.buffering;
 
+    // Force Clear Buffering if Position is Advancing or Playback is active
+    PlaybackStatus effectiveStatus = isRetryingState ? PlaybackStatus.retrying : newState.status;
+    if (effectiveStatus == PlaybackStatus.buffering) {
+      if (newState.isPlaying || (newState.position > Duration.zero && newState.position != state.position)) {
+        effectiveStatus = PlaybackStatus.playing;
+      }
+    }
+
     // Check Next Episode Binge Countdown threshold (remaining duration <= 20s)
     bool shouldShowCountdown = false;
     int remainingSec = 0;
@@ -120,7 +128,7 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
     }
 
     emit(newState.copyWith(
-      status: isRetryingState ? PlaybackStatus.retrying : newState.status,
+      status: effectiveStatus,
       intervals: state.intervals,
       autoSkipIntros: state.autoSkipIntros,
       activeInterval: currentInterval,
