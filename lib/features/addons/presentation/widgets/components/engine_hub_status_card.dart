@@ -143,26 +143,45 @@ class EngineHubStatusCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (isInstalled && onToggleActive != null)
-                Row(
-                  children: [
-                    SizedBox(
-                      height: 24,
-                      width: 40,
-                      child: Switch(
-                        value: isActive,
-                        onChanged: onToggleActive,
-                        activeThumbColor: AppColors.accentPink,
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? AppColors.accentPink.withValues(alpha: 0.12)
+                        : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isActive
+                          ? AppColors.accentPink.withValues(alpha: 0.3)
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      isActive ? 'Engine Active' : 'Engine Disabled',
-                      style: context.auraText.caption.copyWith(
-                        color: isActive ? AppColors.accentPink : AppColors.textMuted,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform.scale(
+                        scale: 0.75,
+                        child: Switch(
+                          value: isActive,
+                          onChanged: onToggleActive,
+                          activeThumbColor: Colors.white,
+                          activeTrackColor: AppColors.accentPink,
+                          inactiveThumbColor: Colors.white54,
+                          inactiveTrackColor: Colors.white12,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        isActive ? 'Active' : 'Disabled',
+                        style: context.auraText.caption.copyWith(
+                          color: isActive ? AppColors.accentPink : AppColors.textMuted,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else
                 const SizedBox.shrink(),
@@ -190,6 +209,9 @@ class EngineHubStatusCard extends StatelessWidget {
                       foregroundColor:
                           isInstalled ? AppColors.textPrimary : AppColors.surfaceBackground,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: isDownloading
                         ? const SizedBox(

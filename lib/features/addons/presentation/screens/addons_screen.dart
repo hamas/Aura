@@ -15,7 +15,12 @@ import '../widgets/components/engine_hub_status_card.dart';
 import '../widgets/components/install_addon_modal_sheet.dart';
 
 class AddonsScreen extends StatefulWidget {
-  const AddonsScreen({super.key});
+  final bool isStandaloneScreen;
+
+  const AddonsScreen({
+    super.key,
+    this.isStandaloneScreen = true,
+  });
 
   @override
   State<AddonsScreen> createState() => _AddonsScreenState();
@@ -48,66 +53,52 @@ class _AddonsScreenState extends State<AddonsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
+    final topPadding = widget.isStandaloneScreen
+        ? MediaQuery.of(context).padding.top + kToolbarHeight + 4
+        : 0.0;
 
-    return Scaffold(
-      backgroundColor: AppColors.surfaceBackground,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.only(top: topPadding),
+    final content = BlocBuilder<AddonBloc, AddonState>(
+      builder: (context, state) {
+        final isLoading = state.status == AddonStatus.loading;
+        final hasError = state.status == AddonStatus.failure;
+
+        // Presets status
+        final freeEngineInstalled = state.installedAddons
+            .any((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id);
+        final freeEngineActive = freeEngineInstalled &&
+            state.installedAddons
+                .firstWhere((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id)
+                .isEnabled;
+
+        final subtitlesEngineInstalled = state.installedAddons
+            .any((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id);
+        final subtitlesEngineActive = subtitlesEngineInstalled &&
+            state.installedAddons
+                .firstWhere((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id)
+                .isEnabled;
+
+        final customAddons = state.installedAddons;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Hub Header
+            Text(
+              '1-Click Community Engines',
+              style: context.auraText.caption.copyWith(
+                color: AppColors.accentPink,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
               ),
-              SliverToBoxAdapter(
-                child: BlocBuilder<AddonBloc, AddonState>(
-                  builder: (context, state) {
-                    final isLoading = state.status == AddonStatus.loading;
-                    final hasError = state.status == AddonStatus.failure;
-
-                    // Presets status
-                    final freeEngineInstalled = state.installedAddons
-                        .any((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id);
-                    final freeEngineActive = freeEngineInstalled &&
-                        state.installedAddons
-                            .firstWhere((a) => a.id == CommunityAddonPreset.freeCommunityEngine.id)
-                            .isEnabled;
-
-                    final subtitlesEngineInstalled = state.installedAddons
-                        .any((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id);
-                    final subtitlesEngineActive = subtitlesEngineInstalled &&
-                        state.installedAddons
-                            .firstWhere((a) => a.id == CommunityAddonPreset.openSubtitlesEngine.id)
-                            .isEnabled;
-
-                    final customAddons = state.installedAddons;
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTokens.spacingMd,
-                        vertical: AppTokens.spacingSm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Hub Header
-                          Text(
-                            'ENGINE HUB & ADD-ONS',
-                            style: context.auraText.caption.copyWith(
-                              color: AppColors.accentPink,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Install 1-click community engines and utility manifests on demand to resolve media sources.',
-                            style: context.auraText.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: AppTokens.spacingMd),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Install 1-click community engines and utility manifests on demand to resolve media sources.',
+              style: context.auraText.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppTokens.spacingMd),
 
                           // SECTION 1: CORE STREAM ENGINES
                           Text(
@@ -272,9 +263,37 @@ class _AddonsScreenState extends State<AddonsScreen> {
                           ],
                           const SizedBox(height: 40),
                         ],
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  );
+
+    if (!widget.isStandaloneScreen) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTokens.spacingSm,
+          vertical: AppTokens.spacingSm,
+        ),
+        child: content,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.surfaceBackground,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.only(top: topPadding),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTokens.spacingMd,
+                    vertical: AppTokens.spacingSm,
+                  ),
+                  child: content,
                 ),
               ),
             ],

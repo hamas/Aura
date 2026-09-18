@@ -651,10 +651,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 'Streaming':
         return _buildStreamingSubPage();
       case 'Addons':
-        return const SizedBox(
-          height: 600,
-          child: AddonsScreen(),
-        );
+        return const AddonsScreen(isStandaloneScreen: false);
       case 'Policies':
         return _buildPoliciesSubPage();
       case 'Licence':
