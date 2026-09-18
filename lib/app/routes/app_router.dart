@@ -340,15 +340,9 @@ class AppRouter {
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) {
+        builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return NoTransitionPage(
-            key: state.pageKey,
-            child: PlayerView(
-              args: extra,
-              onBack: () => Navigator.of(context).pop(),
-            ),
-          );
+          return PlayerView(args: extra);
         },
       ),
     ],

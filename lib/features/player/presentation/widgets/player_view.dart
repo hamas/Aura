@@ -24,14 +24,14 @@ import '../../../watch_together/presentation/widgets/watch_together_overlay_hud.
 
 class PlayerView extends StatefulWidget {
   final Map<String, dynamic> args;
-  final VoidCallback onBack;
+  final VoidCallback? onBack;
   final MediaKitPlayerService? playerService; // Optional for unit tests / custom overrides
   final VoidCallback? onNextEpisode;
 
   const PlayerView({
     super.key,
     required this.args,
-    required this.onBack,
+    this.onBack,
     this.playerService,
     this.onNextEpisode,
   });
@@ -389,7 +389,7 @@ class _PlayerViewState extends State<PlayerView> {
                       ));
                     }
                   },
-                  onBack: widget.onBack,
+                  onBack: widget.onBack ?? () => Navigator.of(context).pop(),
                 ),
 
                 // Watch Together Synchronized Multi-User Overlay HUD

@@ -224,7 +224,37 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            // P2P Only Static Banner Notice
+            if (!widget.isLoading && widget.streams.isNotEmpty && !widget.streams.any((s) => (s.url ?? '').startsWith('http')))
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF332014),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppTheme.warningAccent.withValues(alpha: 0.5),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    AuraIcon(AppIcons.warning, color: AppTheme.warningAccent, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '⚠️ Direct HTTPS stream required. Configure Real-Debrid / TorBox in your add-on to stream torrents.',
+                        style: TextStyle(
+                          color: AppTheme.warningAccent,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          height: 1.25,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             // Content Area
             if (widget.isLoading && widget.streams.isEmpty)
@@ -462,7 +492,6 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
 
                     final stream = filteredStreams[index - 1];
                     final bool isDirect = (stream.url ?? '').startsWith('http');
-                    final bool isP2pTorrent = stream.url == null && (stream.infoHash ?? '').isNotEmpty;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
                     final fileSize = _extractFileSize(rawTitle);
@@ -473,7 +502,7 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          if (isP2pTorrent) {
+                          if (!isDirect) {
                             showDialog<void>(
                               context: context,
                               builder: (dialogCtx) => AlertDialog(
@@ -506,7 +535,7 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primaryAccent,
-                                      foregroundColor: Colors.white,
+                                      foregroundColor: Colors.black,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                     ),
                                     onPressed: () {
@@ -514,7 +543,7 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
                                       Navigator.of(context).pop();
                                       context.push('/addons');
                                     },
-                                    child: const Text('Configure Add-on'),
+                                    child: const Text('Configure Add-ons'),
                                   ),
                                 ],
                               ),

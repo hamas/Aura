@@ -22,6 +22,7 @@ import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../../library/presentation/bloc/library_event.dart';
 import '../../../library/presentation/bloc/library_state.dart';
+import '../../../player/presentation/widgets/player_view.dart';
 import '../../../player/presentation/widgets/stream_picker_modal.dart';
 import '../../domain/entities/media_item.dart';
 import '../bloc/catalog_bloc.dart';
@@ -56,6 +57,7 @@ class MediaDetailsScreen extends StatefulWidget {
 class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
   final ScrollController _scrollController = ScrollController();
   int _selectedSeasonNumber = 1;
+  bool _isResolvingStream = false;
 
   @override
   void initState() {
@@ -158,48 +160,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     String? episodeTitle,
   }) async {
     final engine = HttpDebridEngine();
-    
-    // Show loading dialog while resolving stream link via Debrid
-    BuildContext? dialogContext;
-    if (context.mounted) {
-      unawaited(showDialog<void>(
-        context: context,
-        barrierDismissible: true,
-        builder: (ctx) {
-          dialogContext = ctx;
-          return const Center(
-            child: Card(
-              color: AppColors.surfaceElevated,
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(color: AppColors.accentPink),
-                    SizedBox(height: 14),
-                    Text(
-                      'Resolving HD Stream...',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ));
-    }
-
-    void dismissDialog() {
-      if (dialogContext != null && dialogContext!.mounted) {
-        try {
-          if (Navigator.of(dialogContext!, rootNavigator: true).canPop()) {
-            Navigator.of(dialogContext!, rootNavigator: true).pop();
-          }
-        } catch (_) {}
-        dialogContext = null;
-      }
-    }
+    setState(() => _isResolvingStream = true);
 
     try {
       debugPrint('DEBUG: [1] Launching player stream resolution for: ${stream.title ?? item.title}');
@@ -214,11 +175,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         },
       );
 
-      debugPrint('DEBUG: [5] Dismissing loading HUD and pushing player with URL: ${resolved.streamUrl}');
-      
-      if (dialogContext != null && dialogContext!.mounted) {
-        Navigator.of(dialogContext!).pop();
-        dialogContext = null;
+      debugPrint('DEBUG: [5] Stream resolved, pushing PlayerView with URL: ${resolved.streamUrl}');
+      if (mounted) {
+        setState(() => _isResolvingStream = false);
       }
 
       if (context.mounted) {
@@ -241,65 +200,50 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
             : stream.resolution;
 
-        await Future.microtask(() {});
-        if (!context.mounted) return;
-
         unawaited(
-          context.push(
-            '/player',
-            extra: {
-              'streamUrl': resolved.streamUrl,
-              'title': item.title,
-              'subtitle': subtitleText,
-              'headers': resolved.httpHeaders,
-              'mediaId': item.id.toString(),
-              'posterPath': item.posterPath,
-              'backdropPath': item.backdropPath,
-              'type': item.type.name,
-              'seasonNumber': seasonNumber,
-              'episodeNumber': episodeNumber,
-            },
+          Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute(
+              builder: (navContext) => PlayerView(
+                args: {
+                  'streamUrl': resolved.streamUrl,
+                  'title': item.title,
+                  'subtitle': subtitleText,
+                  'headers': resolved.httpHeaders,
+                  'mediaId': item.id.toString(),
+                  'posterPath': item.posterPath,
+                  'backdropPath': item.backdropPath,
+                  'type': item.type.name,
+                  'seasonNumber': seasonNumber,
+                  'episodeNumber': episodeNumber,
+                },
+                onBack: () => Navigator.of(navContext).pop(),
+              ),
+            ),
           ),
         );
       }
-    } on ServerException catch (e) {
-      debugPrint('DEBUG: [ERROR] ServerException stream resolution: ${e.message}');
-      dismissDialog();
+    } catch (e) {
+      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
+      if (mounted) {
+        setState(() => _isResolvingStream = false);
+      }
       if (context.mounted) {
-        final errorMsg = e.message.contains('Direct stream URL required')
-            ? 'This stream requires a Debrid gateway. Please select a Direct HTTP link.'
-            : e.message;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: AppColors.statusError,
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             content: Text(
-              errorMsg,
+              e is ServerException ? e.message : 'Failed to resolve stream.',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             duration: const Duration(seconds: 4),
           ),
         );
       }
-    } catch (e) {
-      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
-      dismissDialog();
-      if (context.mounted) {
-        const errorMsg = 'Unable to resolve stream. Please choose another link.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.statusError,
-            behavior: SnackBarBehavior.floating,
-            content: Text(
-              errorMsg,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            duration: Duration(seconds: 4),
-          ),
-        );
-      }
     } finally {
-      dismissDialog();
+      if (mounted && _isResolvingStream) {
+        setState(() => _isResolvingStream = false);
+      }
     }
   }
 
@@ -925,6 +869,21 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                     ],
                   ),
                 ),
+
+                // Non-blocking Stream Resolution Linear Progress Indicator
+                if (_isResolvingStream)
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: LinearProgressIndicator(
+                        color: AppColors.accentPink,
+                        backgroundColor: Colors.transparent,
+                        minHeight: 4,
+                      ),
+                    ),
+                  ),
               ],
             );
           },
