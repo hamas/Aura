@@ -25,8 +25,11 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
     super.initState();
     _deepLinkService = DeepLinkService();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final addonBloc = context.read<AddonBloc>();
-      _deepLinkService.init(addonBloc);
+      if (!mounted) return;
+      try {
+        final addonBloc = context.read<AddonBloc>();
+        _deepLinkService.init(addonBloc);
+      } catch (_) {}
     });
   }
 

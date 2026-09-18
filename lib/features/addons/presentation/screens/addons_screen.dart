@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -7,13 +8,11 @@ import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/addon_preset.dart';
-import '../../data/datasources/stremio_addon_api.dart';
 import '../bloc/addon_bloc.dart';
 import '../bloc/addon_event.dart';
 import '../bloc/addon_state.dart';
 import '../widgets/components/addon_item_card.dart';
 import '../widgets/components/engine_hub_status_card.dart';
-import '../widgets/components/install_addon_modal_sheet.dart';
 
 class AddonsScreen extends StatefulWidget {
   final bool isStandaloneScreen;
@@ -28,8 +27,6 @@ class AddonsScreen extends StatefulWidget {
 }
 
 class _AddonsScreenState extends State<AddonsScreen> {
-  final StremioAddonApi _addonApi = StremioAddonApi();
-
   @override
   void initState() {
     super.initState();
@@ -37,13 +34,7 @@ class _AddonsScreenState extends State<AddonsScreen> {
   }
 
   void _showInstallDialog(BuildContext context) {
-    InstallAddonModalSheet.show(
-      context,
-      _addonApi,
-      (manifestUrl) {
-        context.read<AddonBloc>().add(InstallAddonFromUrlEvent(manifestUrl));
-      },
-    );
+    context.push('/addons/install');
   }
 
   Future<void> _launchCommunityDirectory() async {

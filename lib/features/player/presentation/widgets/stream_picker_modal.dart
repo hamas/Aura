@@ -331,8 +331,8 @@ class StreamPickerModal extends StatelessWidget {
                     }
 
                     final stream = streams[index - 1];
-                    final bool isDirectHttp = stream.url != null && stream.url!.startsWith('http');
-                    final bool isP2pTorrent = stream.url == null && stream.infoHash != null;
+                    final bool isDirectHttp = (stream.url ?? '').startsWith('http');
+                    final bool isP2pTorrent = stream.url == null && (stream.infoHash ?? '').isNotEmpty;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
                     final fileSize = _extractFileSize(rawTitle);
@@ -486,7 +486,7 @@ class StreamPickerModal extends StatelessWidget {
                                       crossAxisAlignment:
                                           WrapCrossAlignment.center,
                                       children: [
-                                        if (stream.addonName != null)
+                                        if ((stream.addonName ?? '').isNotEmpty)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -498,7 +498,7 @@ class StreamPickerModal extends StatelessWidget {
                                                   BorderRadius.circular(4),
                                             ),
                                             child: Text(
-                                              stream.addonName!,
+                                              stream.addonName ?? '',
                                               style: const TextStyle(
                                                 color: AppTheme.textSecondary,
                                                 fontSize: 10,

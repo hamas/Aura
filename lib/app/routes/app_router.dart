@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/presentation/primitives/primitives.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
+import '../../features/addons/presentation/screens/install_addon_screen.dart';
 import '../../features/catalog/domain/entities/media_item.dart';
 import '../../features/catalog/presentation/screens/category_screen.dart';
 import '../../features/catalog/presentation/screens/media_details_screen.dart';
@@ -70,6 +71,13 @@ class AppRouter {
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
               child: const AddonsScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/addons/install',
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const InstallAddonScreen(),
             ),
           ),
           GoRoute(

@@ -1,9 +1,10 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import '../../domain/entities/addon_manifest.dart';
 import '../../domain/repositories/addon_repository.dart';
 import 'addon_event.dart';
 import 'addon_state.dart';
 
-class AddonBloc extends Bloc<AddonEvent, AddonState> {
+class AddonBloc extends HydratedBloc<AddonEvent, AddonState> {
   final AddonRepository _addonRepository;
 
   AddonBloc({required AddonRepository addonRepository})
@@ -15,6 +16,31 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
     on<UninstallAddonEvent>(_onUninstallAddon);
     on<ToggleAddonStatusEvent>(_onToggleAddonStatus);
     on<FetchStreamsForMediaEvent>(_onFetchStreamsForMedia);
+  }
+
+  @override
+  AddonState? fromJson(Map<String, dynamic> json) {
+    try {
+      final rawList = json['installedAddons'] as List<dynamic>?;
+      if (rawList != null) {
+        final addons = rawList.map((e) {
+          final map = e as Map;
+          return AddonManifest.fromJson(
+            Map<String, dynamic>.from(map),
+            transportUrl: map['transportUrl']?.toString() ?? '',
+          );
+        }).toList();
+        return AddonState(status: AddonStatus.success, installedAddons: addons);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  @override
+  Map<String, dynamic>? toJson(AddonState state) {
+    return {
+      'installedAddons': state.installedAddons.map((e) => e.toJson()).toList(),
+    };
   }
 
   Future<void> _onLoadAddons(
@@ -36,10 +62,14 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
     try {
       final manifest = await _addonRepository.fetchManifest(event.manifestUrl);
       await _addonRepository.installAddon(manifest);
-      final updatedList = await _addonRepository.getInstalledAddons();
+      final currentAddons = await _addonRepository.getInstalledAddons();
+      final updatedAddons = List<AddonManifest>.from(currentAddons)
+        ..removeWhere((addon) => addon.id == manifest.id)
+        ..add(manifest);
+
       emit(state.copyWith(
         status: AddonStatus.success,
-        installedAddons: updatedList,
+        installedAddons: updatedAddons,
         successMessage: 'Successfully installed ${manifest.name}',
       ));
     } catch (e) {
@@ -55,10 +85,14 @@ class AddonBloc extends Bloc<AddonEvent, AddonState> {
     emit(state.copyWith(status: AddonStatus.loading));
     try {
       await _addonRepository.installAddon(event.manifest);
-      final updatedList = await _addonRepository.getInstalledAddons();
+      final currentAddons = await _addonRepository.getInstalledAddons();
+      final updatedAddons = List<AddonManifest>.from(currentAddons)
+        ..removeWhere((addon) => addon.id == event.manifest.id)
+        ..add(event.manifest);
+
       emit(state.copyWith(
         status: AddonStatus.success,
-        installedAddons: updatedList,
+        installedAddons: updatedAddons,
         successMessage: 'Successfully installed ${event.manifest.name}',
       ));
     } catch (e) {

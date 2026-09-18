@@ -157,12 +157,21 @@ class AddonStream extends Equatable {
       }
     }
 
+    int? parsedFileIdx;
+    if (json['fileIdx'] != null) {
+      if (json['fileIdx'] is int) {
+        parsedFileIdx = json['fileIdx'] as int;
+      } else {
+        parsedFileIdx = int.tryParse(json['fileIdx'].toString());
+      }
+    }
+
     return AddonStream(
-      name: json['name'] as String?,
-      title: json['title'] as String?,
-      url: json['url'] as String?,
-      infoHash: json['infoHash'] as String?,
-      fileIdx: json['fileIdx'] as int?,
+      name: json['name']?.toString(),
+      title: json['title']?.toString(),
+      url: json['url']?.toString(),
+      infoHash: json['infoHash']?.toString(),
+      fileIdx: parsedFileIdx,
       behaviorHints: encodedBehaviorHints,
       addonName: addonName,
       headers: parsedHeaders,
