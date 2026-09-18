@@ -215,11 +215,9 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       );
 
       debugPrint('DEBUG: [5] Dismissing loading HUD and pushing player with URL: ${resolved.streamUrl}');
+      
       if (dialogContext != null && dialogContext!.mounted) {
-        final nav = Navigator.of(dialogContext!, rootNavigator: true);
-        if (nav.canPop()) {
-          nav.pop();
-        }
+        Navigator.of(dialogContext!).pop();
         dialogContext = null;
       }
 
@@ -243,23 +241,26 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
             : stream.resolution;
 
-        final playerExtra = {
-          'streamUrl': resolved.streamUrl,
-          'title': item.title,
-          'subtitle': subtitleText,
-          'headers': resolved.httpHeaders,
-          'mediaId': item.id.toString(),
-          'posterPath': item.posterPath,
-          'backdropPath': item.backdropPath,
-          'type': item.type.name,
-          'seasonNumber': seasonNumber,
-          'episodeNumber': episodeNumber,
-        };
+        await Future.microtask(() {});
+        if (!context.mounted) return;
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!context.mounted) return;
-          context.push('/player', extra: playerExtra);
-        });
+        unawaited(
+          context.push(
+            '/player',
+            extra: {
+              'streamUrl': resolved.streamUrl,
+              'title': item.title,
+              'subtitle': subtitleText,
+              'headers': resolved.httpHeaders,
+              'mediaId': item.id.toString(),
+              'posterPath': item.posterPath,
+              'backdropPath': item.backdropPath,
+              'type': item.type.name,
+              'seasonNumber': seasonNumber,
+              'episodeNumber': episodeNumber,
+            },
+          ),
+        );
       }
     } on ServerException catch (e) {
       debugPrint('DEBUG: [ERROR] ServerException stream resolution: ${e.message}');

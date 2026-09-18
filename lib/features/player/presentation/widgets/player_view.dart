@@ -63,6 +63,7 @@ class _PlayerViewState extends State<PlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
+    debugPrint('🚀 [PlayerView] Mounted successfully with URL: ${widget.args['streamUrl']}');
     debugPrint('DEBUG: [PLAYER_VIEW] Initialized with args: ${widget.args}');
 
     try {
