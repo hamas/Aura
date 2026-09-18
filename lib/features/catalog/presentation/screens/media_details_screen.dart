@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -155,6 +154,52 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     if (!screenContext.mounted) return;
 
+    final String rawUrl = stream.url ?? '';
+
+    // Direct HTTP/HTTPS streams bypass Debrid resolver completely
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      debugPrint('⚡ [Direct Stream] Bypassing resolver, pushing player immediately: $rawUrl');
+      
+      screenContext.read<LibraryBloc>().add(
+            UpdateProgressEvent(
+              mediaId: item.id.toString(),
+              title: item.title,
+              posterPath: item.posterPath,
+              backdropPath: item.backdropPath,
+              type: item.type.name,
+              positionSeconds: 1,
+              durationSeconds: (item.runtimeMinutes ?? 120) * 60,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+            ),
+          );
+
+      final subtitleText = (item.type == MediaType.series && seasonNumber != null)
+          ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
+          : (stream.name ?? stream.resolution);
+
+      Navigator.of(screenContext, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (navContext) => PlayerView(
+            args: {
+              'streamUrl': rawUrl,
+              'title': item.title,
+              'subtitle': subtitleText,
+              'headers': stream.headers,
+              'mediaId': item.id.toString(),
+              'posterPath': item.posterPath,
+              'backdropPath': item.backdropPath,
+              'type': item.type.name,
+              'seasonNumber': seasonNumber,
+              'episodeNumber': episodeNumber,
+            },
+            onBack: () => Navigator.of(navContext).pop(),
+          ),
+        ),
+      );
+      return;
+    }
+
     final engine = HttpDebridEngine();
     setState(() => _isResolvingStream = true);
 
@@ -213,8 +258,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
-      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
+    } catch (e, stack) {
+      debugPrint('❌ [resolveStream Error]: $e\n$stack');
       if (mounted) {
         setState(() => _isResolvingStream = false);
       }
@@ -224,7 +269,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             content: Text(
-              e is ServerException ? e.message : 'Failed to resolve stream.',
+              'Stream error: $e',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             duration: const Duration(seconds: 4),
