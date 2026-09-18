@@ -13,6 +13,10 @@ import '../../domain/entities/media_item.dart';
 import '../bloc/catalog_bloc.dart';
 import '../bloc/catalog_event.dart';
 import '../bloc/catalog_state.dart';
+import '../../../../core/theme/app_icons.dart';
+import '../../../addons/presentation/bloc/addon_bloc.dart';
+import '../../../addons/presentation/bloc/addon_state.dart';
+import '../../../addons/presentation/widgets/engine_setup_sheet.dart';
 import '../widgets/components/discovery_dialogs.dart';
 import '../widgets/components/discovery_shimmer_skeleton.dart';
 import '../widgets/widgets.dart';
@@ -249,6 +253,83 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
+                          BlocBuilder<AddonBloc, AddonState>(
+                            builder: (context, addonState) {
+                              if (addonState.installedAddons.isEmpty) {
+                                return SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      top: MediaQuery.of(context).padding.top + 70,
+                                      left: 16,
+                                      right: 16,
+                                      bottom: 12,
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () => EngineSetupSheet.show(context),
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.surfaceCard,
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color: AppColors.accentPink
+                                                  .withValues(alpha: 0.4),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const AuraIcon(
+                                                AppIcons.extension,
+                                                color: AppColors.accentPink,
+                                                size: 22,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Configure Playback Extension',
+                                                      style: AppTypography.caption
+                                                          .copyWith(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      'Tap to add a media manifest provider or deep-link',
+                                                      style: AppTypography.caption
+                                                          .copyWith(
+                                                        color: Colors.white70,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Icon(
+                                                Icons.chevron_right,
+                                                color: Colors.white54,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SliverToBoxAdapter(
+                                  child: SizedBox.shrink());
+                            },
+                          ),
                           if (heroItems.isNotEmpty)
                             SliverToBoxAdapter(
                               child: BillboardHeroBanner(

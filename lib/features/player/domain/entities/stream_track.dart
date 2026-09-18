@@ -15,9 +15,17 @@ class SubtitleTrackInfo extends Equatable {
   final String id;
   final String? title;
   final String? language;
+  final bool isExternal;
+  final String? uri;
 
-  const SubtitleTrackInfo({required this.id, this.title, this.language});
+  const SubtitleTrackInfo({
+    required this.id,
+    this.title,
+    this.language,
+    this.isExternal = false,
+    this.uri,
+  });
 
   @override
-  List<Object?> get props => [id, title, language];
+  List<Object?> get props => [id, title, language, isExternal, uri];
 }

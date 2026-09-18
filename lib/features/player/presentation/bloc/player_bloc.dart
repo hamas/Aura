@@ -67,15 +67,68 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
       return;
     }
 
-    if (currentInterval == null) {
-      _lastAutoSkippedInterval = null;
+    if (newState.status == PlaybackStatus.error) {
+      final candidates = state.candidateStreams;
+      final nextIndex = state.activeCandidateIndex + 1;
+
+      if (candidates.isNotEmpty && nextIndex < candidates.length) {
+        final currentPos = state.position;
+        final nextStreamUrl = candidates[nextIndex];
+        
+        emit(state.copyWith(
+          status: PlaybackStatus.retrying,
+          activeCandidateIndex: nextIndex,
+          currentStreamUrl: nextStreamUrl,
+          errorMessage: 'Source connection failed. Retrying alternate stream ${nextIndex + 1}/${candidates.length}...',
+        ));
+
+        // Attempt playback on next candidate stream at current position
+        unawaited(_playerService.openStream(
+          url: nextStreamUrl,
+          title: state.title,
+          subtitle: state.subtitle,
+        ).then((_) {
+          if (currentPos > Duration.zero) {
+            _playerService.seek(currentPos);
+          }
+        }));
+        return;
+      } else if (candidates.isNotEmpty && nextIndex >= candidates.length) {
+        emit(newState.copyWith(
+          status: PlaybackStatus.error,
+          errorMessage: 'All available sources failed to load. Please verify your connection or try another extension.',
+          intervals: state.intervals,
+          autoSkipIntros: state.autoSkipIntros,
+          candidateStreams: state.candidateStreams,
+          activeCandidateIndex: state.activeCandidateIndex,
+        ));
+        return;
+      }
+    }
+
+    final isRetryingState = state.status == PlaybackStatus.retrying && newState.status == PlaybackStatus.buffering;
+
+    // Check Next Episode Binge Countdown threshold (remaining duration <= 20s)
+    bool shouldShowCountdown = false;
+    int remainingSec = 0;
+    if (newState.duration.inSeconds > 0 && newState.position.inSeconds > 0) {
+      final rem = newState.duration.inSeconds - newState.position.inSeconds;
+      if (rem <= 20 && rem > 0) {
+        shouldShowCountdown = true;
+        remainingSec = rem;
+      }
     }
 
     emit(newState.copyWith(
+      status: isRetryingState ? PlaybackStatus.retrying : newState.status,
       intervals: state.intervals,
       autoSkipIntros: state.autoSkipIntros,
       activeInterval: currentInterval,
       clearActiveInterval: currentInterval == null,
+      candidateStreams: state.candidateStreams,
+      activeCandidateIndex: state.activeCandidateIndex,
+      showNextEpisodeCountdown: shouldShowCountdown,
+      remainingCountdownSeconds: remainingSec,
     ));
   }
 
@@ -136,9 +189,15 @@ class PlayerBloc extends Bloc<PlayerEvent, AuraPlayerState> {
   Future<void> _onPlayStream(
       PlayStreamEvent event, Emitter<AuraPlayerState> emit) async {
     _lastAutoSkippedInterval = null;
-    if (event.intervals != null) {
-      emit(state.copyWith(intervals: event.intervals));
-    }
+    final candidates = event.candidateStreams ?? [event.streamUrl];
+    
+    emit(state.copyWith(
+      candidateStreams: candidates,
+      activeCandidateIndex: event.candidateIndex,
+      currentStreamUrl: event.streamUrl,
+      intervals: event.intervals ?? state.intervals,
+    ));
+
     await _playerService.openStream(
       url: event.streamUrl,
       title: event.title,

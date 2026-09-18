@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Addon Directory | Stream & Subtitle Extension Library</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            auraDark: '#0B0B0F',
+            auraSurface: '#16161E',
+            auraPink: '#FF2A85',
+            auraBorder: '#232330',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-auraDark text-gray-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Navigation Header -->
+  <header class="border-b border-auraBorder bg-auraSurface/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-auraPink to-purple-600 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-auraPink/30">
+          A
+        </div>
+        <span class="text-xl font-extrabold tracking-tight text-white">AURA <span class="text-auraPink text-sm font-semibold uppercase tracking-wider ml-1">Directory</span></span>
+      </div>
+      <a href="aura://open" class="bg-auraPink hover:bg-auraPink/90 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-auraPink/25">
+        Open Aura App
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 py-10 w-full">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+        Community Stremio v3 Add-ons
+      </h1>
+      <p class="text-gray-400 text-lg">
+        Discover and 1-click install compliant stream resolvers, subtitle providers, and catalog indexes directly into your Aura player.
+      </p>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
+      <button onclick="filterAddons('all')" id="btn-all" class="filter-btn active bg-auraPink text-white font-medium px-5 py-2 rounded-xl text-sm transition">
+        All Extensions
+      </button>
+      <button onclick="filterAddons('stream')" id="btn-stream" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
+        Video Streams
+      </button>
+      <button onclick="filterAddons('subtitles')" id="btn-subtitles" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
+        Subtitles
+      </button>
+      <button onclick="filterAddons('catalog')" id="btn-catalog" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
+        Catalogs
+      </button>
+    </div>
+
+    <!-- Addon Grid Container -->
+    <div id="addon-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+      <!-- Dynamic Addon Cards Rendered Here -->
+    </div>
+
+    <!-- Torrentio & Debrid Setup Guide Card -->
+    <div class="bg-auraSurface border border-auraBorder rounded-2xl p-8 mb-16 shadow-xl relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-auraPink/10 rounded-full blur-3xl pointer-events-none"></div>
+      <h2 class="text-2xl font-bold text-white mb-3">Debrid & Torrentio Setup Guide</h2>
+      <p class="text-gray-300 mb-6 max-w-2xl">
+        Configure RealDebrid or HTTP stream caching endpoints using the Torrentio web configurator, then copy the resulting manifest URL to install it directly in Aura.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="https://torrentio.strem.fun/configure" target="_blank" rel="noopener" class="bg-auraPink hover:bg-auraPink/90 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-auraPink/20 flex items-center">
+          Open Torrentio Configurator &rarr;
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Legal & Compliance Footer -->
+  <footer class="border-t border-auraBorder bg-auraSurface/40 py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-2">
+      <p>Powered by open Stremio v3 community manifest endpoints.</p>
+      <p>Aura is an independent media player client shell and does not host, control, or distribute any media content or stream files.</p>
+    </div>
+  </footer>
+
+  <script>
+    const addons = [
+      {
+        id: 'opensubtitles-v3',
+        name: 'OpenSubtitles v3',
+        version: '1.0.0',
+        description: 'Official multi-language subtitle provider for movies and TV series.',
+        type: 'subtitles',
+        icon: '💬',
+        manifestUrl: 'https://opensubtitles.strem.io/manifest.json',
+        badge: 'Subtitles',
+      },
+      {
+        id: 'cinemeta',
+        name: 'Cinemeta Catalog',
+        version: '3.0.0',
+        description: 'Official IMDB media catalog metadata and poster indexes.',
+        type: 'catalog',
+        icon: '🎬',
+        manifestUrl: 'https://v3-cinemeta.strem.io/manifest.json',
+        badge: 'Official Catalog',
+      },
+      {
+        id: 'cyberflix',
+        name: 'CyberFlix Catalog',
+        version: '1.4.0',
+        description: 'Curated streaming platform catalog sections (Netflix, Disney+, Apple TV+).',
+        type: 'catalog',
+        icon: '🍿',
+        manifestUrl: 'https://cyberflix.konoa.ra/manifest.json',
+        badge: 'Catalog',
+      },
+      {
+        id: 'torrentio',
+        name: 'Torrentio Lite',
+        version: '0.0.14',
+        description: 'Scrapes HTTP stream links and Debrid cached video streams.',
+        type: 'stream',
+        icon: '⚡',
+        manifestUrl: 'https://torrentio.strem.fun/manifest.json',
+        badge: 'Direct HTTP / Debrid',
+      },
+    ];
+
+    function renderAddons(items) {
+      const grid = document.getElementById('addon-grid');
+      grid.innerHTML = items.map(a => `
+        <div class="bg-auraSurface border border-auraBorder hover:border-auraPink/50 transition-all rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-3xl">${a.icon}</span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-auraPink/15 text-auraPink border border-auraPink/30">
+                ${a.badge}
+              </span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">${a.name}</h3>
+            <span class="text-xs text-gray-500 block mb-3">v${a.version}</span>
+            <p class="text-sm text-gray-300 mb-6 line-clamp-2">${a.description}</p>
+          </div>
+          <div class="space-y-2">
+            <a href="aura://addon/install?url=${encodeURIComponent(a.manifestUrl)}" 
+               class="w-full bg-auraPink hover:bg-auraPink/90 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center transition shadow-md shadow-auraPink/20">
+              Install to Aura
+            </a>
+            <button onclick="copyManifest('${a.manifestUrl}')" 
+                    class="w-full bg-auraDark hover:bg-auraBorder text-gray-400 font-medium py-2 rounded-xl text-xs border border-auraBorder transition">
+              Copy Manifest URL
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterAddons(category) {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-auraPink', 'text-white');
+        b.classList.add('bg-auraSurface', 'text-gray-300', 'border', 'border-auraBorder');
+      });
+      const activeBtn = document.getElementById(`btn-${category}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-auraPink', 'text-white');
+        activeBtn.classList.remove('bg-auraSurface', 'text-gray-300', 'border', 'border-auraBorder');
+      }
+
+      if (category === 'all') {
+        renderAddons(addons);
+      } else {
+        renderAddons(addons.filter(a => a.type === category));
+      }
+    }
+
+    function copyManifest(url) {
+      navigator.clipboard.writeText(url);
+      alert('Manifest URL copied to clipboard: ' + url);
+    }
+
+    // Initial Render
+    renderAddons(addons);
+  </script>
+</body>
+</html>

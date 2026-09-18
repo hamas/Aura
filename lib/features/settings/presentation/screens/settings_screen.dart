@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -19,6 +20,8 @@ import '../../../profiles/data/services/profile_manager.dart';
 import '../../../profiles/domain/entities/user_profile.dart';
 import '../../../profiles/presentation/screens/edit_profile_sub_page.dart';
 import '../../../profiles/presentation/widgets/components/profile_avatar.dart';
+import '../../../trakt/data/services/trakt_auth_service.dart';
+import '../../../trakt/presentation/widgets/trakt_settings_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? initialSubPage;
@@ -59,8 +62,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showDiscordActivity = false;
   bool _isHouseholdPasswordLinked = false;
 
-  // Profile Manager
+  // Profile Manager & Services
   final GoogleAuthDataSource _googleAuthDataSource = GoogleAuthDataSource();
+  final SecureStorageService _secureStorage = SecureStorageService();
+  final TraktAuthService _traktAuthService = TraktAuthService();
+
+  final TextEditingController _realDebridKeyController = TextEditingController();
+  final TextEditingController _torBoxKeyController = TextEditingController();
+  bool _obscureRdKey = true;
+  bool _obscureTorBoxKey = true;
+  bool _hasRdKey = false;
+  bool _hasTorBoxKey = false;
+
   ProfileManager? _profileManager;
   List<UserProfile> _profiles = [];
 
@@ -69,8 +82,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _currentSubPage = widget.initialSubPage;
     _loadSettings();
+    _loadDebridKeys();
     _checkHouseholdPasswordStatus();
     _initProfiles();
+  }
+
+  Future<void> _loadDebridKeys() async {
+    final rdKey = await _secureStorage.getRealDebridApiKey();
+    final tbKey = await _secureStorage.getTorBoxApiKey();
+    if (mounted) {
+      setState(() {
+        if (rdKey != null && rdKey.isNotEmpty) {
+          _realDebridKeyController.text = rdKey;
+          _hasRdKey = true;
+        }
+        if (tbKey != null && tbKey.isNotEmpty) {
+          _torBoxKeyController.text = tbKey;
+          _hasTorBoxKey = true;
+        }
+      });
+    }
+  }
+
+  Future<void> _saveRealDebridKey() async {
+    final key = _realDebridKeyController.text.trim();
+    if (key.isNotEmpty) {
+      await _secureStorage.saveRealDebridApiKey(key);
+      if (mounted) {
+        setState(() => _hasRdKey = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.surfaceElevated,
+            content: Text('Saved Real-Debrid API Key securely.'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearRealDebridKey() async {
+    await _secureStorage.saveRealDebridApiKey('');
+    if (mounted) {
+      setState(() {
+        _realDebridKeyController.clear();
+        _hasRdKey = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.surfaceElevated,
+          content: Text('Cleared Real-Debrid API Key.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveTorBoxKey() async {
+    final key = _torBoxKeyController.text.trim();
+    if (key.isNotEmpty) {
+      await _secureStorage.saveTorBoxApiKey(key);
+      if (mounted) {
+        setState(() => _hasTorBoxKey = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.surfaceElevated,
+            content: Text('Saved TorBox API Key securely.'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearTorBoxKey() async {
+    await _secureStorage.saveTorBoxApiKey('');
+    if (mounted) {
+      setState(() {
+        _torBoxKeyController.clear();
+        _hasTorBoxKey = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.surfaceElevated,
+          content: Text('Cleared TorBox API Key.'),
+        ),
+      );
+    }
   }
 
   Future<void> _initProfiles() async {
@@ -135,6 +230,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    _realDebridKeyController.dispose();
+    _torBoxKeyController.dispose();
     super.dispose();
   }
 
@@ -742,6 +839,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: AppTokens.spacingLg),
             ],
 
+            // Trakt.tv Integration Card
+            TraktSettingsCard(authService: _traktAuthService),
+            const SizedBox(height: AppTokens.spacingLg),
+
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -749,63 +850,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const Color(0x1AFFFFFF)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Trakt & Integrations',
-                    style: context.auraText.bodyOverview.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeThumbColor: Colors.black,
+                activeTrackColor: Colors.white,
+                inactiveThumbColor: Colors.white54,
+                inactiveTrackColor: Colors.white10,
+                title: Text(
+                  'Show watching activity on Discord',
+                  style: context.auraText.caption.copyWith(
+                    color: Colors.white70,
+                    fontSize: 14.0,
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Trakt Scrobbling',
-                        style: context.auraText.caption.copyWith(
-                          color: Colors.white70,
-                          fontSize: 14.0,
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        onPressed: () {},
-                        child: const Text('Authenticate', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: Color(0x1AFFFFFF), height: 24),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    activeThumbColor: Colors.black,
-                    activeTrackColor: Colors.white,
-                    inactiveThumbColor: Colors.white54,
-                    inactiveTrackColor: Colors.white10,
-                    title: Text(
-                      'Show watching activity on Discord',
-                      style: context.auraText.caption.copyWith(
-                        color: Colors.white70,
-                        fontSize: 14.0,
-                      ),
-                    ),
-                    value: _showDiscordActivity,
-                    onChanged: (val) {
-                      setState(() => _showDiscordActivity = val);
-                      _saveBool('pref_discord_activity', val);
-                    },
-                  ),
-                ],
+                ),
+                value: _showDiscordActivity,
+                onChanged: (val) {
+                  setState(() => _showDiscordActivity = val);
+                  _saveBool('pref_discord_activity', val);
+                },
               ),
             ),
           ],
@@ -1033,7 +1095,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // --- SUB PAGE: STREAMING ---
   Widget _buildStreamingSubPage() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 1. Debrid Cloud Services Card
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -1044,7 +1108,202 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSubSectionTitle(AppIcons.bolt, 'Engine Options'),
+              _buildSubSectionTitle(AppIcons.bolt, 'Debrid Cloud Services'),
+              const SizedBox(height: 8),
+              Text(
+                'Configure your high-speed cloud debrid API keys for instant stream unrestriction and secure playback.',
+                style: context.auraText.caption.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 12.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Real-Debrid API Key Field
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Real-Debrid API Key',
+                    style: context.auraText.bodyOverview.copyWith(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _hasRdKey
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: _hasRdKey ? Colors.greenAccent : const Color(0x1AFFFFFF),
+                      ),
+                    ),
+                    child: Text(
+                      _hasRdKey ? 'Active' : 'Not Set',
+                      style: TextStyle(
+                        color: _hasRdKey ? Colors.greenAccent : Colors.white60,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _realDebridKeyController,
+                obscureText: _obscureRdKey,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Paste your Real-Debrid API token...',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 12.5),
+                  filled: true,
+                  fillColor: Colors.black.withValues(alpha: 0.25),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0x22FFFFFF)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0x22FFFFFF)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.accentPink),
+                  ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _obscureRdKey ? Icons.visibility_off : Icons.visibility,
+                          size: 18,
+                          color: Colors.white60,
+                        ),
+                        onPressed: () => setState(() => _obscureRdKey = !_obscureRdKey),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.check_circle_outline, size: 18, color: AppColors.accentPink),
+                        tooltip: 'Save Key',
+                        onPressed: _saveRealDebridKey,
+                      ),
+                      if (_hasRdKey)
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 18, color: AppColors.statusError),
+                          tooltip: 'Clear Key',
+                          onPressed: _clearRealDebridKey,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // TorBox API Key Field
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'TorBox API Key',
+                    style: context.auraText.bodyOverview.copyWith(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _hasTorBoxKey
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: _hasTorBoxKey ? Colors.greenAccent : const Color(0x1AFFFFFF),
+                      ),
+                    ),
+                    child: Text(
+                      _hasTorBoxKey ? 'Active' : 'Not Set',
+                      style: TextStyle(
+                        color: _hasTorBoxKey ? Colors.greenAccent : Colors.white60,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _torBoxKeyController,
+                obscureText: _obscureTorBoxKey,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Paste your TorBox API token...',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 12.5),
+                  filled: true,
+                  fillColor: Colors.black.withValues(alpha: 0.25),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0x22FFFFFF)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0x22FFFFFF)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.accentPink),
+                  ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _obscureTorBoxKey ? Icons.visibility_off : Icons.visibility,
+                          size: 18,
+                          color: Colors.white60,
+                        ),
+                        onPressed: () => setState(() => _obscureTorBoxKey = !_obscureTorBoxKey),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.check_circle_outline, size: 18, color: AppColors.accentPink),
+                        tooltip: 'Save Key',
+                        onPressed: _saveTorBoxKey,
+                      ),
+                      if (_hasTorBoxKey)
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 18, color: AppColors.statusError),
+                          tooltip: 'Clear Key',
+                          onPressed: _clearTorBoxKey,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppTokens.spacingLg),
+
+        // 2. Engine Cache & Torrent Profile Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0x1AFFFFFF)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSubSectionTitle(AppIcons.extension, 'Engine & Cache Options'),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text('Cache size', style: context.auraText.bodyOverview.copyWith(color: Colors.white, fontSize: 14.0)),

@@ -3,6 +3,7 @@ import 'package:aura/features/engine/common/stream_engine.dart';
 import 'package:aura/features/engine/http_debrid_engine.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('Part 1: Stream Resolution Engine Tests', () {
     test('HttpDebridEngine resolves direct HTTP stream URLs cleanly', () async {
       final engine = HttpDebridEngine();

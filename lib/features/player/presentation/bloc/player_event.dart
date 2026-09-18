@@ -18,6 +18,8 @@ class PlayStreamEvent extends PlayerEvent {
   final String? subtitle;
   final Map<String, String>? httpHeaders;
   final List<MediaInterval>? intervals;
+  final List<String>? candidateStreams;
+  final int candidateIndex;
 
   const PlayStreamEvent({
     required this.streamUrl,
@@ -25,6 +27,8 @@ class PlayStreamEvent extends PlayerEvent {
     this.subtitle,
     this.httpHeaders,
     this.intervals,
+    this.candidateStreams,
+    this.candidateIndex = 0,
   });
 }
 

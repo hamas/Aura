@@ -3,7 +3,7 @@ import 'package:flutter/painting.dart';
 import 'media_interval.dart';
 import 'stream_track.dart';
 
-enum PlaybackStatus { idle, buffering, playing, paused, completed, error }
+enum PlaybackStatus { idle, buffering, playing, paused, completed, error, retrying }
 
 class AuraPlayerState extends Equatable {
   final PlaybackStatus status;
@@ -21,12 +21,16 @@ class AuraPlayerState extends Equatable {
   final SubtitleTrackInfo? selectedSecondarySubtitleTrack;
   final double subtitleOffset;
   final String? currentStreamUrl;
+  final List<String> candidateStreams;
+  final int activeCandidateIndex;
   final BoxFit fit;
   final bool enableAuraGlow;
   final bool autoSkipIntros;
   final List<MediaInterval> intervals;
   final MediaInterval? activeInterval;
   final String? errorMessage;
+  final bool showNextEpisodeCountdown;
+  final int remainingCountdownSeconds;
 
   const AuraPlayerState({
     this.status = PlaybackStatus.idle,
@@ -44,16 +48,29 @@ class AuraPlayerState extends Equatable {
     this.selectedSecondarySubtitleTrack,
     this.subtitleOffset = 0.0,
     this.currentStreamUrl,
+    this.candidateStreams = const [],
+    this.activeCandidateIndex = 0,
     this.fit = BoxFit.contain,
     this.enableAuraGlow = true,
     this.autoSkipIntros = false,
     this.intervals = const [],
     this.activeInterval,
     this.errorMessage,
+    this.showNextEpisodeCountdown = false,
+    this.remainingCountdownSeconds = 0,
   });
 
   bool get isPlaying => status == PlaybackStatus.playing;
   bool get isBuffering => status == PlaybackStatus.buffering;
+  bool get isRetrying => status == PlaybackStatus.retrying;
+
+  /// Calculated buffer cushion duration (buffer duration - position)
+  Duration get bufferCushion {
+    if (buffer > position) {
+      return buffer - position;
+    }
+    return Duration.zero;
+  }
 
   AuraPlayerState copyWith({
     PlaybackStatus? status,
@@ -72,6 +89,8 @@ class AuraPlayerState extends Equatable {
     bool clearSecondarySubtitle = false,
     double? subtitleOffset,
     String? currentStreamUrl,
+    List<String>? candidateStreams,
+    int? activeCandidateIndex,
     BoxFit? fit,
     bool? enableAuraGlow,
     bool? autoSkipIntros,
@@ -79,6 +98,8 @@ class AuraPlayerState extends Equatable {
     MediaInterval? activeInterval,
     bool clearActiveInterval = false,
     String? errorMessage,
+    bool? showNextEpisodeCountdown,
+    int? remainingCountdownSeconds,
   }) {
     return AuraPlayerState(
       status: status ?? this.status,
@@ -100,6 +121,8 @@ class AuraPlayerState extends Equatable {
               this.selectedSecondarySubtitleTrack),
       subtitleOffset: subtitleOffset ?? this.subtitleOffset,
       currentStreamUrl: currentStreamUrl ?? this.currentStreamUrl,
+      candidateStreams: candidateStreams ?? this.candidateStreams,
+      activeCandidateIndex: activeCandidateIndex ?? this.activeCandidateIndex,
       fit: fit ?? this.fit,
       enableAuraGlow: enableAuraGlow ?? this.enableAuraGlow,
       autoSkipIntros: autoSkipIntros ?? this.autoSkipIntros,
@@ -107,6 +130,8 @@ class AuraPlayerState extends Equatable {
       activeInterval:
           clearActiveInterval ? null : (activeInterval ?? this.activeInterval),
       errorMessage: errorMessage,
+      showNextEpisodeCountdown: showNextEpisodeCountdown ?? this.showNextEpisodeCountdown,
+      remainingCountdownSeconds: remainingCountdownSeconds ?? this.remainingCountdownSeconds,
     );
   }
 
@@ -127,11 +152,15 @@ class AuraPlayerState extends Equatable {
         selectedSecondarySubtitleTrack,
         subtitleOffset,
         currentStreamUrl,
+        candidateStreams,
+        activeCandidateIndex,
         fit,
         enableAuraGlow,
         autoSkipIntros,
         intervals,
         activeInterval,
         errorMessage,
+        showNextEpisodeCountdown,
+        remainingCountdownSeconds,
       ];
 }

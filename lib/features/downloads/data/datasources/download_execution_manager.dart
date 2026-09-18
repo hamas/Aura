@@ -53,6 +53,12 @@ class DownloadExecutionManager {
     final taskId = task.id;
     if (isDownloading(taskId)) return;
 
+    final hasSpace = await _storageService.hasSufficientStorageSpace(task.totalBytes);
+    if (!hasSpace) {
+      onError(taskId, 'Insufficient storage space on device');
+      return;
+    }
+
     final cancelToken = CancelToken();
     _activeCancelTokens[taskId] = cancelToken;
 
@@ -75,6 +81,7 @@ class DownloadExecutionManager {
 
       final headers = <String, dynamic>{
         'User-Agent': 'Aura-Mobile/1.0',
+        if (task.httpHeaders != null) ...task.httpHeaders!,
       };
       if (startByte > 0) {
         headers['Range'] = 'bytes=$startByte-';

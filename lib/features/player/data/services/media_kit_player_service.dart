@@ -14,8 +14,9 @@ class MediaKitPlayerService {
   AuraPlayerState _currentState = const AuraPlayerState();
 
   final List<StreamSubscription<dynamic>> _subscriptions = [];
+  final bool _isTestMode;
 
-  MediaKitPlayerService() {
+  MediaKitPlayerService() : _isTestMode = false {
     player = Player(
       configuration: const PlayerConfiguration(
         bufferSize: 32 * 1024 * 1024, // 32MB buffer for high-bitrate 4K
@@ -31,12 +32,26 @@ class MediaKitPlayerService {
       ),
     );
 
+    _setNativeReconnectOptions();
     _listenToPlayerEvents();
+  }
+
+  void _setNativeReconnectOptions() {
+    try {
+      final platform = player.platform;
+      if (platform != null) {
+        (platform as dynamic).setProperty('reconnect', 'yes');
+        (platform as dynamic).setProperty('reconnect-delay-max', '5');
+        (platform as dynamic).setProperty('reconnect-streamed', 'yes');
+        (platform as dynamic).setProperty('demuxer-readahead-secs', '25');
+      }
+    } catch (_) {}
   }
 
   MediaKitPlayerService.test(
       {AuraPlayerState initialState = const AuraPlayerState()})
-      : _currentState = initialState;
+      : _isTestMode = true,
+        _currentState = initialState;
 
   Stream<AuraPlayerState> get stateStream => _stateController.stream;
   AuraPlayerState get state => _currentState;
@@ -113,7 +128,9 @@ class MediaKitPlayerService {
     Map<String, String>? httpHeaders,
   }) async {
     _emit(_currentState.copyWith(
-      status: PlaybackStatus.buffering,
+      status: _currentState.status == PlaybackStatus.retrying
+          ? PlaybackStatus.retrying
+          : PlaybackStatus.buffering,
       title: title,
       subtitle: subtitle,
       currentStreamUrl: url,
@@ -125,13 +142,21 @@ class MediaKitPlayerService {
       if (httpHeaders != null) ...httpHeaders,
     };
 
-    await player.open(
-      Media(
-        url,
-        httpHeaders: effectiveHeaders,
-      ),
-      play: true,
-    );
+    try {
+      if (_isTestMode) return;
+      await player.open(
+        Media(
+          url,
+          httpHeaders: effectiveHeaders,
+        ),
+        play: true,
+      );
+    } catch (e) {
+      _emit(_currentState.copyWith(
+        status: PlaybackStatus.paused,
+      ));
+      rethrow;
+    }
   }
 
   Future<void> play() => player.play();
@@ -164,13 +189,49 @@ class MediaKitPlayerService {
     _emit(_currentState.copyWith(selectedAudioTrack: track));
   }
 
+  Future<void> addExternalSubtitleTrack({
+    required String url,
+    required String language,
+    String? title,
+  }) async {
+    final trackId = 'ext_$url';
+    final newTrack = SubtitleTrackInfo(
+      id: trackId,
+      title: title ?? language,
+      language: language,
+      isExternal: true,
+      uri: url,
+    );
+
+    final updatedSubs = List<SubtitleTrackInfo>.from(_currentState.subtitleTracks);
+    if (!updatedSubs.any((s) => s.id == trackId)) {
+      updatedSubs.add(newTrack);
+      _emit(_currentState.copyWith(subtitleTracks: updatedSubs));
+    }
+  }
+
   Future<void> selectSubtitleTrack(SubtitleTrackInfo? track) async {
     if (track == null) {
-      await player.setSubtitleTrack(SubtitleTrack.no());
+      if (!_isTestMode) {
+        await player.setSubtitleTrack(SubtitleTrack.no());
+      }
       _emit(_currentState.copyWith(selectedSubtitleTrack: null));
+    } else if (track.isExternal && track.uri != null) {
+      if (!_isTestMode) {
+        await player.setSubtitleTrack(
+          SubtitleTrack.uri(
+            track.uri!,
+            title: track.title ?? track.language ?? 'External Subtitle',
+            language: track.language,
+          ),
+        );
+      }
+      _emit(_currentState.copyWith(selectedSubtitleTrack: track));
     } else {
-      final nativeTrack = SubtitleTrack(track.id, track.title, track.language);
-      await player.setSubtitleTrack(nativeTrack);
+      if (!_isTestMode) {
+        final nativeTrack = SubtitleTrack(track.id, track.title, track.language);
+        await player.setSubtitleTrack(nativeTrack);
+      }
       _emit(_currentState.copyWith(selectedSubtitleTrack: track));
     }
   }

@@ -528,23 +528,40 @@ class StreamPickerModal extends StatelessWidget {
                                             ),
                                           ),
                                         if (isTorrent)
-                                          const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              AuraIcon(
-                                                AppIcons.bolt,
-                                                size: 13,
-                                                color: AppTheme.warningAccent,
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF332014),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: AppTheme.warningAccent
+                                                    .withAlpha(
+                                                        (0.4 * 255).round()),
                                               ),
-                                              Text(
-                                                'P2P',
-                                                style: TextStyle(
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                AuraIcon(
+                                                  AppIcons.bolt,
+                                                  size: 11,
                                                   color: AppTheme.warningAccent,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                              ),
-                                            ],
+                                                SizedBox(width: 3),
+                                                Text(
+                                                  'Requires Debrid / P2P',
+                                                  style: TextStyle(
+                                                    color: AppTheme.warningAccent,
+                                                    fontSize: 9.5,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                       ],
                                     ),

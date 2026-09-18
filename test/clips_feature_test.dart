@@ -1,4 +1,5 @@
 import 'package:aura/core/theme/aura_theme.dart';
+import 'package:aura/features/addons/domain/entities/addon_subtitle.dart';
 import 'package:aura/features/addons/domain/entities/addon_manifest.dart';
 import 'package:aura/features/addons/domain/entities/addon_stream.dart';
 import 'package:aura/features/addons/domain/repositories/addon_repository.dart';
@@ -119,6 +120,10 @@ class MockAddonRepository implements AddonRepository {
   Future<void> toggleAddonStatus(String addonId, bool isEnabled) async {}
   @override
   Future<List<AddonStream>> getStreams(
+          {required String type, required String id}) async =>
+      [];
+  @override
+  Future<List<AddonSubtitle>> getSubtitles(
           {required String type, required String id}) async =>
       [];
 }

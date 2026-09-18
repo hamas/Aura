@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../domain/entities/addon_manifest.dart';
 import '../../domain/entities/addon_stream.dart';
+import '../../domain/entities/addon_subtitle.dart';
 import '../../domain/repositories/addon_repository.dart';
 import '../datasources/stremio_addon_api.dart';
 
@@ -95,5 +96,28 @@ class AddonRepositoryImpl implements AddonRepository {
     }
 
     return aggregatedStreams;
+  }
+
+  @override
+  Future<List<AddonSubtitle>> getSubtitles({
+    required String type,
+    required String id,
+  }) async {
+    final addons = await getInstalledAddons();
+    final enabledAddons = addons.where((a) => a.isEnabled).toList();
+
+    // Query subtitles concurrently across all active add-ons
+    final subFutures = enabledAddons.map((addon) {
+      return _addonApi.fetchSubtitles(manifest: addon, type: type, id: id);
+    });
+
+    final subResults = await Future.wait(subFutures);
+    final aggregatedSubs = <AddonSubtitle>[];
+
+    for (final list in subResults) {
+      aggregatedSubs.addAll(list);
+    }
+
+    return aggregatedSubs;
   }
 }

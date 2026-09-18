@@ -101,10 +101,39 @@ class PlayerTrackPickers {
                   ...state.subtitleTracks.map((s) {
                     final isSelected = state.selectedSubtitleTrack?.id == s.id;
                     return ListTile(
-                      title: Text(
-                        s.title ?? s.language ?? 'Track ${s.id}',
-                        style: context.auraText.bodyOverview
-                            .copyWith(color: AppColors.textPrimary),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              s.title ?? s.language ?? 'Track ${s.id}',
+                              style: context.auraText.bodyOverview
+                                  .copyWith(color: AppColors.textPrimary),
+                            ),
+                          ),
+                          if (s.isExternal) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentPink.withAlpha(40),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: AppColors.accentPink,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: const Text(
+                                'EXT ADD-ON',
+                                style: TextStyle(
+                                  color: AppColors.accentPink,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       trailing: isSelected
                           ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)
@@ -212,11 +241,37 @@ class PlayerTrackPickers {
               ),
               ...state.audioTracks.map((a) {
                 final isSelected = state.selectedAudioTrack?.id == a.id;
+                final rawName = a.title ?? a.language ?? 'Audio Track ${a.id}';
+                final langLabel = (a.language != null && a.language!.isNotEmpty)
+                    ? a.language!.toUpperCase()
+                    : 'UND';
+
                 return ListTile(
-                  title: Text(
-                    a.title ?? a.language ?? 'Audio Track ${a.id}',
-                    style: context.auraText.bodyOverview
-                        .copyWith(color: AppColors.textPrimary),
+                  title: Row(
+                    children: [
+                      Text(
+                        rawName,
+                        style: context.auraText.bodyOverview
+                            .copyWith(color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: Text(
+                          langLabel,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.accentPink,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   trailing: isSelected
                       ? const AuraIcon(AppIcons.check, color: AppColors.accentPink)

@@ -1,14 +1,19 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/storage/secure_storage_service.dart';
 import 'common/stream_engine.dart';
 import '../../core/errors/exceptions.dart';
 
 class HttpDebridEngine implements StreamEngine {
   final Dio _dio;
+  final SecureStorageService _secureStorage;
 
-  HttpDebridEngine({dynamic debridRepository, Dio? dio})
-      : _dio = dio ??
+  HttpDebridEngine({
+    dynamic debridRepository,
+    Dio? dio,
+    SecureStorageService? secureStorage,
+  })  : _dio = dio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 4),
               receiveTimeout: const Duration(seconds: 4),
@@ -17,7 +22,8 @@ class HttpDebridEngine implements StreamEngine {
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
               },
-            ));
+            )),
+        _secureStorage = secureStorage ?? SecureStorageService();
 
   @override
   String get engineId => 'http_debrid_engine';
@@ -71,7 +77,10 @@ class HttpDebridEngine implements StreamEngine {
     debugPrint('DEBUG: [1] Entering resolveStream with: $rawUrlOrInfoHash');
     final title = extraParams?['title'] as String?;
     final quality = extraParams?['quality'] as String?;
-    final headers = extraParams?['headers'] as Map<String, String>?;
+    final headers = <String, String>{
+      if (extraParams?['headers'] is Map<String, String>)
+        ...(extraParams!['headers'] as Map<String, String>),
+    };
 
     if (rawUrlOrInfoHash.isEmpty) {
       throw const ServerException(
@@ -84,6 +93,25 @@ class HttpDebridEngine implements StreamEngine {
     if (!isHttp) {
       throw const ServerException(
           'Direct stream URL required. Magnet links require a direct web streaming gateway.');
+    }
+
+    // Attach stored Real-Debrid / TorBox credentials if matching domain and header missing
+    if (!headers.containsKey('Authorization')) {
+      try {
+        if (rawUrlOrInfoHash.contains('real-debrid')) {
+          final rdKey = await _secureStorage.getRealDebridApiKey();
+          if (rdKey != null && rdKey.isNotEmpty) {
+            headers['Authorization'] = 'Bearer $rdKey';
+          }
+        } else if (rawUrlOrInfoHash.contains('torbox')) {
+          final tbKey = await _secureStorage.getTorBoxApiKey();
+          if (tbKey != null && tbKey.isNotEmpty) {
+            headers['Authorization'] = 'Bearer $tbKey';
+          }
+        }
+      } catch (_) {
+        // Safe fallback if secure storage is unavailable or in isolated unit test
+      }
     }
 
     final targetUrl = await _resolveRedirects(rawUrlOrInfoHash, headers: headers);
@@ -100,7 +128,7 @@ class HttpDebridEngine implements StreamEngine {
       httpHeaders: {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        if (headers != null) ...headers,
+        ...headers,
       },
       title: title ?? 'Direct Stream',
       quality: quality,

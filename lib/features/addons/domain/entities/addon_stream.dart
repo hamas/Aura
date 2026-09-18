@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 class AddonStream extends Equatable {
@@ -97,15 +98,62 @@ class AddonStream extends Equatable {
     return null;
   }
 
+  /// Parsed behavior hints getters
+  String? get bingeGroup {
+    final map = parsedBehaviorHints;
+    return map?['bingeGroup']?.toString();
+  }
+
+  String? get filename {
+    final map = parsedBehaviorHints;
+    return map?['filename']?.toString();
+  }
+
+  String? get videoHash {
+    final map = parsedBehaviorHints;
+    return map?['videoHash']?.toString();
+  }
+
+  int? get videoSize {
+    final map = parsedBehaviorHints;
+    final val = map?['videoSize'];
+    if (val is int) return val;
+    if (val is String) return int.tryParse(val);
+    return null;
+  }
+
+  Map<String, dynamic>? get parsedBehaviorHints {
+    if (behaviorHints == null) return null;
+    try {
+      if (behaviorHints!.startsWith('{')) {
+        final decoded = jsonDecode(behaviorHints!);
+        if (decoded is Map) {
+          return decoded.map((k, v) => MapEntry(k.toString(), v));
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
   factory AddonStream.fromJson(Map<String, dynamic> json, {String? addonName}) {
     Map<String, String>? parsedHeaders;
     final rawBehaviorHints = json['behaviorHints'];
-    if (rawBehaviorHints is Map<String, dynamic> &&
-        rawBehaviorHints['proxyHeaders'] is Map) {
-      final reqHeaders = rawBehaviorHints['proxyHeaders']['request'] as Map?;
-      if (reqHeaders != null) {
-        parsedHeaders =
-            reqHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+    if (rawBehaviorHints is Map<String, dynamic>) {
+      if (rawBehaviorHints['proxyHeaders'] is Map) {
+        final reqHeaders = rawBehaviorHints['proxyHeaders']['request'] as Map?;
+        if (reqHeaders != null) {
+          parsedHeaders =
+              reqHeaders.map((k, v) => MapEntry(k.toString(), v.toString()));
+        }
+      }
+    }
+
+    String? encodedBehaviorHints;
+    if (rawBehaviorHints != null) {
+      if (rawBehaviorHints is Map) {
+        encodedBehaviorHints = jsonEncode(rawBehaviorHints);
+      } else {
+        encodedBehaviorHints = rawBehaviorHints.toString();
       }
     }
 
@@ -115,7 +163,7 @@ class AddonStream extends Equatable {
       url: json['url'] as String?,
       infoHash: json['infoHash'] as String?,
       fileIdx: json['fileIdx'] as int?,
-      behaviorHints: json['behaviorHints']?.toString(),
+      behaviorHints: encodedBehaviorHints,
       addonName: addonName,
       headers: parsedHeaders,
     );
@@ -127,11 +175,12 @@ class AddonStream extends Equatable {
         'url': url,
         'infoHash': infoHash,
         'fileIdx': fileIdx,
+        'behaviorHints': behaviorHints,
         'addonName': addonName,
         'headers': headers,
       };
 
   @override
   List<Object?> get props =>
-      [name, title, url, infoHash, fileIdx, addonName, headers];
+      [name, title, url, infoHash, fileIdx, behaviorHints, addonName, headers];
 }

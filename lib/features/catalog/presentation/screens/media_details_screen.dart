@@ -377,6 +377,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           posterPath: item.posterPath,
           backdropPath: item.backdropPath,
           downloadUrl: resolved.streamUrl,
+          httpHeaders: resolved.httpHeaders,
           localFilePath: '',
           createdAt: DateTime.now(),
         );

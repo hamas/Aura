@@ -1,5 +1,6 @@
 import '../entities/addon_manifest.dart';
 import '../entities/addon_stream.dart';
+import '../entities/addon_subtitle.dart';
 
 abstract class AddonRepository {
   /// Fetches the manifest from a remote URL.
@@ -19,6 +20,12 @@ abstract class AddonRepository {
 
   /// Aggregates streams from all enabled add-ons for a given media (e.g. IMDb ID `tt0137523` or `tt0944947:1:1`).
   Future<List<AddonStream>> getStreams({
+    required String type,
+    required String id,
+  });
+
+  /// Aggregates external subtitles from all enabled subtitle add-ons.
+  Future<List<AddonSubtitle>> getSubtitles({
     required String type,
     required String id,
   });

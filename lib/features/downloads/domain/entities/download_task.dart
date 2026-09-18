@@ -31,6 +31,7 @@ class DownloadTask extends Equatable {
 
   final String qualityLabel;
   final String profileId;
+  final Map<String, String>? httpHeaders;
 
   const DownloadTask({
     required this.id,
@@ -46,6 +47,7 @@ class DownloadTask extends Equatable {
     required this.localFilePath,
     this.qualityLabel = '1080p Web-DL',
     this.profileId = 'default',
+    this.httpHeaders,
     this.status = DownloadStatus.queued,
     this.bytesDownloaded = 0,
     this.totalBytes = 0,
@@ -115,6 +117,7 @@ class DownloadTask extends Equatable {
     String? localFilePath,
     String? qualityLabel,
     String? profileId,
+    Map<String, String>? httpHeaders,
     DownloadStatus? status,
     int? bytesDownloaded,
     int? totalBytes,
@@ -137,6 +140,7 @@ class DownloadTask extends Equatable {
       localFilePath: localFilePath ?? this.localFilePath,
       qualityLabel: qualityLabel ?? this.qualityLabel,
       profileId: profileId ?? this.profileId,
+      httpHeaders: httpHeaders ?? this.httpHeaders,
       status: status ?? this.status,
       bytesDownloaded: bytesDownloaded ?? this.bytesDownloaded,
       totalBytes: totalBytes ?? this.totalBytes,
@@ -162,6 +166,7 @@ class DownloadTask extends Equatable {
         localFilePath,
         qualityLabel,
         profileId,
+        httpHeaders,
         status,
         bytesDownloaded,
         totalBytes,

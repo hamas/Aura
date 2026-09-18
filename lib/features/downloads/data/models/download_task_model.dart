@@ -19,6 +19,7 @@ class DownloadTaskModel {
   final double downloadSpeed;
   final String qualityLabel;
   final String profileId;
+  final Map<String, String>? httpHeaders;
   final String createdAt;
   final String? completedAt;
   final String? error;
@@ -37,6 +38,7 @@ class DownloadTaskModel {
     required this.localFilePath,
     this.qualityLabel = '1080p Web-DL',
     this.profileId = 'default',
+    this.httpHeaders,
     required this.status,
     required this.bytesDownloaded,
     required this.totalBytes,
@@ -61,6 +63,9 @@ class DownloadTaskModel {
       localFilePath: json['localFilePath'] as String,
       qualityLabel: json['qualityLabel'] as String? ?? '1080p Web-DL',
       profileId: json['profileId'] as String? ?? 'default',
+      httpHeaders: (json['httpHeaders'] as Map<String, dynamic>?)?.map(
+        (key, value) => MapEntry(key, value.toString()),
+      ),
       status: json['status'] as String? ?? 'queued',
       bytesDownloaded: json['bytesDownloaded'] as int? ?? 0,
       totalBytes: json['totalBytes'] as int? ?? 0,
@@ -86,6 +91,7 @@ class DownloadTaskModel {
       'localFilePath': localFilePath,
       'qualityLabel': qualityLabel,
       'profileId': profileId,
+      if (httpHeaders != null) 'httpHeaders': httpHeaders,
       'status': status,
       'bytesDownloaded': bytesDownloaded,
       'totalBytes': totalBytes,
@@ -111,6 +117,7 @@ class DownloadTaskModel {
       localFilePath: task.localFilePath,
       qualityLabel: task.qualityLabel,
       profileId: task.profileId,
+      httpHeaders: task.httpHeaders,
       status: task.status.name,
       bytesDownloaded: task.bytesDownloaded,
       totalBytes: task.totalBytes,
@@ -146,6 +153,7 @@ class DownloadTaskModel {
       localFilePath: localFilePath,
       qualityLabel: qualityLabel,
       profileId: profileId,
+      httpHeaders: httpHeaders,
       status: parsedStatus,
       bytesDownloaded: bytesDownloaded,
       totalBytes: totalBytes,

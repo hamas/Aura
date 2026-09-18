@@ -157,6 +157,16 @@ class PlayerTopControlBar extends StatelessWidget {
                   ],
                 ),
               ),
+              const PopupMenuItem(
+                value: 'pip',
+                child: Row(
+                  children: [
+                    AuraIcon(AppIcons.pip, color: Colors.white, size: 20),
+                    SizedBox(width: 12),
+                    Text('Picture-in-Picture', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'glow',
                 child: Row(

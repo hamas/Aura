@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:aura/features/addons/domain/repositories/addon_repository.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../library/domain/entities/library_item.dart';
 import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../../library/presentation/bloc/library_event.dart';
 import '../../data/services/media_kit_player_service.dart';
@@ -12,6 +16,7 @@ import 'aura_glow_backdrop.dart';
 import 'player_controls_overlay.dart';
 
 import '../../data/services/chapter_ingestion_service.dart';
+import '../../services/pip_service.dart';
 import '../../../watch_together/data/services/watch_together_service.dart';
 import '../../../watch_together/domain/entities/watch_room_session.dart';
 import '../../../watch_together/presentation/widgets/join_create_watch_room_dialog.dart';
@@ -50,6 +55,7 @@ class _PlayerViewState extends State<PlayerView> {
   WatchRoomSession? _watchSession;
   WatchTogetherService? _watchService;
   StreamSubscription<WatchSyncEvent>? _syncSubscription;
+  bool _dismissedBingeCountdown = false;
 
   @override
   void initState() {
@@ -74,6 +80,76 @@ class _PlayerViewState extends State<PlayerView> {
 
     _startProgressSyncTimer();
     _fetchIntervals();
+    _fetchExternalSubtitles();
+    _checkResumeProgress();
+  }
+
+  Future<void> _fetchExternalSubtitles() async {
+    if (widget.mediaId == null) return;
+    try {
+      final addonRepo = context.read<AddonRepository>();
+      final type = widget.mediaType ?? 'movie';
+      
+      String stremioId = widget.mediaId!;
+      if (type == 'series' && widget.seasonNumber != null && widget.episodeNumber != null) {
+        stremioId = '${widget.mediaId}:${widget.seasonNumber}:${widget.episodeNumber}';
+      }
+
+      final subs = await addonRepo.getSubtitles(type: type, id: stremioId);
+      if (mounted) {
+        for (final sub in subs) {
+          unawaited(
+            widget.playerService.addExternalSubtitleTrack(
+              url: sub.url,
+              language: sub.lang,
+              title: '${sub.lang.toUpperCase()} (Addon)',
+            ),
+          );
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _checkResumeProgress() async {
+    if (widget.mediaId == null) return;
+    try {
+      final libraryBloc = context.read<LibraryBloc>();
+      final continueWatching = libraryBloc.state.continueWatching;
+      final existing = continueWatching.cast<LibraryItem?>().firstWhere(
+            (item) => item?.id == widget.mediaId,
+            orElse: () => null,
+          );
+
+      if (existing != null && existing.progress != null) {
+        final posSec = existing.progress!.positionSeconds;
+        final durSec = existing.progress!.durationSeconds;
+        // Prompt/Resume if > 15s and < 92% finished
+        if (posSec > 15 && posSec < (durSec * 0.92)) {
+          final posDuration = Duration(seconds: posSec);
+          final formattedTime = Formatters.formatDuration(posDuration);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: AppColors.surfaceElevated,
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Resume from $formattedTime',
+                  textColor: AppColors.accentPink,
+                  onPressed: () {
+                    context.read<PlayerBloc>().add(SeekPositionEvent(posDuration));
+                  },
+                ),
+                content: Text(
+                  'Saved watch progress found ($formattedTime)',
+                  style: const TextStyle(color: AppColors.textPrimary),
+                ),
+              ),
+            );
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchIntervals() async {
@@ -91,9 +167,53 @@ class _PlayerViewState extends State<PlayerView> {
     } catch (_) {}
   }
 
+  Timer? _stallDetectionTimer;
+  Duration _lastStallPosition = Duration.zero;
+  int _stallSecondsCount = 0;
+
   void _startProgressSyncTimer() {
-    _progressSyncTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    _progressSyncTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       _syncProgress();
+    });
+
+    _stallDetectionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final state = widget.playerService.state;
+      if (state.isBuffering) {
+        if (state.position == _lastStallPosition) {
+          _stallSecondsCount++;
+          if (_stallSecondsCount == 15 && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: AppColors.surfaceElevated,
+                duration: const Duration(seconds: 6),
+                action: SnackBarAction(
+                  label: 'Retry Stream',
+                  textColor: AppColors.accentPink,
+                  onPressed: () {
+                    if (state.currentStreamUrl != null) {
+                      context.read<PlayerBloc>().add(PlayStreamEvent(
+                        streamUrl: state.currentStreamUrl!,
+                        title: state.title,
+                        subtitle: state.subtitle,
+                      ));
+                    }
+                  },
+                ),
+                content: const Text(
+                  'Network stream stalled. Connection slow or unstable.',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+              ),
+            );
+          }
+        } else {
+          _lastStallPosition = state.position;
+          _stallSecondsCount = 0;
+        }
+      } else {
+        _lastStallPosition = state.position;
+        _stallSecondsCount = 0;
+      }
     });
   }
 
@@ -127,6 +247,7 @@ class _PlayerViewState extends State<PlayerView> {
   void dispose() {
     _syncProgress(); // Final sync before exiting player
     _progressSyncTimer?.cancel();
+    _stallDetectionTimer?.cancel();
     _syncSubscription?.cancel();
     _watchService?.dispose();
 
@@ -231,6 +352,7 @@ class _PlayerViewState extends State<PlayerView> {
                 onToggleAuraGlow: () => bloc.add(const ToggleAuraGlowEvent()),
                 onSkipInterval: () =>
                     bloc.add(const SkipCurrentIntervalEvent()),
+                onPictureInPicture: () => PipService.enterPip(),
                 onNextEpisode: widget.onNextEpisode,
                 onWatchTogether: _openWatchTogetherDialog,
                 onRetryStream: () {
@@ -265,6 +387,170 @@ class _PlayerViewState extends State<PlayerView> {
                     _watchService?.leaveRoom();
                     setState(() => _watchSession = null);
                   },
+                ),
+
+              // Reconnect / Backup Source Fallback HUD Notice Overlay
+              if (state.isRetrying)
+                Positioned(
+                  top: 54,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.accentPink.withValues(alpha: 0.5),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentPink.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            state.errorMessage ?? 'Connection interrupted. Switching to backup source...',
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Next Episode Glassmorphic Auto-Play Countdown Card Overlay
+              if (state.showNextEpisodeCountdown && !_dismissedBingeCountdown)
+                Positioned(
+                  bottom: 80,
+                  right: 24,
+                  child: Container(
+                    width: 260,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.accentPink.withValues(alpha: 0.6),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accentPink.withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.accentPink.withValues(alpha: 0.2),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${state.remainingCountdownSeconds}',
+                                  style: const TextStyle(
+                                    color: AppColors.accentPink,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Text(
+                                'Up Next',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                setState(() => _dismissedBingeCountdown = true);
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Next Episode (${widget.seasonNumber != null && widget.episodeNumber != null ? "S${widget.seasonNumber} E${widget.episodeNumber! + 1}" : "Episode"})',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: AppColors.accentPink,
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (widget.onNextEpisode != null) {
+                                    widget.onNextEpisode!();
+                                  }
+                                },
+                                child: const Text(
+                                  'Play Now',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
             ],
           ),
