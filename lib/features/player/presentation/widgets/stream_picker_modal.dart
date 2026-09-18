@@ -331,7 +331,8 @@ class StreamPickerModal extends StatelessWidget {
                     }
 
                     final stream = streams[index - 1];
-                    final isTorrent = stream.isTorrent;
+                    final isHttpStream = stream.url != null && stream.url!.startsWith('http');
+                    final isP2pTorrent = (stream.url == null || !stream.url!.startsWith('http')) && stream.infoHash != null;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
                     final fileSize = _extractFileSize(rawTitle);
@@ -342,6 +343,54 @@ class StreamPickerModal extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
+                          if (isP2pTorrent && !isHttpStream) {
+                            showDialog<void>(
+                              context: context,
+                              builder: (dialogCtx) => AlertDialog(
+                                backgroundColor: const Color(0xFF191A1E),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(color: AppTheme.warningAccent.withValues(alpha: 0.4)),
+                                ),
+                                title: const Row(
+                                  children: [
+                                    AuraIcon(AppIcons.warning, color: AppTheme.warningAccent, size: 22),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Direct HTTP Stream Required',
+                                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                content: const Text(
+                                  'Aura operates as a store-compliant media player and does not bundle a BitTorrent engine.\n\nTo play this stream, configure your add-on with an HTTPS debrid service (e.g., Real-Debrid, TorBox) or select a direct FREE HTTP stream.',
+                                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(dialogCtx).pop(),
+                                    child: const Text('OK', style: TextStyle(color: Colors.white54)),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primaryAccent,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(dialogCtx).pop();
+                                      Navigator.of(context).pop();
+                                      context.push('/addons');
+                                    },
+                                    child: const Text('Configure Add-ons'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
                           Navigator.of(context).pop();
                           onStreamSelected(stream);
                         },
@@ -502,7 +551,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                        if (!isTorrent)
+                                        if (!isP2pTorrent)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -527,7 +576,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                        if (isTorrent)
+                                        if (isP2pTorrent)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -547,13 +596,13 @@ class StreamPickerModal extends StatelessWidget {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 AuraIcon(
-                                                  AppIcons.bolt,
+                                                  AppIcons.warning,
                                                   size: 11,
                                                   color: AppTheme.warningAccent,
                                                 ),
                                                 SizedBox(width: 3),
                                                 Text(
-                                                  'Requires Debrid / P2P',
+                                                  '⚠️ P2P (Debrid Required)',
                                                   style: TextStyle(
                                                     color: AppTheme.warningAccent,
                                                     fontSize: 9.5,
