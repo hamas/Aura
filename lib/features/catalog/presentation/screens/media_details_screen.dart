@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -255,11 +256,13 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
           },
         );
       }
-    } catch (e) {
-      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
+    } on ServerException catch (e) {
+      debugPrint('DEBUG: [ERROR] ServerException stream resolution: ${e.message}');
       dismissDialog();
       if (context.mounted) {
-        final errorMsg = 'Could not resolve stream: $e';
+        final errorMsg = e.message.contains('Direct stream URL required')
+            ? 'This stream requires a Debrid gateway. Please select a Direct HTTP link.'
+            : e.message;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.statusError,
@@ -269,6 +272,23 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('DEBUG: [ERROR] Stream resolution error: $e');
+      dismissDialog();
+      if (context.mounted) {
+        const errorMsg = 'Unable to resolve stream. Please choose another link.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.statusError,
+            behavior: SnackBarBehavior.floating,
+            content: Text(
+              errorMsg,
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            duration: Duration(seconds: 4),
           ),
         );
       }

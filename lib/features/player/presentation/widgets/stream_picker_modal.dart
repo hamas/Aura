@@ -331,8 +331,8 @@ class StreamPickerModal extends StatelessWidget {
                     }
 
                     final stream = streams[index - 1];
-                    final isHttpStream = stream.url != null && stream.url!.startsWith('http');
-                    final isP2pTorrent = (stream.url == null || !stream.url!.startsWith('http')) && stream.infoHash != null;
+                    final bool isDirectHttp = stream.url != null && stream.url!.startsWith('http');
+                    final bool isP2pTorrent = stream.url == null && stream.infoHash != null;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
                     final fileSize = _extractFileSize(rawTitle);
@@ -343,7 +343,7 @@ class StreamPickerModal extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          if (isP2pTorrent && !isHttpStream) {
+                          if (isP2pTorrent) {
                             showDialog<void>(
                               context: context,
                               builder: (dialogCtx) => AlertDialog(
@@ -358,20 +358,20 @@ class StreamPickerModal extends StatelessWidget {
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'Direct HTTP Stream Required',
+                                        'Direct Stream Gateway Required',
                                         style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ],
                                 ),
                                 content: const Text(
-                                  'Aura operates as a store-compliant media player and does not bundle a BitTorrent engine.\n\nTo play this stream, configure your add-on with an HTTPS debrid service (e.g., Real-Debrid, TorBox) or select a direct FREE HTTP stream.',
+                                  'Aura is an App Store–compliant media client and does not bundle a peer-to-peer torrent client. To play this stream, configure your add-on with an HTTPS debrid service (such as Real-Debrid or TorBox), or select an available Direct HTTP stream.',
                                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(dialogCtx).pop(),
-                                    child: const Text('OK', style: TextStyle(color: Colors.white54)),
+                                    child: const Text('Got It', style: TextStyle(color: Colors.white54)),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -384,7 +384,7 @@ class StreamPickerModal extends StatelessWidget {
                                       Navigator.of(context).pop();
                                       context.push('/addons');
                                     },
-                                    child: const Text('Configure Add-ons'),
+                                    child: const Text('Configure Add-on'),
                                   ),
                                 ],
                               ),
@@ -551,7 +551,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                        if (!isP2pTorrent)
+                                        if (isDirectHttp)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -568,7 +568,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                             child: const Text(
-                                              'FREE HTTP',
+                                              '⚡ Direct Stream',
                                               style: TextStyle(
                                                 color: AppTheme.successAccent,
                                                 fontSize: 9.5,
@@ -602,7 +602,7 @@ class StreamPickerModal extends StatelessWidget {
                                                 ),
                                                 SizedBox(width: 3),
                                                 Text(
-                                                  '⚠️ P2P (Debrid Required)',
+                                                  '⚠️ P2P / Debrid Required',
                                                   style: TextStyle(
                                                     color: AppTheme.warningAccent,
                                                     fontSize: 9.5,
