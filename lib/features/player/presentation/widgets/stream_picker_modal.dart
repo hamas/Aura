@@ -365,13 +365,13 @@ class StreamPickerModal extends StatelessWidget {
                                   ],
                                 ),
                                 content: const Text(
-                                  'Aura is an App Store–compliant media client and does not bundle a peer-to-peer torrent client. To play this stream, configure your add-on with an HTTPS debrid service (such as Real-Debrid or TorBox), or select an available Direct HTTP stream.',
+                                  'Aura is a store-compliant media player and does not bundle a BitTorrent engine. To stream this title, configure an HTTPS debrid service (Real-Debrid, TorBox) in your add-on, or pick a direct stream.',
                                   style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(dialogCtx).pop(),
-                                    child: const Text('Got It', style: TextStyle(color: Colors.white54)),
+                                    child: const Text('Understood', style: TextStyle(color: Colors.white54)),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -602,7 +602,7 @@ class StreamPickerModal extends StatelessWidget {
                                                 ),
                                                 SizedBox(width: 3),
                                                 Text(
-                                                  '⚠️ P2P / Debrid Required',
+                                                  '⚠️ P2P (Debrid Required)',
                                                   style: TextStyle(
                                                     color: AppTheme.warningAccent,
                                                     fontSize: 9.5,
