@@ -76,3 +76,9 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
+# Agent scratchpads & task trackers
+tasks_*.md
+tasks/
+tasks_todo.md
+tasks_lessons.md
+
