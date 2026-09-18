@@ -132,18 +132,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             return StreamPickerModal(
               streams: addonState.resolvedStreams,
               isLoading: addonState.isLoadingStreams,
-              onStreamSelected: (stream) {
-                // Dismiss StreamPickerModal bottom sheet first
-                Navigator.of(modalContext).pop();
-                _launchPlayerWithStream(
-                  parentContext,
-                  item,
-                  stream,
-                  seasonNumber: effectiveSeason,
-                  episodeNumber: effectiveEpisode,
-                  episodeTitle: episodeTitle,
-                );
-              },
+              onStreamSelected: (stream) => _onStreamSelected(parentContext, stream, item),
             );
           },
         );
@@ -151,19 +140,25 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
     );
   }
 
-  Future<void> _launchPlayerWithStream(
-    BuildContext context,
-    MediaItem item,
-    AddonStream stream, {
+  void _onStreamSelected(
+    BuildContext screenContext,
+    AddonStream stream,
+    MediaItem item, {
     int? seasonNumber,
     int? episodeNumber,
     String? episodeTitle,
   }) async {
+    // 1. Close the bottom sheet modal first
+    Navigator.of(screenContext).pop();
+
+    // 2. Wait for modal dismiss animation to complete
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!screenContext.mounted) return;
+
     final engine = HttpDebridEngine();
     setState(() => _isResolvingStream = true);
 
     try {
-      debugPrint('DEBUG: [1] Launching player stream resolution for: ${stream.title ?? item.title}');
       final rawTarget = stream.url ?? stream.infoHash ?? '';
       final resolved = await engine.resolveStream(
         rawUrlOrInfoHash: rawTarget,
@@ -175,13 +170,12 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         },
       );
 
-      debugPrint('DEBUG: [5] Stream resolved, pushing PlayerView with URL: ${resolved.streamUrl}');
       if (mounted) {
         setState(() => _isResolvingStream = false);
       }
 
-      if (context.mounted) {
-        context.read<LibraryBloc>().add(
+      if (screenContext.mounted) {
+        screenContext.read<LibraryBloc>().add(
               UpdateProgressEvent(
                 mediaId: item.id.toString(),
                 title: item.title,
@@ -195,29 +189,26 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
               ),
             );
 
-        final subtitleText = (item.type == MediaType.series &&
-                seasonNumber != null)
+        final subtitleText = (item.type == MediaType.series && seasonNumber != null)
             ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
-            : stream.resolution;
+            : (stream.name ?? stream.resolution);
 
-        unawaited(
-          Navigator.of(context, rootNavigator: true).push(
-            MaterialPageRoute(
-              builder: (navContext) => PlayerView(
-                args: {
-                  'streamUrl': resolved.streamUrl,
-                  'title': item.title,
-                  'subtitle': subtitleText,
-                  'headers': resolved.httpHeaders,
-                  'mediaId': item.id.toString(),
-                  'posterPath': item.posterPath,
-                  'backdropPath': item.backdropPath,
-                  'type': item.type.name,
-                  'seasonNumber': seasonNumber,
-                  'episodeNumber': episodeNumber,
-                },
-                onBack: () => Navigator.of(navContext).pop(),
-              ),
+        Navigator.of(screenContext, rootNavigator: true).push(
+          MaterialPageRoute<void>(
+            builder: (navContext) => PlayerView(
+              args: {
+                'streamUrl': resolved.streamUrl,
+                'title': item.title,
+                'subtitle': subtitleText,
+                'headers': resolved.httpHeaders,
+                'mediaId': item.id.toString(),
+                'posterPath': item.posterPath,
+                'backdropPath': item.backdropPath,
+                'type': item.type.name,
+                'seasonNumber': seasonNumber,
+                'episodeNumber': episodeNumber,
+              },
+              onBack: () => Navigator.of(navContext).pop(),
             ),
           ),
         );
@@ -227,8 +218,8 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
       if (mounted) {
         setState(() => _isResolvingStream = false);
       }
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (screenContext.mounted) {
+        ScaffoldMessenger.of(screenContext).showSnackBar(
           SnackBar(
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
@@ -677,21 +668,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           child: DetailsActionButtons(
                             item: item,
                             isInWatchlist: isInWatchlist,
-                            onPlayPressed: () {
-                              debugPrint('🚀 [DIAGNOSTIC] Launching PlayerView directly via root Navigator');
-                              Navigator.of(context, rootNavigator: true).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const PlayerView(
-                                    args: {
-                                      'streamUrl': '', // Leave blank to disable video decoding
-                                      'title': 'Static Player Screen Test',
-                                      'subtitle': 'UI Verification Mode',
-                                      'mediaId': '999999',
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                            onPlayPressed: () => _openStreamPicker(context, item),
                             onTrailerPressed: () {
                               if (item.trailerUrl != null &&
                                   item.trailerUrl!.isNotEmpty) {

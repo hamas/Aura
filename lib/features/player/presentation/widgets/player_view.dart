@@ -54,10 +54,7 @@ class _PlayerViewState extends State<PlayerView> {
   void initState() {
     super.initState();
     final streamUrl = widget.args['streamUrl'] as String? ?? '';
-    if (streamUrl.isEmpty) {
-      debugPrint('🛑 [PlayerView] Diagnostic Mode: streamUrl is empty. Playback disabled.');
-      return; // Do NOT initialize PlayerBloc or PlayerService
-    }
+    debugPrint('🎬 [PlayerView] Initializing playback with URL: $streamUrl');
 
     _playerService = widget.playerService ?? MediaKitPlayerService();
     _playerBloc = PlayerBloc(playerService: _playerService);
@@ -272,26 +269,23 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   void dispose() {
-    final streamUrl = widget.args['streamUrl'] as String? ?? '';
-    if (streamUrl.isNotEmpty) {
-      _syncProgress(); // Final sync before exiting player
-      _progressSyncTimer?.cancel();
-      _stallDetectionTimer?.cancel();
-      _syncSubscription?.cancel();
-      _watchService?.dispose();
+    _syncProgress(); // Final sync before exiting player
+    _progressSyncTimer?.cancel();
+    _stallDetectionTimer?.cancel();
+    _syncSubscription?.cancel();
+    _watchService?.dispose();
 
-      // Mobile Hardening: Restore system orientations and edge-to-edge UI
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // Mobile Hardening: Restore system orientations and edge-to-edge UI
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-      _playerBloc.close();
-      _playerService.dispose();
-    }
+    _playerBloc.close();
+    _playerService.dispose();
     super.dispose();
   }
 
@@ -329,36 +323,6 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   Widget build(BuildContext context) {
-    final streamUrl = widget.args['streamUrl'] as String? ?? '';
-    if (streamUrl.isEmpty) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: const BackButton(color: Colors.white),
-          title: const Text('Player Screen Diagnostic', style: TextStyle(color: Colors.white)),
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 64),
-              SizedBox(height: 16),
-              Text(
-                'PlayerView Mounted Successfully!',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Navigation pipeline is fully working.',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
     return BlocProvider<PlayerBloc>.value(
       value: _playerBloc,
       child: BlocBuilder<PlayerBloc, dynamic>(
