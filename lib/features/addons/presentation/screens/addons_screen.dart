@@ -90,56 +90,42 @@ class _AddonsScreenState extends State<AddonsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hub Header
+            // Section Title matching Settings screen design
             Text(
-              '1-Click Community Engines',
+              'Community Engines & Add-ons',
               style: context.auraText.caption.copyWith(
-                color: AppColors.accentPink,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Install 1-click community engines and utility manifests on demand to resolve media sources.',
-              style: context.auraText.caption.copyWith(
+                fontSize: 13.0,
+                fontWeight: FontWeight.normal,
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: AppTokens.spacingMd),
+            const SizedBox(height: 12),
 
-            // Prominent Community Add-ons Banner Button
-            InkWell(
+            // Prominent Community Add-ons Banner Button (Minimal White Glass Card Style)
+            GestureDetector(
               onTap: _launchCommunityDirectory,
-              borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.accentPink.withValues(alpha: 0.25),
-                      AppColors.surfaceElevated,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.accentPink.withValues(alpha: 0.4),
+                    color: const Color(0x1AFFFFFF),
+                    width: 1,
                   ),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.accentPink.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.language_rounded,
-                        color: AppColors.accentPink,
-                        size: 24,
+                      child: const AuraIcon(
+                        AppIcons.language,
+                        color: Colors.white,
+                        size: 18,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -151,30 +137,35 @@ class _AddonsScreenState extends State<AddonsScreen> {
                             children: [
                               Text(
                                 'Browse Community Directory',
-                                style: context.auraText.itemTitle.copyWith(
+                                style: context.auraText.bodyOverview.copyWith(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14.0,
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Icon(
-                                Icons.open_in_new_rounded,
-                                color: AppColors.accentPink,
+                              const AuraIcon(
+                                AppIcons.openInNew,
+                                color: AppColors.textMuted,
                                 size: 14,
                               ),
                             ],
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Explore official hosted web directory with 1-click install add-ons',
+                            'Explore web directory with 1-click install add-ons & engines',
                             style: context.auraText.caption.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
+                              color: AppColors.textMuted,
+                              fontSize: 12.0,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                    const AuraIcon(
+                      AppIcons.chevronRight,
+                      color: AppColors.textMuted,
+                      size: 18,
                     ),
                   ],
                 ),
@@ -182,172 +173,130 @@ class _AddonsScreenState extends State<AddonsScreen> {
             ),
             const SizedBox(height: AppTokens.spacingLg),
 
-                          // SECTION 1: CORE STREAM ENGINES
-                          Text(
-                            'SECTION 1: CORE STREAM ENGINES',
-                            style: context.auraText.caption.copyWith(
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: AppTokens.spacingSm),
+            // Free Community Stream Engine Card
+            EngineHubStatusCard(
+              title: CommunityAddonPreset.freeCommunityEngine.name,
+              description:
+                  CommunityAddonPreset.freeCommunityEngine.description,
+              icon: AppIcons.playCircle,
+              status: isLoading
+                  ? EngineStatus.downloading
+                  : (freeEngineInstalled
+                      ? EngineStatus.installed
+                      : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
+              errorMessage: hasError ? state.errorMessage : null,
+              isActive: freeEngineActive,
+              onInstallOrUpdate: () => _installPreset(
+                  CommunityAddonPreset.freeCommunityEngine),
+              onUninstall: freeEngineInstalled
+                  ? () => context.read<AddonBloc>().add(
+                        UninstallAddonEvent(
+                            CommunityAddonPreset.freeCommunityEngine.id),
+                      )
+                  : null,
+              onToggleActive: freeEngineInstalled
+                  ? (val) => context.read<AddonBloc>().add(
+                        ToggleAddonStatusEvent(
+                            CommunityAddonPreset.freeCommunityEngine.id, val),
+                      )
+                  : null,
+            ),
+            const SizedBox(height: AppTokens.spacingSm),
 
-                          // Free Community Stream Engine Card
-                          EngineHubStatusCard(
-                            title: CommunityAddonPreset.freeCommunityEngine.name,
-                            description:
-                                CommunityAddonPreset.freeCommunityEngine.description,
-                            icon: AppIcons.play,
-                            status: isLoading
-                                ? EngineStatus.downloading
-                                : (freeEngineInstalled
-                                    ? EngineStatus.installed
-                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
-                            errorMessage: hasError ? state.errorMessage : null,
-                            isActive: freeEngineActive,
-                            onInstallOrUpdate: () => _installPreset(
-                                CommunityAddonPreset.freeCommunityEngine),
-                            onUninstall: freeEngineInstalled
-                                ? () => context.read<AddonBloc>().add(
-                                      UninstallAddonEvent(
-                                          CommunityAddonPreset.freeCommunityEngine.id),
-                                    )
-                                : null,
-                            onToggleActive: freeEngineInstalled
-                                ? (val) => context.read<AddonBloc>().add(
-                                      ToggleAddonStatusEvent(
-                                          CommunityAddonPreset.freeCommunityEngine.id, val),
-                                    )
-                                : null,
-                          ),
-                          const SizedBox(height: AppTokens.spacingLg),
+            // OpenSubtitles Engine Card
+            EngineHubStatusCard(
+              title: CommunityAddonPreset.openSubtitlesEngine.name,
+              description:
+                  CommunityAddonPreset.openSubtitlesEngine.description,
+              icon: AppIcons.subtitles,
+              status: isLoading
+                  ? EngineStatus.downloading
+                  : (subtitlesEngineInstalled
+                      ? EngineStatus.installed
+                      : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
+              errorMessage: hasError ? state.errorMessage : null,
+              isActive: subtitlesEngineActive,
+              onInstallOrUpdate: () => _installPreset(
+                  CommunityAddonPreset.openSubtitlesEngine),
+              onUninstall: subtitlesEngineInstalled
+                  ? () => context.read<AddonBloc>().add(
+                        UninstallAddonEvent(
+                            CommunityAddonPreset.openSubtitlesEngine.id),
+                      )
+                  : null,
+              onToggleActive: subtitlesEngineInstalled
+                  ? (val) => context.read<AddonBloc>().add(
+                        ToggleAddonStatusEvent(
+                            CommunityAddonPreset.openSubtitlesEngine.id, val),
+                      )
+                  : null,
+            ),
+            const SizedBox(height: AppTokens.spacingLg),
 
-                          // SECTION 2: UTILITY & SUBTITLES
-                          Text(
-                            'SECTION 2: UTILITY & SUBTITLES',
-                            style: context.auraText.caption.copyWith(
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
+            // Installed Custom Add-ons List (if any custom URL manifests added)
+            if (customAddons.where((a) =>
+                a.id != CommunityAddonPreset.freeCommunityEngine.id &&
+                a.id != CommunityAddonPreset.openSubtitlesEngine.id).isNotEmpty) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Custom Add-ons',
+                    style: context.auraText.caption.copyWith(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.normal,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _showInstallDialog(context),
+                    child: Row(
+                      children: [
+                        const AuraIcon(AppIcons.add,
+                            color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Add Manifest',
+                          style: context.auraText.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12.0,
                           ),
-                          const SizedBox(height: AppTokens.spacingSm),
-
-                          EngineHubStatusCard(
-                            title: CommunityAddonPreset.openSubtitlesEngine.name,
-                            description:
-                                CommunityAddonPreset.openSubtitlesEngine.description,
-                            icon: AppIcons.download,
-                            status: isLoading
-                                ? EngineStatus.downloading
-                                : (subtitlesEngineInstalled
-                                    ? EngineStatus.installed
-                                    : (hasError ? EngineStatus.error : EngineStatus.notInstalled)),
-                            errorMessage: hasError ? state.errorMessage : null,
-                            isActive: subtitlesEngineActive,
-                            onInstallOrUpdate: () => _installPreset(
-                                CommunityAddonPreset.openSubtitlesEngine),
-                            onUninstall: subtitlesEngineInstalled
-                                ? () => context.read<AddonBloc>().add(
-                                      UninstallAddonEvent(
-                                          CommunityAddonPreset.openSubtitlesEngine.id),
-                                    )
-                                : null,
-                            onToggleActive: subtitlesEngineInstalled
-                                ? (val) => context.read<AddonBloc>().add(
-                                      ToggleAddonStatusEvent(
-                                          CommunityAddonPreset.openSubtitlesEngine.id, val),
-                                    )
-                                : null,
-                          ),
-                          const SizedBox(height: AppTokens.spacingLg),
-
-                          // SECTION 3: INSTALLED ADD-ONS & CUSTOM MANIFEST
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'INSTALLED ADD-ONS (${customAddons.length})',
-                                style: context.auraText.caption.copyWith(
-                                  color: AppColors.accentPink,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () => _showInstallDialog(context),
-                                icon: const AuraIcon(AppIcons.add,
-                                    color: AppColors.accentPink, size: 16),
-                                label: Text(
-                                  'Add Custom Manifest',
-                                  style: context.auraText.caption.copyWith(
-                                    color: AppColors.accentPink,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppTokens.spacingSm),
-
-                          if (customAddons.isEmpty) ...[
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(AppTokens.spacingLg),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceElevated,
-                                borderRadius:
-                                    BorderRadius.circular(AppTokens.radiusMedium),
-                                border: Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: Column(
-                                children: [
-                                  const AuraIcon(AppIcons.extension,
-                                      color: AppColors.textMuted, size: 32),
-                                  const SizedBox(height: AppTokens.spacingSm),
-                                  Text(
-                                    'No Engines or Add-ons Installed',
-                                    style: context.auraText.itemTitle.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Install a Stream Engine above or paste a custom Stremio manifest URL to resolve media sources.',
-                                    textAlign: TextAlign.center,
-                                    style: context.auraText.caption
-                                        .copyWith(color: AppColors.textMuted),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ] else ...[
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: customAddons.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 10),
-                              itemBuilder: (context, index) {
-                                final addon = customAddons[index];
-                                return AddonItemCard(
-                                  addon: addon,
-                                  onUninstall: () {
-                                    context
-                                        .read<AddonBloc>()
-                                        .add(UninstallAddonEvent(addon.id));
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                          const SizedBox(height: 40),
-                        ],
-                      );
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: customAddons.where((a) =>
+                    a.id != CommunityAddonPreset.freeCommunityEngine.id &&
+                    a.id != CommunityAddonPreset.openSubtitlesEngine.id).length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final addon = customAddons.where((a) =>
+                      a.id != CommunityAddonPreset.freeCommunityEngine.id &&
+                      a.id != CommunityAddonPreset.openSubtitlesEngine.id).elementAt(index);
+                  return AddonItemCard(
+                    addon: addon,
+                    onUninstall: () {
+                      context
+                          .read<AddonBloc>()
+                          .add(UninstallAddonEvent(addon.id));
                     },
                   );
+                },
+              ),
+            ],
+            const SizedBox(height: 40),
+          ],
+        );
+      },
+    );
 
     if (!widget.isStandaloneScreen) {
       return Padding(

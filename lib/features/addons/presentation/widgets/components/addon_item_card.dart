@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/presentation/primitives/aura_badge.dart';
-import '../../../../../core/presentation/primitives/aura_card.dart';
 import '../../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_icons.dart';
-import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 
 import '../../../domain/entities/addon_manifest.dart';
@@ -26,8 +23,16 @@ class AddonItemCard extends StatelessWidget {
     final isOfficial =
         addon.id.contains('official') || addon.id.contains('cinemeta');
 
-    return AuraCard(
-      padding: const EdgeInsets.all(14),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0x1AFFFFFF),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,26 +40,29 @@ class AddonItemCard extends StatelessWidget {
             children: [
               // Icon / Logo
               Container(
-                width: 48,
-                height: 48,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceElevated,
-                  borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: addon.icon != null
-                    ? Image.network(
-                        addon.icon!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const AuraIcon(
-                          AppIcons.extension,
-                          color: AppColors.accentPink,
-                          size: 24,
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          addon.icon!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const AuraIcon(
+                            AppIcons.extension,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       )
                     : const AuraIcon(
                         AppIcons.extension,
-                        color: AppColors.accentPink,
-                        size: 24,
+                        color: Colors.white,
+                        size: 20,
                       ),
               ),
               const SizedBox(width: 14),
@@ -69,9 +77,10 @@ class AddonItemCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             addon.name,
-                            style: context.auraText.itemTitle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                            style: context.auraText.bodyOverview.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.0,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -79,11 +88,21 @@ class AddonItemCard extends StatelessWidget {
                         ),
                         if (isOfficial) ...[
                           const SizedBox(width: 6),
-                          const AuraBadge(
-                            label: 'OFFICIAL',
-                            backgroundColor: Color(0x1EA0E1E5),
-                            borderColor: AppColors.accentPink,
-                            textColor: AppColors.accentPink,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(color: const Color(0x1AFFFFFF)),
+                            ),
+                            child: Text(
+                              'OFFICIAL',
+                              style: context.auraText.caption.copyWith(
+                                color: Colors.white70,
+                                fontSize: 10.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
                       ],
@@ -91,8 +110,10 @@ class AddonItemCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'v${addon.version} • ${addon.id}',
-                      style: context.auraText.caption
-                          .copyWith(color: AppColors.textMuted),
+                      style: context.auraText.caption.copyWith(
+                        color: AppColors.textMuted,
+                        fontSize: 11.5,
+                      ),
                     ),
                   ],
                 ),
@@ -106,7 +127,8 @@ class AddonItemCard extends StatelessWidget {
             Text(
               addon.description,
               style: context.auraText.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: AppColors.textMuted,
+                fontSize: 12.0,
                 height: 1.3,
               ),
               maxLines: 2,
@@ -125,18 +147,17 @@ class AddonItemCard extends StatelessWidget {
                   runSpacing: 4,
                   children: addon.resources.map((res) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceElevated,
-                        borderRadius:
-                            BorderRadius.circular(AppTokens.radiusSmall),
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         res.toUpperCase(),
                         style: context.auraText.metadataPill.copyWith(
-                          fontSize: 9,
-                          color: AppColors.textSecondary,
+                          fontSize: 9.5,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     );
@@ -146,7 +167,7 @@ class AddonItemCard extends StatelessWidget {
               if (!isOfficial)
                 IconButton(
                   icon: const AuraIcon(AppIcons.delete,
-                      color: AppColors.statusError, size: 20),
+                      color: AppColors.statusError, size: 18),
                   tooltip: 'Uninstall Add-on',
                   onPressed: onUninstall,
                 ),

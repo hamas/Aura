@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/presentation/primitives/aura_badge.dart';
-import '../../../../../core/presentation/primitives/aura_card.dart';
 import '../../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_icons.dart';
-import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 
 enum EngineStatus {
@@ -44,40 +42,38 @@ class EngineHubStatusCard extends StatelessWidget {
     final isDownloading = status == EngineStatus.downloading;
     final hasError = status == EngineStatus.error;
 
-    return AuraCard(
-      padding: const EdgeInsets.all(AppTokens.spacingMd),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0x1AFFFFFF),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Engine Icon Container
+              // Engine Icon Container matching Settings menu items
               Container(
-                width: 44,
-                height: 44,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isInstalled
-                      ? AppColors.accentPink.withAlpha((0.15 * 255).round())
-                      : AppColors.surfaceElevated,
-                  borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
-                  border: Border.all(
-                    color: isInstalled
-                        ? AppColors.accentPink.withAlpha((0.3 * 255).round())
-                        : AppColors.borderSubtle,
-                  ),
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: AuraIcon(
-                    icon,
-                    color: isInstalled ? AppColors.accentPink : AppColors.textSecondary,
-                    size: 22,
-                  ),
+                child: AuraIcon(
+                  icon,
+                  color: Colors.white,
+                  size: 18,
                 ),
               ),
-              const SizedBox(width: AppTokens.spacingMd),
+              const SizedBox(width: 14),
 
-              // Title, Status Pill & Description
+              // Title, Status & Description
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,21 +83,23 @@ class EngineHubStatusCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             title,
-                            style: context.auraText.itemTitle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                            style: context.auraText.bodyOverview.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.0,
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppTokens.spacingSm),
+                        const SizedBox(width: 8),
                         _buildStatusBadge(context),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       description,
                       style: context.auraText.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: AppColors.textMuted,
+                        fontSize: 12.0,
                         height: 1.3,
                       ),
                     ),
@@ -112,12 +110,12 @@ class EngineHubStatusCard extends StatelessWidget {
           ),
 
           if (hasError && errorMessage != null) ...[
-            const SizedBox(height: AppTokens.spacingSm),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.statusError.withAlpha((0.15 * 255).round()),
-                borderRadius: BorderRadius.circular(AppTokens.radiusSmall),
+                color: AppColors.statusError.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
@@ -136,7 +134,7 @@ class EngineHubStatusCard extends StatelessWidget {
             ),
           ],
 
-          const SizedBox(height: AppTokens.spacingMd),
+          const SizedBox(height: 14),
 
           // Actions Row
           Row(
@@ -144,16 +142,12 @@ class EngineHubStatusCard extends StatelessWidget {
             children: [
               if (isInstalled && onToggleActive != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   decoration: BoxDecoration(
-                    color: isActive
-                        ? AppColors.accentPink.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isActive
-                          ? AppColors.accentPink.withValues(alpha: 0.3)
-                          : Colors.white.withValues(alpha: 0.1),
+                      color: const Color(0x1AFFFFFF),
                     ),
                   ),
                   child: Row(
@@ -165,9 +159,9 @@ class EngineHubStatusCard extends StatelessWidget {
                           value: isActive,
                           onChanged: onToggleActive,
                           activeThumbColor: Colors.white,
-                          activeTrackColor: AppColors.accentPink,
-                          inactiveThumbColor: Colors.white54,
-                          inactiveTrackColor: Colors.white12,
+                          activeTrackColor: Colors.white38,
+                          inactiveThumbColor: Colors.white30,
+                          inactiveTrackColor: Colors.white10,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
@@ -175,9 +169,9 @@ class EngineHubStatusCard extends StatelessWidget {
                       Text(
                         isActive ? 'Active' : 'Disabled',
                         style: context.auraText.caption.copyWith(
-                          color: isActive ? AppColors.accentPink : AppColors.textMuted,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          color: isActive ? Colors.white : AppColors.textMuted,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.0,
                         ),
                       ),
                     ],
@@ -190,39 +184,55 @@ class EngineHubStatusCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isInstalled && onUninstall != null) ...[
-                    TextButton.icon(
+                    TextButton(
                       onPressed: onUninstall,
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.statusError,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       ),
-                      icon: const AuraIcon(AppIcons.delete,
-                          color: AppColors.statusError, size: 16),
-                      label: const Text('Uninstall'),
+                      child: Text(
+                        'Uninstall',
+                        style: context.auraText.caption.copyWith(
+                          color: AppColors.statusError,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.0,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                   ],
-                  ElevatedButton(
-                    onPressed: isDownloading ? null : onInstallOrUpdate,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isInstalled ? AppColors.surfaceElevated : AppColors.accentPink,
-                      foregroundColor:
-                          isInstalled ? AppColors.textPrimary : AppColors.surfaceBackground,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  InkWell(
+                    onTap: isDownloading ? null : onInstallOrUpdate,
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: isInstalled
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: const Color(0x22FFFFFF),
+                        ),
                       ),
-                    ),
-                    child: isDownloading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.textPrimary,
+                      child: isDownloading
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              isInstalled ? 'Update' : 'Install Engine',
+                              style: context.auraText.caption.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.0,
+                              ),
                             ),
-                          )
-                        : Text(isInstalled ? 'Update' : 'Install Engine'),
+                    ),
                   ),
                 ],
               ),

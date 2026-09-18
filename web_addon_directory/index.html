@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aura Addon Directory | Stream & Subtitle Extension Library</title>
+  <title>Aura Community Add-on Directory</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -38,49 +38,67 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Main Content -->
   <main class="flex-grow max-w-7xl mx-auto px-4 py-10 w-full">
-    <div class="text-center max-w-3xl mx-auto mb-12">
+    <div class="text-center max-w-3xl mx-auto mb-10">
       <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-        Community Stremio v3 Add-ons
+        Community Stremio Add-ons
       </h1>
       <p class="text-gray-400 text-lg">
-        Discover and 1-click install compliant stream resolvers, subtitle providers, and catalog indexes directly into your Aura player.
+        Discover and 1-click install community stream resolvers, subtitle providers, and catalog indexes directly into your Aura player.
       </p>
     </div>
 
-    <!-- Category Filter Bar -->
-    <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
-      <button onclick="filterAddons('all')" id="btn-all" class="filter-btn active bg-auraPink text-white font-medium px-5 py-2 rounded-xl text-sm transition">
-        All Extensions
-      </button>
-      <button onclick="filterAddons('stream')" id="btn-stream" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
-        Video Streams
-      </button>
-      <button onclick="filterAddons('subtitles')" id="btn-subtitles" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
-        Subtitles
-      </button>
-      <button onclick="filterAddons('catalog')" id="btn-catalog" class="filter-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-5 py-2 rounded-xl text-sm transition border border-auraBorder">
-        Catalogs
-      </button>
+    <!-- Search & Filter Controls -->
+    <div class="max-w-3xl mx-auto mb-10 space-y-4">
+      <!-- Search Input -->
+      <div class="relative">
+        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search add-ons by name, description, or keyword..." 
+               class="w-full bg-auraSurface border border-auraBorder focus:border-auraPink text-white px-5 py-3.5 pl-12 rounded-2xl outline-none transition text-sm shadow-inner placeholder-gray-500">
+        <svg class="w-5 h-5 text-gray-400 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="flex flex-wrap items-center justify-center gap-2" id="category-tabs">
+        <button onclick="setCategory('all')" id="tab-all" class="category-btn active bg-auraPink text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition">
+          All
+        </button>
+        <button onclick="setCategory('stream')" id="tab-stream" class="category-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition border border-auraBorder">
+          Streams
+        </button>
+        <button onclick="setCategory('subtitles')" id="tab-subtitles" class="category-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition border border-auraBorder">
+          Subtitles
+        </button>
+        <button onclick="setCategory('catalog')" id="tab-catalog" class="category-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition border border-auraBorder">
+          Catalogs
+        </button>
+        <button onclick="setCategory('anime')" id="tab-anime" class="category-btn bg-auraSurface hover:bg-auraBorder text-gray-300 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition border border-auraBorder">
+          Anime
+        </button>
+      </div>
     </div>
 
-    <!-- Addon Grid Container -->
+    <!-- Addon Cards Grid -->
     <div id="addon-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-      <!-- Dynamic Addon Cards Rendered Here -->
+      <!-- Dynamic and Preset Cards Render Here -->
     </div>
 
-    <!-- Torrentio & Debrid Setup Guide Card -->
+    <!-- Debrid Configurator Helper Banner Card -->
     <div class="bg-auraSurface border border-auraBorder rounded-2xl p-8 mb-16 shadow-xl relative overflow-hidden">
       <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-auraPink/10 rounded-full blur-3xl pointer-events-none"></div>
-      <h2 class="text-2xl font-bold text-white mb-3">Debrid & Torrentio Setup Guide</h2>
-      <p class="text-gray-300 mb-6 max-w-2xl">
-        Configure RealDebrid or HTTP stream caching endpoints using the Torrentio web configurator, then copy the resulting manifest URL to install it directly in Aura.
-      </p>
-      <div class="flex flex-wrap gap-4">
-        <a href="https://torrentio.strem.fun/configure" target="_blank" rel="noopener" class="bg-auraPink hover:bg-auraPink/90 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-auraPink/20 flex items-center">
-          Open Torrentio Configurator &rarr;
-        </a>
+      <div class="relative z-10">
+        <span class="text-xs font-bold text-auraPink uppercase tracking-wider block mb-2">High-Speed Debrid Caching</span>
+        <h2 class="text-2xl font-bold text-white mb-3">Torrentio & Debrid Setup Helper</h2>
+        <p class="text-gray-300 mb-6 max-w-2xl text-sm leading-relaxed">
+          Configure RealDebrid, AllDebrid, or TorBox API keys using the Torrentio web configurator. Once configured, click <strong>Install</strong> and Aura will intercept the custom manifest link.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="https://torrentio.strem.fun/configure" target="_blank" rel="noopener" class="bg-auraPink hover:bg-auraPink/90 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-auraPink/20 flex items-center">
+            Open Torrentio Configurator &rarr;
+          </a>
+        </div>
       </div>
     </div>
   </main>
@@ -88,109 +106,205 @@
   <!-- Legal & Compliance Footer -->
   <footer class="border-t border-auraBorder bg-auraSurface/40 py-8">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-2">
-      <p>Powered by open Stremio v3 community manifest endpoints.</p>
-      <p>Aura is an independent media player client shell and does not host, control, or distribute any media content or stream files.</p>
+      <p>Aura is an open-source media player shell. All add-ons listed here are independently maintained by third-party community developers. Aura does not host, curate, or distribute any media content.</p>
     </div>
   </footer>
 
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-auraSurface border border-auraPink/50 text-white text-xs px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50 flex items-center space-x-2">
+    <span class="w-2 h-2 rounded-full bg-auraPink animate-pulse"></span>
+    <span id="toast-message">Manifest URL copied to clipboard!</span>
+  </div>
+
   <script>
-    const addons = [
+    // Curated Preset Manifests (Instant Load)
+    const presetAddons = [
       {
         id: 'opensubtitles-v3',
         name: 'OpenSubtitles v3',
         version: '1.0.0',
-        description: 'Official multi-language subtitle provider for movies and TV series.',
-        type: 'subtitles',
+        description: 'Official multi-language subtitle provider for movies, TV series, and anime.',
+        types: ['subtitles'],
         icon: '💬',
-        manifestUrl: 'https://opensubtitles.strem.io/manifest.json',
+        manifestUrl: 'https://opensubtitles-v3.strem.io/manifest.json',
         badge: 'Subtitles',
       },
       {
-        id: 'cinemeta',
+        id: 'cinemeta-official',
         name: 'Cinemeta Catalog',
         version: '3.0.0',
-        description: 'Official IMDB media catalog metadata and poster indexes.',
-        type: 'catalog',
+        description: 'Official IMDB media catalog metadata, poster indexes, and movie summaries.',
+        types: ['catalog'],
         icon: '🎬',
         manifestUrl: 'https://v3-cinemeta.strem.io/manifest.json',
-        badge: 'Official Catalog',
+        badge: 'Catalogs',
       },
       {
-        id: 'cyberflix',
+        id: 'anime-kitsu',
+        name: 'Anime Kitsu Catalog',
+        version: '1.0.2',
+        description: 'Trending Japanese anime series, movies, ratings, and episode catalogs.',
+        types: ['anime', 'catalog'],
+        icon: '⛩️',
+        manifestUrl: 'https://anime-kitsu.strem.fun/manifest.json',
+        badge: 'Anime',
+      },
+      {
+        id: 'cyberflix-catalog',
         name: 'CyberFlix Catalog',
         version: '1.4.0',
-        description: 'Curated streaming platform catalog sections (Netflix, Disney+, Apple TV+).',
-        type: 'catalog',
+        description: 'Curated streaming platform catalog sections (Netflix, Disney+, Apple TV+, HBO).',
+        types: ['catalog'],
         icon: '🍿',
-        manifestUrl: 'https://cyberflix.konoa.ra/manifest.json',
-        badge: 'Catalog',
+        manifestUrl: 'https://cyberflix.elfhosted.com/manifest.json',
+        badge: 'Catalogs',
       },
       {
-        id: 'torrentio',
-        name: 'Torrentio Lite',
+        id: 'torrentio-debrid',
+        name: 'Torrentio (Debrid Helper)',
         version: '0.0.14',
-        description: 'Scrapes HTTP stream links and Debrid cached video streams.',
-        type: 'stream',
+        description: 'Scrapes HTTP stream links and Debrid cached video streams for high-speed playback.',
+        types: ['stream'],
         icon: '⚡',
         manifestUrl: 'https://torrentio.strem.fun/manifest.json',
-        badge: 'Direct HTTP / Debrid',
-      },
+        badge: 'Streams',
+      }
     ];
 
-    function renderAddons(items) {
-      const grid = document.getElementById('addon-grid');
-      grid.innerHTML = items.map(a => `
-        <div class="bg-auraSurface border border-auraBorder hover:border-auraPink/50 transition-all rounded-2xl p-6 flex flex-col justify-between shadow-lg">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-3xl">${a.icon}</span>
-              <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-auraPink/15 text-auraPink border border-auraPink/30">
-                ${a.badge}
-              </span>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1">${a.name}</h3>
-            <span class="text-xs text-gray-500 block mb-3">v${a.version}</span>
-            <p class="text-sm text-gray-300 mb-6 line-clamp-2">${a.description}</p>
-          </div>
-          <div class="space-y-2">
-            <a href="aura://addon/install?url=${encodeURIComponent(a.manifestUrl)}" 
-               class="w-full bg-auraPink hover:bg-auraPink/90 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center transition shadow-md shadow-auraPink/20">
-              Install to Aura
-            </a>
-            <button onclick="copyManifest('${a.manifestUrl}')" 
-                    class="w-full bg-auraDark hover:bg-auraBorder text-gray-400 font-medium py-2 rounded-xl text-xs border border-auraBorder transition">
-              Copy Manifest URL
-            </button>
-          </div>
-        </div>
-      `).join('');
+    let allAddons = [...presetAddons];
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    // Fetch dynamic community list asynchronously
+    async function fetchCommunityRegistry() {
+      try {
+        const response = await fetch('https://stremio-addons.net/api/addons');
+        if (response.ok) {
+          const remoteList = await response.json();
+          if (Array.isArray(remoteList)) {
+            const parsedRemote = remoteList.map(item => {
+              const manifest = item.manifest || {};
+              const resList = manifest.resources || [];
+              const types = [];
+              if (resList.includes('stream') || manifest.types?.includes('movie')) types.push('stream');
+              if (resList.includes('subtitles')) types.push('subtitles');
+              if (resList.includes('catalog')) types.push('catalog');
+              if ((manifest.name || '').toLowerCase().includes('anime') || (manifest.description || '').toLowerCase().includes('anime')) types.push('anime');
+              if (types.length === 0) types.push('catalog');
+
+              return {
+                id: manifest.id || item.transportUrl,
+                name: manifest.name || 'Community Addon',
+                version: manifest.version || '1.0.0',
+                description: manifest.description || 'Community Stremio addon manifest.',
+                types: types,
+                icon: manifest.icon || '🧩',
+                manifestUrl: item.transportUrl || item.manifestUrl,
+                badge: types[0].toUpperCase(),
+              };
+            });
+
+            // Merge avoiding duplicates with presets
+            const existingIds = new Set(presetAddons.map(a => a.id));
+            const filteredRemote = parsedRemote.filter(a => a.manifestUrl && !existingIds.has(a.id));
+            allAddons = [...presetAddons, ...filteredRemote];
+            renderFilteredAddons();
+          }
+        }
+      } catch (err) {
+        console.warn('Dynamic community registry fallback active:', err);
+      }
     }
 
-    function filterAddons(category) {
-      document.querySelectorAll('.filter-btn').forEach(b => {
+    function renderFilteredAddons() {
+      const grid = document.getElementById('addon-grid');
+      const filtered = allAddons.filter(a => {
+        const matchesCategory = activeCategory === 'all' || a.types.includes(activeCategory);
+        const matchesQuery = searchQuery === '' || 
+          a.name.toLowerCase().includes(searchQuery) || 
+          a.description.toLowerCase().includes(searchQuery);
+        return matchesCategory && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 text-gray-400">
+            <p class="text-lg">No add-ons found matching your criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(a => {
+        const iconHtml = a.icon.startsWith('http') 
+          ? `<img src="${a.icon}" alt="${a.name}" class="w-8 h-8 rounded-lg object-cover" onerror="this.onerror=null; this.src=''; this.innerText='🧩';">`
+          : `<span class="text-3xl">${a.icon}</span>`;
+
+        return `
+          <div class="bg-auraSurface border border-auraBorder hover:border-auraPink/50 transition-all rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                ${iconHtml}
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-auraPink/15 text-auraPink border border-auraPink/30 uppercase tracking-wider">
+                  ${a.badge}
+                </span>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-1">${a.name}</h3>
+              <span class="text-xs text-gray-500 block mb-3">v${a.version}</span>
+              <p class="text-sm text-gray-300 mb-6 line-clamp-2">${a.description}</p>
+            </div>
+            <div class="space-y-2">
+              <a href="aura://addon/install?url=${encodeURIComponent(a.manifestUrl)}" 
+                 class="w-full bg-auraPink hover:bg-auraPink/90 text-white font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center transition shadow-md shadow-auraPink/20">
+                Install to Aura
+              </a>
+              <button onclick="copyManifest('${a.manifestUrl}')" 
+                      class="w-full bg-auraDark hover:bg-auraBorder text-gray-400 font-medium py-2 rounded-xl text-xs border border-auraBorder transition">
+                Copy Manifest URL
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setCategory(category) {
+      activeCategory = category;
+      document.querySelectorAll('.category-btn').forEach(b => {
         b.classList.remove('bg-auraPink', 'text-white');
         b.classList.add('bg-auraSurface', 'text-gray-300', 'border', 'border-auraBorder');
       });
-      const activeBtn = document.getElementById(`btn-${category}`);
+      const activeBtn = document.getElementById(`tab-${category}`);
       if (activeBtn) {
         activeBtn.classList.add('bg-auraPink', 'text-white');
         activeBtn.classList.remove('bg-auraSurface', 'text-gray-300', 'border', 'border-auraBorder');
       }
+      renderFilteredAddons();
+    }
 
-      if (category === 'all') {
-        renderAddons(addons);
-      } else {
-        renderAddons(addons.filter(a => a.type === category));
-      }
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      renderFilteredAddons();
     }
 
     function copyManifest(url) {
       navigator.clipboard.writeText(url);
-      alert('Manifest URL copied to clipboard: ' + url);
+      showToast('Manifest URL copied to clipboard!');
     }
 
-    // Initial Render
-    renderAddons(addons);
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.innerText = msg;
+      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // Initial Render & Fetch
+    renderFilteredAddons();
+    fetchCommunityRegistry();
   </script>
 </body>
 </html>
