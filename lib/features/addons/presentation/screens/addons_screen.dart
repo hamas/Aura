@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_icons.dart';
@@ -43,6 +44,13 @@ class _AddonsScreenState extends State<AddonsScreen> {
         context.read<AddonBloc>().add(InstallAddonFromUrlEvent(manifestUrl));
       },
     );
+  }
+
+  Future<void> _launchCommunityDirectory() async {
+    final uri = Uri.parse(CommunityAddonPreset.communityDirectoryUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   void _installPreset(CommunityAddonPreset preset) {
@@ -99,6 +107,80 @@ class _AddonsScreenState extends State<AddonsScreen> {
               ),
             ),
             const SizedBox(height: AppTokens.spacingMd),
+
+            // Prominent Community Add-ons Banner Button
+            InkWell(
+              onTap: _launchCommunityDirectory,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.accentPink.withValues(alpha: 0.25),
+                      AppColors.surfaceElevated,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.accentPink.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentPink.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.language_rounded,
+                        color: AppColors.accentPink,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Browse Community Directory',
+                                style: context.auraText.itemTitle.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.open_in_new_rounded,
+                                color: AppColors.accentPink,
+                                size: 14,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Explore official hosted web directory with 1-click install add-ons',
+                            style: context.auraText.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppTokens.spacingLg),
 
                           // SECTION 1: CORE STREAM ENGINES
                           Text(
