@@ -677,8 +677,21 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                           child: DetailsActionButtons(
                             item: item,
                             isInWatchlist: isInWatchlist,
-                            onPlayPressed: () =>
-                                _openStreamPicker(context, item),
+                            onPlayPressed: () {
+                              debugPrint('🚀 [DIAGNOSTIC] Launching PlayerView directly via root Navigator');
+                              Navigator.of(context, rootNavigator: true).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const PlayerView(
+                                    args: {
+                                      'streamUrl': '', // Leave blank to disable video decoding
+                                      'title': 'Static Player Screen Test',
+                                      'subtitle': 'UI Verification Mode',
+                                      'mediaId': '999999',
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                             onTrailerPressed: () {
                               if (item.trailerUrl != null &&
                                   item.trailerUrl!.isNotEmpty) {
