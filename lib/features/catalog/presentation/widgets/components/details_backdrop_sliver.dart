@@ -1,11 +1,8 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:aura/core/constants/api_constants.dart';
-import 'package:aura/core/presentation/primitives/aura_icon.dart';
 import 'package:aura/core/theme/app_colors.dart';
-import 'package:aura/core/theme/app_icons.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/ambient_backdrop_fallback.dart';
 
@@ -25,36 +22,11 @@ class DetailsBackdropSliver extends StatelessWidget {
     this.overlappingHeader,
   });
 
-  Future<void> _openExternalTrailer(BuildContext context) async {
-    final youtubeKey = item.trailerUrl;
-    if (youtubeKey != null && youtubeKey.isNotEmpty) {
-      final String rawUrl = youtubeKey.startsWith('http')
-          ? youtubeKey
-          : 'https://www.youtube.com/watch?v=$youtubeKey';
-      final uri = Uri.parse(rawUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      }
-    }
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: AppColors.surfaceElevated,
-          content: Text('Official trailer link unavailable for this title.'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final backdropUrl = item.backdropPath != null
         ? '${ApiConstants.tmdbImageBaseUrl}${item.backdropPath}'
         : null;
-
-    final hasTrailer = item.trailerUrl != null && item.trailerUrl!.isNotEmpty;
 
     return SliverToBoxAdapter(
       child: Stack(
@@ -81,31 +53,7 @@ class DetailsBackdropSliver extends StatelessWidget {
                     title: item.title,
                   ),
 
-                // 2. Play Trailer Button Overlay
-                if (hasTrailer)
-                  Center(
-                    child: GestureDetector(
-                      onTap: () => _openExternalTrailer(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: const AuraIcon(
-                          AppIcons.play,
-                          size: 28,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // 3. Bottom Seamless Scrim Gradient Overlay
+                // 2. Bottom Seamless Scrim Gradient Overlay
                 Positioned(
                   bottom: 0,
                   left: 0,

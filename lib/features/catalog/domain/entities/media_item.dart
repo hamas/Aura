@@ -60,6 +60,12 @@ class MediaItem extends Equatable {
   final int? runtimeMinutes;
   final String? tagline;
   final String? trailerUrl;
+  final String? certification;
+  final List<String> productionCountries;
+  final int? budget;
+  final int? revenue;
+  final List<String> spokenLanguages;
+  final List<String> productionCompanies;
 
   const MediaItem({
     required this.id,
@@ -79,6 +85,12 @@ class MediaItem extends Equatable {
     this.runtimeMinutes,
     this.tagline,
     this.trailerUrl,
+    this.certification,
+    this.productionCountries = const [],
+    this.budget,
+    this.revenue,
+    this.spokenLanguages = const [],
+    this.productionCompanies = const [],
   });
 
   String get fullPosterUrl =>
@@ -143,6 +155,12 @@ class MediaItem extends Equatable {
     int? runtimeMinutes,
     String? tagline,
     String? trailerUrl,
+    String? certification,
+    List<String>? productionCountries,
+    int? budget,
+    int? revenue,
+    List<String>? spokenLanguages,
+    List<String>? productionCompanies,
   }) {
     return MediaItem(
       id: id ?? this.id,
@@ -162,6 +180,12 @@ class MediaItem extends Equatable {
       runtimeMinutes: runtimeMinutes ?? this.runtimeMinutes,
       tagline: tagline ?? this.tagline,
       trailerUrl: trailerUrl ?? this.trailerUrl,
+      certification: certification ?? this.certification,
+      productionCountries: productionCountries ?? this.productionCountries,
+      budget: budget ?? this.budget,
+      revenue: revenue ?? this.revenue,
+      spokenLanguages: spokenLanguages ?? this.spokenLanguages,
+      productionCompanies: productionCompanies ?? this.productionCompanies,
     );
   }
 
@@ -199,7 +223,7 @@ class MediaItem extends Equatable {
     List<CastMember> castList = [];
     if (rawCredits is Map<String, dynamic> && rawCredits['cast'] is List) {
       castList = (rawCredits['cast'] as List<dynamic>)
-          .take(10)
+          .take(15)
           .whereType<Map<String, dynamic>>()
           .map((c) => CastMember.fromJson(c))
           .toList();
@@ -239,6 +263,44 @@ class MediaItem extends Equatable {
 
     final relDate = (json['release_date'] ?? json['first_air_date']) as String?;
 
+    // Safe extraction of production countries
+    final rawCountries = json['production_countries'] as List<dynamic>? ?? [];
+    final countries = rawCountries
+        .whereType<Map<String, dynamic>>()
+        .map((c) => (c['name'] ?? c['iso_3166_1'] ?? '').toString())
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    // Safe extraction of spoken languages
+    final rawLanguages = json['spoken_languages'] as List<dynamic>? ?? [];
+    final languages = rawLanguages
+        .whereType<Map<String, dynamic>>()
+        .map((l) => (l['english_name'] ?? l['name'] ?? l['iso_639_1'] ?? '').toString())
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    // Safe extraction of production companies
+    final rawCompanies = json['production_companies'] as List<dynamic>? ?? [];
+    final companies = rawCompanies
+        .whereType<Map<String, dynamic>>()
+        .map((c) => (c['name'] ?? '').toString())
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    // Runtime extraction (handle movie runtime array or tv episode_run_time)
+    int? runtime;
+    if (json['runtime'] is num) {
+      runtime = (json['runtime'] as num).toInt();
+    } else if (json['episode_run_time'] is List && (json['episode_run_time'] as List).isNotEmpty) {
+      runtime = ((json['episode_run_time'] as List).first as num?)?.toInt();
+    }
+
+    // Certification rating extraction if available in content_ratings / release_dates
+    String? cert;
+    if (json['certification'] is String) {
+      cert = json['certification'] as String;
+    }
+
     return MediaItem(
       id: json['id'] as int? ?? 0,
       imdbId: imdb,
@@ -257,9 +319,15 @@ class MediaItem extends Equatable {
       genres: genresList,
       cast: castList,
       seasons: seasonsList,
-      runtimeMinutes: json['runtime'] as int?,
+      runtimeMinutes: runtime,
       tagline: json['tagline'] as String?,
       trailerUrl: _parseTrailerUrl(json),
+      certification: cert,
+      productionCountries: countries,
+      budget: (json['budget'] as num?)?.toInt(),
+      revenue: (json['revenue'] as num?)?.toInt(),
+      spokenLanguages: languages,
+      productionCompanies: companies,
     );
   }
 

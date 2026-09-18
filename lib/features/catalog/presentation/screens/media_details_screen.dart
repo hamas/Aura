@@ -29,6 +29,10 @@ import '../widgets/media_poster_card.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_action_buttons.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_backdrop_sliver.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_cast_section.dart';
+import 'package:aura/features/catalog/presentation/widgets/components/details_information_block.dart';
+import 'package:aura/features/catalog/presentation/widgets/components/details_metadata_block.dart';
+import 'package:aura/features/catalog/presentation/widgets/components/details_official_trailer_card.dart';
+import 'package:aura/features/catalog/presentation/widgets/components/details_related_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_series_episodic_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/modals/engine_required_modal.dart';
 
@@ -728,7 +732,7 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Synopsis
+                          // 1. Synopsis Overview
                           GestureDetector(
                             onTap: () => setState(() =>
                                 _isSynopsisExpanded = !_isSynopsisExpanded),
@@ -741,13 +745,15 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                               style: context.auraText.bodyOverview,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
-                          if (item.cast.isNotEmpty) ...[
-                            DetailsCastSection(item: item),
-                            const SizedBox(height: 20),
+                          // 2. Official Trailer Section (Below Hero & Overview)
+                          if (item.trailerUrl != null && item.trailerUrl!.isNotEmpty) ...[
+                            DetailsOfficialTrailerCard(item: item),
+                            const SizedBox(height: 24),
                           ],
 
+                          // Series Episodic Section (if TV Series)
                           if (item.type == MediaType.series &&
                               item.seasons.isNotEmpty) ...[
                             DetailsSeriesEpisodicSection(
@@ -782,41 +788,43 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                                       episodeNumber: episodeNumber,
                                       episodeTitle: episodeTitle),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 24),
                           ],
 
+                          // 3. Related & Recommended Content
                           if (recommendations.isNotEmpty) ...[
-                            const AuraSectionHeader(
-                              title: 'More Like This',
-                              showChevron: false,
-                            ),
-                            const SizedBox(height: AppTokens.spacingSm),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: AppTokens.posterAspectRatio,
-                                mainAxisSpacing: AppTokens.spacingSm,
-                                crossAxisSpacing: AppTokens.spacingSm,
-                              ),
-                              itemCount: recommendations.take(12).length,
-                              itemBuilder: (context, index) {
-                                final recItem = recommendations[index];
-                                return MediaPosterCard(
-                                  item: recItem,
-                                  onTap: () {
-                                    context.push(
-                                      '/detail/${recItem.type.name}/${recItem.id}',
-                                      extra: recItem,
-                                    );
-                                  },
-                                );
-                              },
+                            DetailsRelatedSection(items: recommendations),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // 4. Cast & Crew Section
+                          if (item.cast.isNotEmpty) ...[
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Cast & Crew',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                DetailsCastSection(item: item),
+                              ],
                             ),
                             const SizedBox(height: 24),
                           ],
+
+                          // 5. Information & Production Details
+                          DetailsInformationBlock(item: item),
+                          const SizedBox(height: 24),
+
+                          // 6. Metadata & Spoken Languages & TMDb Attribution
+                          DetailsMetadataBlock(item: item),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
