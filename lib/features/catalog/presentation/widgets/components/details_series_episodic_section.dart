@@ -12,6 +12,7 @@ import 'package:aura/features/catalog/domain/entities/season_episode.dart';
 
 class DetailsSeriesEpisodicSection extends StatelessWidget {
   final MediaItem item;
+  final Season? currentSeason;
   final int selectedSeasonNumber;
   final ValueChanged<int> onSeasonSelected;
   final void Function(BuildContext, MediaItem,
@@ -30,6 +31,7 @@ class DetailsSeriesEpisodicSection extends StatelessWidget {
   const DetailsSeriesEpisodicSection({
     super.key,
     required this.item,
+    this.currentSeason,
     required this.selectedSeasonNumber,
     required this.onSeasonSelected,
     required this.onPlayEpisode,
@@ -39,24 +41,20 @@ class DetailsSeriesEpisodicSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentSeason = item.seasons.firstWhere(
-      (s) => s.seasonNumber == selectedSeasonNumber,
-      orElse: () => item.seasons.first,
-    );
+    final seasonToDisplay = currentSeason ??
+        item.seasons.firstWhere(
+          (s) => s.seasonNumber == selectedSeasonNumber,
+          orElse: () => item.seasons.first,
+        );
+
+    final episodes = seasonToDisplay.episodes;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AuraSectionHeader(
-          title: 'Episodes',
-          padding: EdgeInsets.zero,
-          showChevron: false,
-        ),
-        const SizedBox(height: 12),
-
         // Season Selector Dropdown / Pills
         SizedBox(
-          height: 38,
+          height: 34,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: item.seasons.length,
@@ -64,33 +62,69 @@ class DetailsSeriesEpisodicSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final season = item.seasons[index];
               final isSelected = season.seasonNumber == selectedSeasonNumber;
-              return ChoiceChip(
-                label: Text('Season ${season.seasonNumber}'),
-                selected: isSelected,
-                selectedColor: AppColors.accentPink,
-                backgroundColor: AppColors.surfaceCard,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.black : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              return GestureDetector(
+                onTap: () => onSeasonSelected(season.seasonNumber),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color:
+                          isSelected ? Colors.white : const Color(0x22FFFFFF),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Season ${season.seasonNumber}',
+                      style: context.auraText.caption.copyWith(
+                        color: isSelected
+                            ? AppColors.surfaceBackground
+                            : Colors.white,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ),
-                onSelected: (_) => onSeasonSelected(season.seasonNumber),
               );
             },
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTokens.screenEdgeHorizontal),
 
         // Episodes List
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: currentSeason.episodes.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final episode = currentSeason.episodes[index];
-            return _buildEpisodeCard(context, episode);
-          },
-        ),
+        if (episodes.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.accentPink,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: episodes.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final episode = episodes[index];
+              return _buildEpisodeCard(context, episode);
+            },
+          ),
       ],
     );
   }
@@ -100,12 +134,12 @@ class DetailsSeriesEpisodicSection extends StatelessWidget {
         ? '${ApiConstants.tmdbPosterW500}${episode.stillPath}'
         : null;
 
-    return AuraCard(
-      padding: AppTokens.paddingSm,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Episode Still Thumbnail
+          // Episode Still Thumbnail with Play Icon Overlay
           Stack(
             alignment: Alignment.center,
             children: [
@@ -122,13 +156,20 @@ class DetailsSeriesEpisodicSection extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: stillUrl,
                           fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => const Icon(
+                            Icons.movie,
+                            color: AppColors.textMuted,
+                          ),
                         )
                       : const Icon(Icons.movie, color: AppColors.textMuted),
                 ),
               ),
               IconButton(
-                icon: const AuraIcon(AppIcons.play,
-                    color: Colors.white, size: 28),
+                icon: const AuraIcon(
+                  AppIcons.play,
+                  color: Colors.white,
+                  size: 28,
+                ),
                 onPressed: () => onPlayEpisode(
                   context,
                   item,

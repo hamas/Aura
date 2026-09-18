@@ -4,7 +4,7 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/presentation/primitives/aura_icon.dart';
 import '../../../addons/domain/entities/addon_stream.dart';
 
-class StreamPickerModal extends StatelessWidget {
+class StreamPickerModal extends StatefulWidget {
   final List<AddonStream> streams;
   final bool isLoading;
   final ValueChanged<AddonStream> onStreamSelected;
@@ -15,6 +15,13 @@ class StreamPickerModal extends StatelessWidget {
     this.isLoading = false,
     required this.onStreamSelected,
   });
+
+  @override
+  State<StreamPickerModal> createState() => _StreamPickerModalState();
+}
+
+class _StreamPickerModalState extends State<StreamPickerModal> {
+  int _selectedTabIndex = 0; // 0: Direct Streams (Default), 1: All Streams / P2P
 
   String? _extractFileSize(String text) {
     final match = RegExp(
@@ -62,6 +69,10 @@ class StreamPickerModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filteredStreams = _selectedTabIndex == 0
+        ? widget.streams.where((s) => (s.url ?? '').startsWith('http')).toList()
+        : widget.streams;
+
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
@@ -133,7 +144,7 @@ class StreamPickerModal extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                if (isLoading)
+                if (widget.isLoading)
                   const SizedBox(
                     width: 20,
                     height: 20,
@@ -144,10 +155,79 @@ class StreamPickerModal extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
+            // Filter Tabs (Direct Streams vs All Streams / P2P)
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111215),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withAlpha((0.05 * 255).round()),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTabIndex = 0),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _selectedTabIndex == 0
+                              ? AppTheme.primaryAccent
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Text(
+                          '⚡ Direct Streams',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _selectedTabIndex == 0
+                                ? Colors.black
+                                : AppTheme.textMuted,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTabIndex = 1),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _selectedTabIndex == 1
+                              ? const Color(0xFF262C3A)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Text(
+                          'All Streams / P2P',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _selectedTabIndex == 1
+                                ? AppTheme.textPrimary
+                                : AppTheme.textMuted,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
 
             // Content Area
-            if (isLoading && streams.isEmpty)
+            if (widget.isLoading && widget.streams.isEmpty)
               Container(
                 width: double.infinity,
                 padding:
@@ -185,7 +265,57 @@ class StreamPickerModal extends StatelessWidget {
                   ],
                 ),
               )
-            else if (!isLoading && streams.isEmpty)
+            else if (!widget.isLoading && filteredStreams.isEmpty && _selectedTabIndex == 0 && widget.streams.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceCard.withAlpha((0.5 * 255).round()),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF1E2638)),
+                ),
+                child: Column(
+                  children: [
+                    const AuraIcon(AppIcons.warning,
+                        size: 36, color: AppTheme.warningAccent),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'No Direct Streams Found',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Available sources require a BitTorrent engine or Debrid service. Switch to "All Streams / P2P" tab to view them.',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                          height: 1.35),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF262C3A),
+                        foregroundColor: AppTheme.textPrimary,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                      ),
+                      onPressed: () => setState(() => _selectedTabIndex = 1),
+                      child: const Text(
+                        'View All Streams / P2P',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (!widget.isLoading && filteredStreams.isEmpty)
               Container(
                 width: double.infinity,
                 padding:
@@ -243,7 +373,7 @@ class StreamPickerModal extends StatelessWidget {
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
-                  itemCount: streams.length + 1,
+                  itemCount: filteredStreams.length + 1,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     // Inject sample instant test stream at top of list
@@ -260,7 +390,7 @@ class StreamPickerModal extends StatelessWidget {
                         child: InkWell(
                           onTap: () {
                             Navigator.of(context).pop();
-                            onStreamSelected(sampleStream);
+                            widget.onStreamSelected(sampleStream);
                           },
                           borderRadius: BorderRadius.circular(14),
                           child: Container(
@@ -330,8 +460,8 @@ class StreamPickerModal extends StatelessWidget {
                       );
                     }
 
-                    final stream = streams[index - 1];
-                    final bool isDirectHttp = (stream.url ?? '').startsWith('http');
+                    final stream = filteredStreams[index - 1];
+                    final bool isDirect = (stream.url ?? '').startsWith('http');
                     final bool isP2pTorrent = stream.url == null && (stream.infoHash ?? '').isNotEmpty;
                     final rawTitle =
                         stream.title ?? stream.name ?? 'Stream ${index + 1}';
@@ -392,7 +522,7 @@ class StreamPickerModal extends StatelessWidget {
                             return;
                           }
                           Navigator.of(context).pop();
-                          onStreamSelected(stream);
+                          widget.onStreamSelected(stream);
                         },
                         borderRadius: BorderRadius.circular(14),
                         child: Container(
@@ -551,7 +681,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                        if (isDirectHttp)
+                                        if (isDirect)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -576,7 +706,7 @@ class StreamPickerModal extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                        if (isP2pTorrent)
+                                        if (!isDirect)
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
@@ -619,9 +749,9 @@ class StreamPickerModal extends StatelessWidget {
                               ),
 
                               const SizedBox(width: 8),
-                              const AuraIcon(
+                              AuraIcon(
                                 AppIcons.playCircle,
-                                color: AppTheme.primaryAccent,
+                                color: isDirect ? AppTheme.primaryAccent : AppTheme.textMuted,
                                 size: 26,
                               ),
                             ],

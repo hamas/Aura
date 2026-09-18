@@ -34,6 +34,13 @@ class AuraTheme {
       extensions: const [
         AuraThemeExtension.dark,
       ],
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+          TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+        },
+      ),
       colorScheme: const ColorScheme.dark(
         primary: AppColors.accentPink,
         secondary: AppColors.secondaryAccent,

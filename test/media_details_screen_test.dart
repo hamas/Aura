@@ -271,8 +271,8 @@ void main() {
       expect(find.text('Stranger Things'), findsOneWidget);
       expect(find.text('8.7'), findsOneWidget);
       expect(find.text('IMDb'), findsOneWidget);
-      expect(find.text('2016'), findsOneWidget);
-      expect(find.text('Watch'), findsOneWidget);
+      expect(find.textContaining('2016'), findsWidgets);
+      expect(find.text('Play'), findsOneWidget);
     });
 
     testWidgets('Renders synopsis text', (tester) async {
@@ -303,7 +303,6 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Episodes'), findsOneWidget);
       expect(find.text('Season 1'), findsOneWidget);
     });
   });

@@ -63,42 +63,9 @@ class DetailsOfficialTrailerCard extends StatelessWidget {
 
     final thumbnailUrl = _getTrailerThumbnailUrl();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'Official Trailer',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.2,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.accentPink.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text(
-                'HD',
-                style: TextStyle(
-                  color: AppColors.accentPink,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
             color: AppColors.surfaceElevated,
             child: AspectRatio(
               aspectRatio: 16 / 9,
@@ -210,8 +177,6 @@ class DetailsOfficialTrailerCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
-    );
+        );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/presentation/primitives/primitives.dart';
 import '../../features/addons/presentation/screens/addons_screen.dart';
@@ -12,9 +11,6 @@ import '../../features/catalog/presentation/screens/search_screen.dart';
 import '../../features/clips/presentation/screens/clips_screen.dart';
 import '../../features/downloads/presentation/screens/downloads_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
-import '../../features/player/data/services/media_kit_player_service.dart';
-import '../../features/player/presentation/bloc/player_bloc.dart';
-import '../../features/player/presentation/bloc/player_event.dart';
 import '../../features/player/presentation/widgets/player_view.dart';
 import '../../features/catalog/presentation/screens/person_details_screen.dart';
 import '../../features/profiles/presentation/screens/profile_selection_screen.dart';
@@ -40,58 +36,138 @@ class AppRouter {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const DiscoveryScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/clips',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const ClipsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/library',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const LibraryScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/downloads',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const DownloadsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/addons',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const AddonsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/addons/install',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const InstallAddonScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/settings',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const SettingsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
           GoRoute(
             path: '/profile',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const SettingsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  ),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 200),
             ),
           ),
         ],
@@ -103,9 +179,28 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
           final genre = state.uri.queryParameters['genre'] ?? 'Action';
-          return NoTransitionPage(
+          return CustomTransitionPage(
             key: ValueKey('category_${genre}_${state.pageKey}'),
             child: CategoryScreen(genreName: genre),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  )),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 250),
           );
         },
       ),
@@ -114,9 +209,28 @@ class AppRouter {
       GoRoute(
         path: '/search',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => NoTransitionPage(
+        pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const SearchScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.04),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 250),
         ),
       ),
 
@@ -124,9 +238,19 @@ class AppRouter {
       GoRoute(
         path: '/profiles',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => NoTransitionPage(
+        pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const ProfileSelectionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 250),
         ),
       ),
 
@@ -139,12 +263,31 @@ class AppRouter {
           final id = int.tryParse(idString) ?? 0;
           final initialName = state.extra as String?;
 
-          return NoTransitionPage(
+          return CustomTransitionPage(
             key: state.pageKey,
             child: PersonDetailsScreen(
               personId: id,
               initialName: initialName,
             ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  )),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 250),
           );
         },
       ),
@@ -163,13 +306,32 @@ class AppRouter {
                   ? MediaType.series
                   : MediaType.movie);
 
-          return NoTransitionPage(
+          return CustomTransitionPage(
             key: state.pageKey,
             child: MediaDetailsScreen(
               id: id,
               type: type,
               initialItem: initialItem,
             ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  )),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 250),
           );
         },
       ),
@@ -180,44 +342,11 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          final streamUrl = extra['streamUrl'] as String? ?? '';
-          final title = extra['title'] as String?;
-          final subtitle = extra['subtitle'] as String?;
-          final headers = extra['headers'] as Map<String, String>?;
-          final mediaId = extra['mediaId'] as String?;
-          final posterPath = extra['posterPath'] as String?;
-          final backdropPath = extra['backdropPath'] as String?;
-          final mediaType = extra['type'] as String?;
-          final seasonNumber = extra['seasonNumber'] as int?;
-          final episodeNumber = extra['episodeNumber'] as int?;
-
-          final playerService = MediaKitPlayerService();
-
           return NoTransitionPage(
             key: state.pageKey,
-            child: BlocProvider(
-              create: (context) {
-                final bloc = PlayerBloc(playerService: playerService);
-                bloc.add(
-                  PlayStreamEvent(
-                    streamUrl: streamUrl,
-                    title: title,
-                    subtitle: subtitle,
-                    httpHeaders: headers,
-                  ),
-                );
-                return bloc;
-              },
-              child: PlayerView(
-                playerService: playerService,
-                onBack: () => Navigator.of(context).pop(),
-                mediaId: mediaId,
-                posterPath: posterPath,
-                backdropPath: backdropPath,
-                mediaType: mediaType,
-                seasonNumber: seasonNumber,
-                episodeNumber: episodeNumber,
-              ),
+            child: PlayerView(
+              args: extra,
+              onBack: () => Navigator.of(context).pop(),
             ),
           );
         },

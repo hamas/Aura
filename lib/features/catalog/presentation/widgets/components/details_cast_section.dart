@@ -19,11 +19,11 @@ class DetailsCastSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 110,
+      height: 130,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: item.cast.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final actor = item.cast[index];
           final profileUrl = actor.profilePath != null
@@ -34,23 +34,23 @@ class DetailsCastSection extends StatelessWidget {
             onTap: () {
               context.push('/person/${actor.id}', extra: actor.name);
             },
-            borderRadius: BorderRadius.circular(36),
+            borderRadius: BorderRadius.circular(44),
             child: SizedBox(
-              width: 72,
+              width: 86,
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 30,
+                    radius: 38,
                     backgroundColor: AppColors.surfaceElevated,
                     backgroundImage: profileUrl != null
                         ? CachedNetworkImageProvider(profileUrl)
                         : null,
                     child: profileUrl == null
                         ? const AuraIcon(AppIcons.person,
-                            color: AppColors.textMuted, size: 24)
+                            color: AppColors.textMuted, size: 28)
                         : null,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     actor.name,
                     maxLines: 1,
@@ -58,16 +58,17 @@ class DetailsCastSection extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTypography.caption.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 11,
+                      fontSize: 12,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     actor.character,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: AppTypography.caption.copyWith(
-                      fontSize: 9,
+                      fontSize: 10,
                       color: AppColors.textMuted,
                     ),
                   ),

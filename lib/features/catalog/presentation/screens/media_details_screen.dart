@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/presentation/primitives/primitives.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -25,13 +27,11 @@ import '../../domain/entities/media_item.dart';
 import '../bloc/catalog_bloc.dart';
 import '../bloc/catalog_event.dart';
 import '../bloc/catalog_state.dart';
-import '../widgets/media_poster_card.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_action_buttons.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_backdrop_sliver.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_cast_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_information_block.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_metadata_block.dart';
-import 'package:aura/features/catalog/presentation/widgets/components/details_official_trailer_card.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_related_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/components/details_series_episodic_section.dart';
 import 'package:aura/features/catalog/presentation/widgets/modals/engine_required_modal.dart';
@@ -56,7 +56,6 @@ class MediaDetailsScreen extends StatefulWidget {
 class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
   final ScrollController _scrollController = ScrollController();
   int _selectedSeasonNumber = 1;
-  bool _isSynopsisExpanded = false;
 
   @override
   void initState() {
@@ -244,21 +243,23 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
             : stream.resolution;
 
-        await context.push(
-          '/player',
-          extra: {
-            'streamUrl': resolved.streamUrl,
-            'title': item.title,
-            'subtitle': subtitleText,
-            'headers': resolved.httpHeaders,
-            'mediaId': item.id.toString(),
-            'posterPath': item.posterPath,
-            'backdropPath': item.backdropPath,
-            'type': item.type.name,
-            'seasonNumber': seasonNumber,
-            'episodeNumber': episodeNumber,
-          },
-        );
+        final playerExtra = {
+          'streamUrl': resolved.streamUrl,
+          'title': item.title,
+          'subtitle': subtitleText,
+          'headers': resolved.httpHeaders,
+          'mediaId': item.id.toString(),
+          'posterPath': item.posterPath,
+          'backdropPath': item.backdropPath,
+          'type': item.type.name,
+          'seasonNumber': seasonNumber,
+          'episodeNumber': episodeNumber,
+        };
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) return;
+          context.push('/player', extra: playerExtra);
+        });
       }
     } on ServerException catch (e) {
       debugPrint('DEBUG: [ERROR] ServerException stream resolution: ${e.message}');
@@ -588,134 +589,165 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                         ),
                       );
                     },
-                    overlappingHeader: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                    overlappingHeader: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        MediaPosterCard(
-                          item: item,
-                          width: 95,
-                          showRating: false,
-                          showTitle: false,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // 1. Year (Top)
-                              Text(
-                                item.releaseYear.isNotEmpty
-                                    ? item.releaseYear
-                                    : 'N/A',
-                                style: const TextStyle(
-                                  color: AppColors.textMuted,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-
-                              // 2. Title
-                              Text(
-                                item.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.auraText.displayHero.copyWith(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-
-                              // 3. Genre
-                              Text(
-                                item.genres.isNotEmpty
-                                    ? item.genres.map((g) => g.name).join(' • ')
-                                    : (item.type == MediaType.movie
-                                        ? 'Movie'
-                                        : 'TV Series'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-
-                              // 4. Rating
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 5, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5C518),
-                                      borderRadius:
-                                          BorderRadius.circular(3),
-                                    ),
-                                    child: const Text(
-                                      'IMDb',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    item.voteAverage > 0
-                                        ? item.voteAverage.toStringAsFixed(1)
-                                        : '8.4',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text('🍅',
-                                      style: TextStyle(fontSize: 11)),
-                                  const SizedBox(width: 2),
-                                  const Text(
-                                    '88%',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text('🍿',
-                                      style: TextStyle(fontSize: 11)),
-                                  const SizedBox(width: 2),
-                                  const Text(
-                                    '94%',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                        // 1. Movie / Show Logo (Clearart PNG)
+                        if (item.logoUrl != null && item.logoUrl!.isNotEmpty)
+                          CachedNetworkImage(
+                            imageUrl: item.logoUrl!,
+                            height: 110.0,
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            imageBuilder: (context, imageProvider) => Container(
+                              constraints: const BoxConstraints(maxWidth: 320.0),
+                              decoration: const BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black54,
+                                    blurRadius: 16,
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-
-                              // 5. Buttons
-                              DetailsActionButtons(
-                                item: item,
-                                isInWatchlist: isInWatchlist,
-                                onPlayPressed: () =>
-                                    _openStreamPicker(context, item),
-                                onDownloadPressed: () =>
-                                    _initiateDownload(context, item),
-                                onPlayOfflinePressed: () =>
-                                    _playOfflineDirect(context, item),
+                              child: Image(
+                                image: imageProvider,
+                                height: 110.0,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.center,
                               ),
-                            ],
+                            ),
+                            placeholder: (_, __) => const SizedBox(
+                              height: 110.0,
+                            ),
+                            errorWidget: (_, __, ___) => Text(
+                              item.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.auraText.displayHero.copyWith(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                height: 1.15,
+                              ),
+                            ),
+                          )
+                        else if (state.isLoadingDetails)
+                          const SizedBox(
+                            height: 110.0,
+                          )
+                        else
+                          Text(
+                            item.title,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.auraText.displayHero.copyWith(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              height: 1.15,
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+
+                        // 2. Genre & Release Year Subtitle
+                        Text(
+                          item.genres.isNotEmpty
+                              ? '${item.genres.map((g) => g.name).join(' • ')}${item.releaseYear.isNotEmpty ? ' • ${item.releaseYear}' : ''}'
+                              : (item.releaseYear.isNotEmpty
+                                  ? item.releaseYear
+                                  : (item.type == MediaType.movie ? 'Movie' : 'TV Series')),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // 3. Rating Badges (IMDb, Tomatometer, Audience Popcorn)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5C518),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text(
+                                'IMDb',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.voteAverage > 0
+                                  ? item.voteAverage.toStringAsFixed(1)
+                                  : '8.4',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text('🍅', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 2),
+                            const Text(
+                              '88%',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('🍿', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 2),
+                            const Text(
+                              '94%',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // 4. Centered Play / Trailer / Download Action Buttons
+                        Center(
+                          child: DetailsActionButtons(
+                            item: item,
+                            isInWatchlist: isInWatchlist,
+                            onPlayPressed: () =>
+                                _openStreamPicker(context, item),
+                            onTrailerPressed: () {
+                              if (item.trailerUrl != null &&
+                                  item.trailerUrl!.isNotEmpty) {
+                                final String rawUrl = item.trailerUrl!.startsWith('http')
+                                    ? item.trailerUrl!
+                                    : 'https://www.youtube.com/watch?v=${item.trailerUrl}';
+                                launchUrl(Uri.parse(rawUrl),
+                                    mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            onDownloadPressed: () =>
+                                _initiateDownload(context, item),
+                            onPlayOfflinePressed: () =>
+                                _playOfflineDirect(context, item),
                           ),
                         ),
                       ],
@@ -732,32 +764,13 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 1. Synopsis Overview
-                          GestureDetector(
-                            onTap: () => setState(() =>
-                                _isSynopsisExpanded = !_isSynopsisExpanded),
-                            child: Text(
-                              item.overview,
-                              maxLines: _isSynopsisExpanded ? null : 4,
-                              overflow: _isSynopsisExpanded
-                                  ? TextOverflow.visible
-                                  : TextOverflow.ellipsis,
-                              style: context.auraText.bodyOverview,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // 2. Official Trailer Section (Below Hero & Overview)
-                          if (item.trailerUrl != null && item.trailerUrl!.isNotEmpty) ...[
-                            DetailsOfficialTrailerCard(item: item),
-                            const SizedBox(height: 24),
-                          ],
 
                           // Series Episodic Section (if TV Series)
                           if (item.type == MediaType.series &&
                               item.seasons.isNotEmpty) ...[
                             DetailsSeriesEpisodicSection(
                               item: item,
+                              currentSeason: state.currentSeason,
                               selectedSeasonNumber: _selectedSeasonNumber,
                               onSeasonSelected: (s) =>
                                   _onSeasonChanged(s, item.id),
@@ -791,9 +804,18 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                             const SizedBox(height: 24),
                           ],
 
-                          // 3. Related & Recommended Content
+                          // 2. Related & Recommended Content
                           if (recommendations.isNotEmpty) ...[
                             DetailsRelatedSection(items: recommendations),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // 3. Full Synopsis Overview (Placed directly above Cast & Crew)
+                          if (item.overview.isNotEmpty) ...[
+                            Text(
+                              item.overview,
+                              style: context.auraText.bodyOverview,
+                            ),
                             const SizedBox(height: 24),
                           ],
 

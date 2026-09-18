@@ -23,26 +23,16 @@ import '../../../watch_together/presentation/widgets/join_create_watch_room_dial
 import '../../../watch_together/presentation/widgets/watch_together_overlay_hud.dart';
 
 class PlayerView extends StatefulWidget {
-  final MediaKitPlayerService playerService;
+  final Map<String, dynamic> args;
   final VoidCallback onBack;
-  final String? mediaId;
-  final String? posterPath;
-  final String? backdropPath;
-  final String? mediaType;
-  final int? seasonNumber;
-  final int? episodeNumber;
+  final MediaKitPlayerService? playerService; // Optional for unit tests / custom overrides
   final VoidCallback? onNextEpisode;
 
   const PlayerView({
     super.key,
-    required this.playerService,
+    required this.args,
     required this.onBack,
-    this.mediaId,
-    this.posterPath,
-    this.backdropPath,
-    this.mediaType,
-    this.seasonNumber,
-    this.episodeNumber,
+    this.playerService,
     this.onNextEpisode,
   });
 
@@ -51,6 +41,9 @@ class PlayerView extends StatefulWidget {
 }
 
 class _PlayerViewState extends State<PlayerView> {
+  late final MediaKitPlayerService _playerService;
+  late final PlayerBloc _playerBloc;
+
   Timer? _progressSyncTimer;
   WatchRoomSession? _watchSession;
   WatchTogetherService? _watchService;
@@ -60,6 +53,9 @@ class _PlayerViewState extends State<PlayerView> {
   @override
   void initState() {
     super.initState();
+    _playerService = widget.playerService ?? MediaKitPlayerService();
+    _playerBloc = PlayerBloc(playerService: _playerService);
+
     // Mobile Hardening: Lock to landscape and hide system status/nav bars
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -67,13 +63,13 @@ class _PlayerViewState extends State<PlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    debugPrint('DEBUG: [PLAYER_VIEW] Mounted successfully with streamUrl: ${widget.playerService.state.currentStreamUrl}');
+    debugPrint('DEBUG: [PLAYER_VIEW] Initialized with args: ${widget.args}');
 
     try {
-      widget.playerService.player.stream.error.listen((e) {
+      _playerService.player.stream.error.listen((e) {
         debugPrint('DEBUG: [PLAYER_VIEW] Error: $e');
       });
-      widget.playerService.player.stream.completed.listen((c) {
+      _playerService.player.stream.completed.listen((c) {
         debugPrint('DEBUG: [PLAYER_VIEW] Completed: $c');
       });
     } catch (_) {}
@@ -82,24 +78,48 @@ class _PlayerViewState extends State<PlayerView> {
     _fetchIntervals();
     _fetchExternalSubtitles();
     _checkResumeProgress();
+
+    // Wait for first frame to ensure Texture widget is mounted to GPU
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final streamUrl = widget.args['streamUrl'] as String? ?? '';
+      final title = widget.args['title'] as String?;
+      final subtitle = widget.args['subtitle'] as String?;
+      final headers = widget.args['headers'] as Map<String, String>?;
+      if (streamUrl.isNotEmpty) {
+        _playerBloc.add(PlayStreamEvent(
+          streamUrl: streamUrl,
+          title: title,
+          subtitle: subtitle,
+          httpHeaders: headers,
+        ));
+      }
+    });
   }
 
+  String? get _mediaId => widget.args['mediaId'] as String?;
+  String? get _posterPath => widget.args['posterPath'] as String?;
+  String? get _backdropPath => widget.args['backdropPath'] as String?;
+  String? get _mediaType => widget.args['type'] as String?;
+  int? get _seasonNumber => widget.args['seasonNumber'] as int?;
+  int? get _episodeNumber => widget.args['episodeNumber'] as int?;
+
   Future<void> _fetchExternalSubtitles() async {
-    if (widget.mediaId == null) return;
+    if (_mediaId == null) return;
     try {
       final addonRepo = context.read<AddonRepository>();
-      final type = widget.mediaType ?? 'movie';
+      final type = _mediaType ?? 'movie';
       
-      String stremioId = widget.mediaId!;
-      if (type == 'series' && widget.seasonNumber != null && widget.episodeNumber != null) {
-        stremioId = '${widget.mediaId}:${widget.seasonNumber}:${widget.episodeNumber}';
+      String stremioId = _mediaId!;
+      if (type == 'series' && _seasonNumber != null && _episodeNumber != null) {
+        stremioId = '$_mediaId:$_seasonNumber:$_episodeNumber';
       }
 
       final subs = await addonRepo.getSubtitles(type: type, id: stremioId);
       if (mounted) {
         for (final sub in subs) {
           unawaited(
-            widget.playerService.addExternalSubtitleTrack(
+            _playerService.addExternalSubtitleTrack(
               url: sub.url,
               language: sub.lang,
               title: '${sub.lang.toUpperCase()} (Addon)',
@@ -111,12 +131,12 @@ class _PlayerViewState extends State<PlayerView> {
   }
 
   Future<void> _checkResumeProgress() async {
-    if (widget.mediaId == null) return;
+    if (_mediaId == null) return;
     try {
       final libraryBloc = context.read<LibraryBloc>();
       final continueWatching = libraryBloc.state.continueWatching;
       final existing = continueWatching.cast<LibraryItem?>().firstWhere(
-            (item) => item?.id == widget.mediaId,
+            (item) => item?.id == _mediaId,
             orElse: () => null,
           );
 
@@ -137,7 +157,7 @@ class _PlayerViewState extends State<PlayerView> {
                   label: 'Resume from $formattedTime',
                   textColor: AppColors.accentPink,
                   onPressed: () {
-                    context.read<PlayerBloc>().add(SeekPositionEvent(posDuration));
+                    _playerBloc.add(SeekPositionEvent(posDuration));
                   },
                 ),
                 content: Text(
@@ -153,16 +173,16 @@ class _PlayerViewState extends State<PlayerView> {
   }
 
   Future<void> _fetchIntervals() async {
-    if (widget.mediaId == null) return;
+    if (_mediaId == null) return;
     try {
       final ingestionService = ChapterIngestionService();
       final intervals = await ingestionService.fetchIntervals(
-        imdbId: widget.mediaId!,
-        season: widget.seasonNumber,
-        episode: widget.episodeNumber,
+        imdbId: _mediaId!,
+        season: _seasonNumber,
+        episode: _episodeNumber,
       );
       if (mounted && intervals.isNotEmpty) {
-        context.read<PlayerBloc>().add(SetMediaIntervalsEvent(intervals));
+        _playerBloc.add(SetMediaIntervalsEvent(intervals));
       }
     } catch (_) {}
   }
@@ -177,7 +197,7 @@ class _PlayerViewState extends State<PlayerView> {
     });
 
     _stallDetectionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final state = widget.playerService.state;
+      final state = _playerService.state;
       if (state.isBuffering) {
         if (state.position == _lastStallPosition) {
           _stallSecondsCount++;
@@ -191,7 +211,7 @@ class _PlayerViewState extends State<PlayerView> {
                   textColor: AppColors.accentPink,
                   onPressed: () {
                     if (state.currentStreamUrl != null) {
-                      context.read<PlayerBloc>().add(PlayStreamEvent(
+                      _playerBloc.add(PlayStreamEvent(
                         streamUrl: state.currentStreamUrl!,
                         title: state.title,
                         subtitle: state.subtitle,
@@ -218,24 +238,24 @@ class _PlayerViewState extends State<PlayerView> {
   }
 
   void _syncProgress() {
-    if (!mounted || widget.mediaId == null) return;
-    final state = widget.playerService.state;
+    if (!mounted || _mediaId == null) return;
+    final state = _playerService.state;
     if (!state.isPlaying || state.position.inSeconds <= 0) return;
 
     try {
       context.read<LibraryBloc>().add(
             UpdateProgressEvent(
-              mediaId: widget.mediaId!,
+              mediaId: _mediaId!,
               title: state.title ?? 'Playing Media',
-              posterPath: widget.posterPath,
-              backdropPath: widget.backdropPath,
-              type: widget.mediaType ?? 'movie',
+              posterPath: _posterPath,
+              backdropPath: _backdropPath,
+              type: _mediaType ?? 'movie',
               positionSeconds: state.position.inSeconds,
               durationSeconds: state.duration.inSeconds > 0
                   ? state.duration.inSeconds
                   : (120 * 60),
-              seasonNumber: widget.seasonNumber,
-              episodeNumber: widget.episodeNumber,
+              seasonNumber: _seasonNumber,
+              episodeNumber: _episodeNumber,
             ),
           );
     } catch (_) {
@@ -260,15 +280,17 @@ class _PlayerViewState extends State<PlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+    _playerBloc.close();
+    _playerService.dispose();
     super.dispose();
   }
 
   Future<void> _openWatchTogetherDialog() async {
-    final state = widget.playerService.state;
+    final state = _playerService.state;
     final session = await showDialog<WatchRoomSession>(
       context: context,
       builder: (context) => JoinCreateWatchRoomDialog(
-        mediaId: widget.mediaId ?? 'media_id',
+        mediaId: _mediaId ?? 'media_id',
         streamUrl: state.currentStreamUrl ?? '',
       ),
     );
@@ -284,278 +306,281 @@ class _PlayerViewState extends State<PlayerView> {
     if (_watchService == null) return;
     _syncSubscription = _watchService!.eventStream.listen((event) {
       if (!mounted) return;
-      final currentPos = widget.playerService.state.position;
+      final currentPos = _playerService.state.position;
       final correction = WatchTogetherService.calculateDriftCorrection(
         clientPos: currentPos,
         hostPos: event.position,
       );
       if (correction != null) {
-        context.read<PlayerBloc>().add(SeekPositionEvent(correction));
+        _playerBloc.add(SeekPositionEvent(correction));
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, dynamic>(
-      builder: (context, _) {
-        final bloc = context.read<PlayerBloc>();
-        final state = bloc.state;
+    return BlocProvider<PlayerBloc>.value(
+      value: _playerBloc,
+      child: BlocBuilder<PlayerBloc, dynamic>(
+        builder: (context, _) {
+          final bloc = _playerBloc;
+          final state = bloc.state;
 
-        return Scaffold(
-          backgroundColor: Colors.black,
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Ambient Aura Glow Dynamic Backlight Surface
-              AuraGlowBackdrop(
-                isEnabled: state.enableAuraGlow,
-                isPlaying: state.isPlaying,
-                position: state.position,
-                fit: state.fit,
-              ),
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Ambient Aura Glow Dynamic Backlight Surface
+                AuraGlowBackdrop(
+                  isEnabled: state.enableAuraGlow,
+                  isPlaying: state.isPlaying,
+                  position: state.position,
+                  fit: state.fit,
+                ),
 
-              // Hardware-accelerated Video Surface
-              SizedBox.expand(
-                child: ColoredBox(
-                  color: Colors.black,
-                  child: Center(
-                    child: Video(
-                      controller: widget.playerService.controller,
-                      fit: state.fit,
-                      controls: (state) => const SizedBox.shrink(),
+                // Hardware-accelerated Video Surface
+                SizedBox.expand(
+                  child: ColoredBox(
+                    color: Colors.black,
+                    child: Center(
+                      child: Video(
+                        controller: _playerService.controller,
+                        fit: state.fit,
+                        controls: (state) => const SizedBox.shrink(),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // Cinematic Gesture Overlay Controls
-              PlayerControlsOverlay(
-                state: state,
-                onPlayPause: () => bloc.add(const TogglePlayPauseEvent()),
-                onSeek: (pos) => bloc.add(SeekPositionEvent(pos)),
-                onAspectRatioChange: (fit) =>
-                    bloc.add(ChangeAspectRatioEvent(fit)),
-                onSpeedChange: (speed) =>
-                    bloc.add(SetPlaybackSpeedEvent(speed)),
-                onSelectAudioTrack: (track) =>
-                    bloc.add(SelectAudioTrackEvent(track)),
-                onSelectSubtitleTrack: (track) =>
-                    bloc.add(SelectSubtitleTrackEvent(track)),
-                onSelectSecondarySubtitleTrack: (track) =>
-                    bloc.add(SelectSecondarySubtitleTrackEvent(track)),
-                onSubtitleOffsetChanged: (val) =>
-                    bloc.add(SetSubtitleOffsetEvent(val)),
-                onNudgeSubtitleOffset: (delta) =>
-                    bloc.add(NudgeSubtitleOffsetEvent(delta)),
-                onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
-                onToggleAuraGlow: () => bloc.add(const ToggleAuraGlowEvent()),
-                onSkipInterval: () =>
-                    bloc.add(const SkipCurrentIntervalEvent()),
-                onPictureInPicture: () => PipService.enterPip(),
-                onNextEpisode: widget.onNextEpisode,
-                onWatchTogether: _openWatchTogetherDialog,
-                onRetryStream: () {
-                  if (state.currentStreamUrl != null) {
-                    bloc.add(PlayStreamEvent(
-                      streamUrl: state.currentStreamUrl!,
-                      title: state.title,
-                      subtitle: state.subtitle,
-                    ));
-                  }
-                },
-                onBack: widget.onBack,
-              ),
-
-              // Watch Together Synchronized Multi-User Overlay HUD
-              if (_watchSession != null)
-                WatchTogetherOverlayHUD(
-                  session: _watchSession!,
-                  onSendReaction: (emoji) {
-                    _watchService?.broadcastEvent(WatchSyncEvent(
-                      type: WatchSyncEventType.reaction,
-                      senderId: _watchService?.currentUserId ?? 'user',
-                      position: state.position,
-                      timestamp: DateTime.now(),
-                      payload: emoji,
-                    ));
+                // Cinematic Gesture Overlay Controls
+                PlayerControlsOverlay(
+                  state: state,
+                  onPlayPause: () => bloc.add(const TogglePlayPauseEvent()),
+                  onSeek: (pos) => bloc.add(SeekPositionEvent(pos)),
+                  onAspectRatioChange: (fit) =>
+                      bloc.add(ChangeAspectRatioEvent(fit)),
+                  onSpeedChange: (speed) =>
+                      bloc.add(SetPlaybackSpeedEvent(speed)),
+                  onSelectAudioTrack: (track) =>
+                      bloc.add(SelectAudioTrackEvent(track)),
+                  onSelectSubtitleTrack: (track) =>
+                      bloc.add(SelectSubtitleTrackEvent(track)),
+                  onSelectSecondarySubtitleTrack: (track) =>
+                      bloc.add(SelectSecondarySubtitleTrackEvent(track)),
+                  onSubtitleOffsetChanged: (val) =>
+                      bloc.add(SetSubtitleOffsetEvent(val)),
+                  onNudgeSubtitleOffset: (delta) =>
+                      bloc.add(NudgeSubtitleOffsetEvent(delta)),
+                  onVolumeChange: (vol) => bloc.add(SetVolumeEvent(vol)),
+                  onToggleAuraGlow: () => bloc.add(const ToggleAuraGlowEvent()),
+                  onSkipInterval: () =>
+                      bloc.add(const SkipCurrentIntervalEvent()),
+                  onPictureInPicture: () => PipService.enterPip(),
+                  onNextEpisode: widget.onNextEpisode,
+                  onWatchTogether: _openWatchTogetherDialog,
+                  onRetryStream: () {
+                    if (state.currentStreamUrl != null) {
+                      bloc.add(PlayStreamEvent(
+                        streamUrl: state.currentStreamUrl!,
+                        title: state.title,
+                        subtitle: state.subtitle,
+                      ));
+                    }
                   },
-                  onToggleHostControl: (val) {
-                    _watchService?.toggleHostOnlyControl(val);
-                  },
-                  onLeaveRoom: () {
-                    _watchService?.leaveRoom();
-                    setState(() => _watchSession = null);
-                  },
+                  onBack: widget.onBack,
                 ),
 
-              // Reconnect / Backup Source Fallback HUD Notice Overlay
-              if (state.isRetrying)
-                Positioned(
-                  top: 54,
-                  left: 0,
-                  right: 0,
-                  child: Center(
+                // Watch Together Synchronized Multi-User Overlay HUD
+                if (_watchSession != null)
+                  WatchTogetherOverlayHUD(
+                    session: _watchSession!,
+                    onSendReaction: (emoji) {
+                      _watchService?.broadcastEvent(WatchSyncEvent(
+                        type: WatchSyncEventType.reaction,
+                        senderId: _watchService?.currentUserId ?? 'user',
+                        position: state.position,
+                        timestamp: DateTime.now(),
+                        payload: emoji,
+                      ));
+                    },
+                    onToggleHostControl: (val) {
+                      _watchService?.toggleHostOnlyControl(val);
+                    },
+                    onLeaveRoom: () {
+                      _watchService?.leaveRoom();
+                      setState(() => _watchSession = null);
+                    },
+                  ),
+
+                // Reconnect / Backup Source Fallback HUD Notice Overlay
+                if (state.isRetrying)
+                  Positioned(
+                    top: 54,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: AppColors.accentPink.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accentPink.withValues(alpha: 0.25),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              state.errorMessage ?? 'Connection interrupted. Switching to backup source...',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Next Episode Glassmorphic Auto-Play Countdown Card Overlay
+                if (state.showNextEpisodeCountdown && !_dismissedBingeCountdown)
+                  Positioned(
+                    bottom: 80,
+                    right: 24,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      width: 260,
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: AppColors.accentPink.withValues(alpha: 0.5),
-                          width: 1,
+                          color: AppColors.accentPink.withValues(alpha: 0.6),
+                          width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accentPink.withValues(alpha: 0.25),
-                            blurRadius: 12,
+                            color: AppColors.accentPink.withValues(alpha: 0.3),
+                            blurRadius: 16,
                             spreadRadius: 2,
                           ),
                         ],
                       ),
-                      child: Row(
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentPink),
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.accentPink.withValues(alpha: 0.2),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${state.remainingCountdownSeconds}',
+                                    style: const TextStyle(
+                                      color: AppColors.accentPink,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  'Up Next',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () {
+                                  setState(() => _dismissedBingeCountdown = true);
+                                },
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(height: 8),
                           Text(
-                            state.errorMessage ?? 'Connection interrupted. Switching to backup source...',
+                            'Next Episode (${_seasonNumber != null && _episodeNumber != null ? "S$_seasonNumber E${_episodeNumber! + 1}" : "Episode"})',
                             style: const TextStyle(
                               color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
                               fontSize: 13,
-                              fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: AppColors.accentPink,
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (widget.onNextEpisode != null) {
+                                      widget.onNextEpisode!();
+                                    }
+                                  },
+                                  child: const Text(
+                                    'Play Now',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-
-              // Next Episode Glassmorphic Auto-Play Countdown Card Overlay
-              if (state.showNextEpisodeCountdown && !_dismissedBingeCountdown)
-                Positioned(
-                  bottom: 80,
-                  right: 24,
-                  child: Container(
-                    width: 260,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.accentPink.withValues(alpha: 0.6),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.accentPink.withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.accentPink.withValues(alpha: 0.2),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${state.remainingCountdownSeconds}',
-                                  style: const TextStyle(
-                                    color: AppColors.accentPink,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            const Expanded(
-                              child: Text(
-                                'Up Next',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () {
-                                setState(() => _dismissedBingeCountdown = true);
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Next Episode (${widget.seasonNumber != null && widget.episodeNumber != null ? "S${widget.seasonNumber} E${widget.episodeNumber! + 1}" : "Episode"})',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextButton(
-                                style: TextButton.styleFrom(
-                                  backgroundColor: AppColors.accentPink,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  if (widget.onNextEpisode != null) {
-                                    widget.onNextEpisode!();
-                                  }
-                                },
-                                child: const Text(
-                                  'Play Now',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

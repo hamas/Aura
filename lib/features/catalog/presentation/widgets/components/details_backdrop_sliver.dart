@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:aura/core/constants/api_constants.dart';
@@ -24,24 +23,32 @@ class DetailsBackdropSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final heroHeight = MediaQuery.of(context).size.height * 0.70;
+
+    final posterUrl = item.posterPath != null
+        ? '${ApiConstants.tmdbPosterW500}${item.posterPath}'
+        : null;
     final backdropUrl = item.backdropPath != null
         ? '${ApiConstants.tmdbImageBaseUrl}${item.backdropPath}'
         : null;
+
+    final heroImageUrl = backdropUrl ?? posterUrl;
 
     return SliverToBoxAdapter(
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           SizedBox(
-            height: overlappingHeader != null ? 440.0 : 400.0,
+            height: heroHeight,
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // 1. Static TMDB Backdrop Image with Ken Burns Fallback
-                if (backdropUrl != null)
+                // 1. Static TMDB Poster Image as Hero Background
+                if (heroImageUrl != null)
                   CachedNetworkImage(
-                    imageUrl: backdropUrl,
+                    imageUrl: heroImageUrl,
                     fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
                     errorWidget: (_, __, ___) => AmbientBackdropFallback(
                       backdropUrl: null,
                       title: item.title,
@@ -53,66 +60,34 @@ class DetailsBackdropSliver extends StatelessWidget {
                     title: item.title,
                   ),
 
-                // 2. Bottom Seamless Scrim Gradient Overlay
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 200,
-                  child: ClipRect(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: ShaderMask(
-                            blendMode: BlendMode.dstIn,
-                            shaderCallback: (Rect bounds) {
-                              return const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Color(0x00FFFFFF),
-                                  Color(0x99FFFFFF),
-                                  Color(0xFFFFFFFF),
-                                ],
-                                stops: [0.0, 0.45, 1.0],
-                              ).createShader(bounds);
-                            },
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
-                              child: const ColoredBox(color: Colors.black),
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.2),
-                                  Colors.black.withValues(alpha: 0.85),
-                                  AppColors.surfaceBackground,
-                                ],
-                                stops: const [0.35, 0.60, 0.82, 1.0],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                // 2. Deep Scrim Gradient Overlay for Text Legibility
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.35),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.5),
+                          Colors.black.withValues(alpha: 0.90),
+                          AppColors.surfaceBackground,
+                        ],
+                        stops: const [0.0, 0.25, 0.55, 0.85, 1.0],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          // Overlapping Poster & Metadata Row directly inside backdrop Stack
+          // Overlapping Title & Metadata Row directly inside hero Stack
           if (overlappingHeader != null)
             Positioned(
               left: 16,
               right: 16,
-              bottom: 12,
+              bottom: 16,
               child: overlappingHeader!,
             ),
         ],
