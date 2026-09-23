@@ -134,7 +134,7 @@ public final class AVPlayerManager: ObservableObject {
         player.publisher(for: \.currentItem?.isPlaybackLikelyToKeepUp)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] likelyToKeepUp in
-                self?.isBuffering = !likelyToKeepUp
+                self?.isBuffering = !(likelyToKeepUp ?? true)
             }
             .store(in: &cancellables)
     }

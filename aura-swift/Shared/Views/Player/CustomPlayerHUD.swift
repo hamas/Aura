@@ -133,13 +133,15 @@ public struct CustomPlayerHUD: View {
                 
                 HStack {
                     Text(formatTime(playerManager.currentTime))
-                        .font(.system(size: 12, weight: .monospacedDigit))
+                        .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        .monospacedDigit()
                         .foregroundColor(.secondary)
                     
                     Spacer()
                     
                     Text("-\(formatTime(max(0, playerManager.duration - playerManager.currentTime)))")
-                        .font(.system(size: 12, weight: .monospacedDigit))
+                        .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        .monospacedDigit()
                         .foregroundColor(.secondary)
                 }
             }

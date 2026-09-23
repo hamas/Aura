@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'web_addon_directory/**'
+      - 'aura-flutter/web_addon_directory/**'
       - '.github/workflows/deploy_web_directory.yml'
   workflow_dispatch:
 
@@ -34,7 +34,7 @@ jobs:
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'web_addon_directory'
+          path: 'aura-flutter/web_addon_directory'
 
       - name: Deploy to GitHub Pages
         id: deployment
