@@ -1,12 +1,16 @@
-# GitHub Linguist Overrides - Treat generated runner directories as vendored code
-android/** linguist-vendored
-ios/** linguist-vendored
-windows/** linguist-vendored
-macos/** linguist-vendored
-linux/** linguist-vendored
-web/** linguist-vendored
+# Git Normalization
+* text=auto eol=lf
+*.swift text diff=swift
+*.dart text diff=dart
+*.png binary
+*.jpg binary
+*.plist text
 
-# Treat generated code and lockfiles as vendored/documentation
-*.g.dart linguist-generated
-*.freezed.dart linguist-generated
-pubspec.lock linguist-generated
+# GitHub Linguist Overrides (Ensure Swift is prominent & generated files ignored)
+aura-flutter/ios/** linguist-vendored
+aura-flutter/macos/** linguist-vendored
+aura-flutter/android/** linguist-vendored
+aura-flutter/web_addon_directory/** linguist-documentation
+*.lock linguist-generated
+*.xcworkspacedata linguist-generated
+*.pbxproj linguist-generated

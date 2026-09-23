@@ -1,0 +1,333 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B001 /* AuraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* AuraApp.swift */; };
+		B002 /* MediaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* MediaItem.swift */; };
+		B003 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* APIClient.swift */; };
+		B004 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* AudioSessionManager.swift */; };
+		B005 /* AVPlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F005 /* AVPlayerManager.swift */; };
+		B006 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006 /* GlassCard.swift */; };
+		B007 /* SquircleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F007 /* SquircleButton.swift */; };
+		B008 /* CustomToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F008 /* CustomToolbar.swift */; };
+		B009 /* HeroCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F009 /* HeroCarouselView.swift */; };
+		B010 /* MediaRailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* MediaRailView.swift */; };
+		B011 /* MainFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F011 /* MainFeedView.swift */; };
+		B012 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* VideoPlayerView.swift */; };
+		B013 /* CustomPlayerHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013 /* CustomPlayerHUD.swift */; };
+		B014 /* PictureInPictureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* PictureInPictureController.swift */; };
+		B015 /* iOSHapticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015 /* iOSHapticsManager.swift */; };
+		B016 /* MacOSWindowControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* MacOSWindowControls.swift */; };
+		B017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F017 /* Assets.xcassets */; };
+		B018 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F018 /* GoogleService-Info.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1111111280000000000000D /* Aura.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aura.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F001 /* AuraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/AuraApp.swift; sourceTree = "<group>"; };
+		F002 /* MediaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/MediaItem.swift; sourceTree = "<group>"; };
+		F003 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Networking/APIClient.swift; sourceTree = "<group>"; };
+		F004 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/AudioSessionManager.swift; sourceTree = "<group>"; };
+		F005 /* AVPlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/AVPlayerManager.swift; sourceTree = "<group>"; };
+		F006 /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/GlassCard.swift; sourceTree = "<group>"; };
+		F007 /* SquircleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/SquircleButton.swift; sourceTree = "<group>"; };
+		F008 /* CustomToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/CustomToolbar.swift; sourceTree = "<group>"; };
+		F009 /* HeroCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/HeroCarouselView.swift; sourceTree = "<group>"; };
+		F010 /* MediaRailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/MediaRailView.swift; sourceTree = "<group>"; };
+		F011 /* MainFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/MainFeedView.swift; sourceTree = "<group>"; };
+		F012 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/VideoPlayerView.swift; sourceTree = "<group>"; };
+		F013 /* CustomPlayerHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/CustomPlayerHUD.swift; sourceTree = "<group>"; };
+		F014 /* PictureInPictureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/PictureInPictureController.swift; sourceTree = "<group>"; };
+		F015 /* iOSHapticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/iOSHapticsManager.swift; sourceTree = "<group>"; };
+		F016 /* MacOSWindowControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOS/MacOSWindowControls.swift; sourceTree = "<group>"; };
+		F017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F018 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Shared/Config/GoogleService-Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A11111112800000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1111111280000000000000C /* Aura */ = {
+			isa = PBXGroup;
+			children = (
+				F001 /* AuraApp.swift */,
+				F017 /* Assets.xcassets */,
+				G001 /* Shared */,
+				G002 /* iOS */,
+				G003 /* macOS */,
+				A1111111280000000000000E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1111111280000000000000E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1111111280000000000000D /* Aura.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		G001 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				F018 /* GoogleService-Info.plist */,
+				F002 /* MediaItem.swift */,
+				F003 /* APIClient.swift */,
+				F004 /* AudioSessionManager.swift */,
+				F005 /* AVPlayerManager.swift */,
+				F006 /* GlassCard.swift */,
+				F007 /* SquircleButton.swift */,
+				F008 /* CustomToolbar.swift */,
+				F009 /* HeroCarouselView.swift */,
+				F010 /* MediaRailView.swift */,
+				F011 /* MainFeedView.swift */,
+				F012 /* VideoPlayerView.swift */,
+				F013 /* CustomPlayerHUD.swift */,
+				F014 /* PictureInPictureController.swift */,
+			);
+			name = Shared;
+			sourceTree = "<group>";
+		};
+		G002 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				F015 /* iOSHapticsManager.swift */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		G003 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				F016 /* MacOSWindowControls.swift */,
+			);
+			name = macOS;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A11111112800000000000002 /* Aura */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11111112800000000000007 /* Build configuration list for PBXNativeTarget "Aura" */;
+			buildPhases = (
+				A11111112800000000000003 /* Sources */,
+				A11111112800000000000004 /* Frameworks */,
+				A11111112800000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Aura;
+			productName = Aura;
+			productReference = A1111111280000000000000D /* Aura.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A11111112800000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					A11111112800000000000002 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = A11111112800000000000006 /* Build configuration list for PBXProject "Aura" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1111111280000000000000C /* Aura */;
+			productRefGroup = A1111111280000000000000E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A11111112800000000000002 /* Aura */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A11111112800000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B017 /* Assets.xcassets in Resources */,
+				B018 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A11111112800000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B001 /* AuraApp.swift in Sources */,
+				B002 /* MediaItem.swift in Sources */,
+				B003 /* APIClient.swift in Sources */,
+				B004 /* AudioSessionManager.swift in Sources */,
+				B005 /* AVPlayerManager.swift in Sources */,
+				B006 /* GlassCard.swift in Sources */,
+				B007 /* SquircleButton.swift in Sources */,
+				B008 /* CustomToolbar.swift in Sources */,
+				B009 /* HeroCarouselView.swift in Sources */,
+				B010 /* MediaRailView.swift in Sources */,
+				B011 /* MainFeedView.swift in Sources */,
+				B012 /* VideoPlayerView.swift in Sources */,
+				B013 /* CustomPlayerHUD.swift in Sources */,
+				B014 /* PictureInPictureController.swift in Sources */,
+				B015 /* iOSHapticsManager.swift in Sources */,
+				B016 /* MacOSWindowControls.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A11111112800000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_PROTOTHERREADS = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A11111112800000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_PROTOTHERREADS = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		A1111111280000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Aura;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aura.app.aura;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+			};
+			name = Debug;
+		};
+		A1111111280000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Aura;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aura.app.aura;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A11111112800000000000006 /* Build configuration list for PBXProject "Aura" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11111112800000000000008 /* Debug */,
+				A11111112800000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11111112800000000000007 /* Build configuration list for PBXNativeTarget "Aura" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1111111280000000000000A /* Debug */,
+				A1111111280000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A11111112800000000000001 /* Project object */;
+}

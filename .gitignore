@@ -1,84 +1,65 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
+# ==========================================
+# Operating System Artifacts
+# ==========================================
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Firebase & Auth Credentials
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-ios/firebase_app_id_file.json
-macos/Runner/GoogleService-Info.plist
-macos/firebase_app_id_file.json
-.firebase/
-firebase-debug.log*
-
-# Environment Variables
+# ==========================================
+# Secrets & Environment Configurations
+# ==========================================
 .env
 .env.*
 !.env.example
+*.key
+*.pem
 
-# Keystores & Android local configs
-*.keystore
-*.jks
-android/local.properties
-android/.gradle/
+# ==========================================
+# Flutter / Dart (aura-flutter)
+# ==========================================
+aura-flutter/.dart_tool/
+aura-flutter/.flutter-plugins
+aura-flutter/.flutter-plugins-dependencies
+aura-flutter/.packages
+aura-flutter/build/
+aura-flutter/ephemeral/
+aura-flutter/.pub-cache/
+aura-flutter/.pub/
+aura-flutter/android/.gradle/
+aura-flutter/android/local.properties
+aura-flutter/android/captures/
+aura-flutter/android/gradle/
+aura-flutter/android/app/build/
+aura-flutter/ios/Pods/
+aura-flutter/ios/.symlinks/
+aura-flutter/ios/Flutter/Flutter.podspec
+aura-flutter/ios/Flutter/Generated.xcconfig
+aura-flutter/macos/Pods/
+aura-flutter/macos/.symlinks/
+aura-flutter/macos/Flutter/ephemeral/
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
+# ==========================================
+# Swift / Apple Platforms (aura-swift)
+# ==========================================
+aura-swift/**/xcuserdata/
+aura-swift/**/*.xcscmblueprint
+aura-swift/**/.build/
+aura-swift/build/
+aura-swift/DerivedData/
+aura-swift/*.xcodeproj/project.xcworkspace/xcuserdata/
+aura-swift/*.xcodeproj/xcuserdata/
+aura-swift/*.xcworkspace/xcuserdata/
+
+# ==========================================
+# IDEs & Developer Tooling
+# ==========================================
 .idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
-
-# Pods & Xcode build cache
-ios/Pods/
-macos/Pods/
-*.xcworkspace
 .vscode/
-
-# Symbolication related
-app.*.symbols
-build/app/outputs/symbols/
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/build/
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# Widget Preview related
-.widget_preview/
-
-# Agent scratchpads & task trackers
-tasks_*.md
-tasks/
-tasks_todo.md
-tasks_lessons.md
-
+*.swp
+*~
+*.sublime-project
+*.sublime-workspace
