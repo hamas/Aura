@@ -6,11 +6,18 @@
 *.jpg binary
 *.plist text
 
-# GitHub Linguist Overrides (Ensure Swift is prominent & generated files ignored)
+# GitHub Linguist Overrides
+# Exclude platform runners, build configurations, and locks
 aura-flutter/ios/** linguist-vendored
 aura-flutter/macos/** linguist-vendored
 aura-flutter/android/** linguist-vendored
-aura-flutter/web_addon_directory/** linguist-documentation
 *.lock linguist-generated
 *.xcworkspacedata linguist-generated
 *.pbxproj linguist-generated
+
+# Exclude large auxiliary Dart files to balance language statistics
+aura-flutter/test/** linguist-vendored
+aura-flutter/web_addon_directory/** linguist-vendored
+aura-flutter/docs/** linguist-documentation
+aura-flutter/**/*.g.dart linguist-generated
+aura-flutter/**/*.freezed.dart linguist-generated
