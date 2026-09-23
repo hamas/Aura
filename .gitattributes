@@ -2,22 +2,29 @@
 * text=auto eol=lf
 *.swift text diff=swift
 *.dart text diff=dart
+*.html text diff=html
+*.js text diff=javascript
+*.kt text diff=kotlin
+*.cpp text diff=cpp
 *.png binary
 *.jpg binary
 *.plist text
 
-# GitHub Linguist Overrides
-# Exclude platform runners, build configurations, and locks
-aura-flutter/ios/** linguist-vendored
-aura-flutter/macos/** linguist-vendored
-aura-flutter/android/** linguist-vendored
+# ----------------------------------------------------
+# GitHub Linguist: Force Exposure of All Core Languages
+# ----------------------------------------------------
+
+# Un-vendor platform implementations so native code is counted
+aura-flutter/android/** -linguist-vendored
+aura-flutter/web_addon_directory/** -linguist-vendored
+
+# Force GitHub to count Web Addon technologies on the Language Bar
+*.html linguist-detectable=true
+*.js linguist-detectable=true
+*.css linguist-detectable=true
+
+# Keep machine-generated build metadata and lockfiles excluded
 *.lock linguist-generated
 *.xcworkspacedata linguist-generated
 *.pbxproj linguist-generated
-
-# Exclude large auxiliary Dart files to balance language statistics
-aura-flutter/test/** linguist-vendored
-aura-flutter/web_addon_directory/** linguist-vendored
-aura-flutter/docs/** linguist-documentation
-aura-flutter/**/*.g.dart linguist-generated
-aura-flutter/**/*.freezed.dart linguist-generated
+aura-flutter/.metadata linguist-generated
