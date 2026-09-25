@@ -151,16 +151,7 @@ public struct MainFeedView: View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 28) {
                 if isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.2)
-                            .accentColor(.white)
-                        Text("Loading Live Catalog...")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(height: 350)
-                    .frame(maxWidth: .infinity)
+                    LoadingView(title: "Loading Live Catalog...", minHeight: 350)
                 } else if isError {
                     VStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")

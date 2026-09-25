@@ -39,6 +39,9 @@
 		B032 /* CastMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = F032 /* CastMember.swift */; };
 		B033 /* StreamOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = F033 /* StreamOption.swift */; };
 		B034 /* MediaDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F034 /* MediaDetailsView.swift */; };
+		B035 /* FilterPillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F035 /* FilterPillButton.swift */; };
+		B036 /* MediaGridCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F036 /* MediaGridCardView.swift */; };
+		B037 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F037 /* LoadingView.swift */; };
 		B017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F017 /* Assets.xcassets */; };
 		B018 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F018 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -77,6 +80,9 @@
 		F032 /* CastMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/CastMember.swift; sourceTree = "<group>"; };
 		F033 /* StreamOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/StreamOption.swift; sourceTree = "<group>"; };
 		F034 /* MediaDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Details/MediaDetailsView.swift; sourceTree = "<group>"; };
+		F035 /* FilterPillButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/FilterPillButton.swift; sourceTree = "<group>"; };
+		F036 /* MediaGridCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/MediaGridCardView.swift; sourceTree = "<group>"; };
+		F037 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/LoadingView.swift; sourceTree = "<group>"; };
 		F017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F018 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Shared/Config/GoogleService-Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -138,9 +144,15 @@
 				F026 /* MoviesView.swift */,
 				F027 /* UltraHDView.swift */,
 				F028 /* FavoritesView.swift */,
+				F029 /* ProgressiveBlurView.swift */,
+				F030 /* StreamResolverService.swift */,
+				F031 /* LocalTorrentProxyEngine.swift */,
 				F032 /* CastMember.swift */,
 				F033 /* StreamOption.swift */,
 				F034 /* MediaDetailsView.swift */,
+				F035 /* FilterPillButton.swift */,
+				F036 /* MediaGridCardView.swift */,
+				F037 /* LoadingView.swift */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -263,6 +275,9 @@
 				B032 /* CastMember.swift in Sources */,
 				B033 /* StreamOption.swift in Sources */,
 				B034 /* MediaDetailsView.swift in Sources */,
+				B035 /* FilterPillButton.swift in Sources */,
+				B036 /* MediaGridCardView.swift in Sources */,
+				B037 /* LoadingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

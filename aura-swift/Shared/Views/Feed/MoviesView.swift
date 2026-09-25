@@ -33,37 +33,14 @@ public struct MoviesView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(genres, id: \.self) { genre in
-                                Button(action: {
+                                FilterPillButton(
+                                    title: genre,
+                                    isSelected: selectedGenre == genre
+                                ) {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         selectedGenre = genre
                                     }
-                                }) {
-                                    Text(genre)
-                                        .font(.callout.weight(.semibold))
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 7)
-                                        .background(
-                                            Group {
-                                                if selectedGenre == genre {
-                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                        .fill(Color.white.opacity(0.20))
-                                                        .overlay(
-                                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                                .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                                                        )
-                                                } else {
-                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                        .fill(.ultraThinMaterial)
-                                                        .overlay(
-                                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                                        )
-                                                }
-                                            }
-                                        )
-                                        .foregroundColor(selectedGenre == genre ? .white : .secondary)
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
@@ -72,9 +49,7 @@ public struct MoviesView: View {
                 .padding(.top, 20)
                 
                 if isLoading {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                        .frame(maxWidth: .infinity, minHeight: 300)
+                    LoadingView()
                 } else {
                     // Featured Rails
                     MediaRailView(

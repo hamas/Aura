@@ -38,29 +38,16 @@ public struct FavoritesView: View {
                 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 200), spacing: 20)], spacing: 24) {
                     ForEach(MediaItem.sampleRailItems) { item in
-                        Button(action: {
+                        MediaGridCardView(item: item, action: {
                             if let onSelect = onSelectItem {
                                 onSelect(item)
                             } else {
                                 playerManager.loadMedia(item)
                             }
                         }) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ZStack(alignment: .topTrailing) {
-                                    AsyncImage(url: item.posterURL) { phase in
-                                        if let image = phase.image {
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(height: 240)
-                                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                        } else {
-                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .fill(Color(white: 0.15))
-                                                .frame(height: 240)
-                                        }
-                                    }
-                                    
+                            VStack {
+                                HStack {
+                                    Spacer()
                                     Image(systemName: "heart.fill")
                                         .foregroundColor(.red.opacity(0.9))
                                         .padding(8)
@@ -68,23 +55,9 @@ public struct FavoritesView: View {
                                         .clipShape(Circle())
                                         .padding(8)
                                 }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                )
-                                
-                                Text(item.title)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                
-                                Text(item.subtitle)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
+                                Spacer()
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .padding(.horizontal, 24)

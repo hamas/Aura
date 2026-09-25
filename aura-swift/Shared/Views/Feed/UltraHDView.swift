@@ -53,9 +53,7 @@ public struct UltraHDView: View {
                 .padding(.top, 20)
                 
                 if isLoading {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                        .frame(maxWidth: .infinity, minHeight: 300)
+                    LoadingView()
                 } else {
                     // 4K Rails
                     MediaRailView(

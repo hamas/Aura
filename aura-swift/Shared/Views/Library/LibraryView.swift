@@ -36,37 +36,14 @@ public struct LibraryView: View {
                     
                     HStack(spacing: 10) {
                         ForEach(LibraryFilter.allCases) { filter in
-                            Button(action: {
+                            FilterPillButton(
+                                title: filter.rawValue,
+                                isSelected: selectedFilter == filter
+                            ) {
                                 withAnimation(.easeInOut(duration: 0.2)) {
                                     selectedFilter = filter
                                 }
-                            }) {
-                                Text(filter.rawValue)
-                                    .font(.callout.weight(.semibold))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Group {
-                                            if selectedFilter == filter {
-                                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                    .fill(Color.white.opacity(0.20))
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                            .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                                                    )
-                                            } else {
-                                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                    .fill(.ultraThinMaterial)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                                    )
-                                            }
-                                        }
-                                    )
-                                    .foregroundColor(selectedFilter == filter ? .white : .secondary)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
@@ -76,59 +53,25 @@ public struct LibraryView: View {
                 // Grid of Items
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 200), spacing: 20)], spacing: 24) {
                     ForEach(MediaItem.sampleRailItems) { item in
-                        Button(action: {
+                        MediaGridCardView(item: item, action: {
                             if let onSelect = onSelectItem {
                                 onSelect(item)
                             } else {
                                 playerManager.loadMedia(item)
                             }
                         }) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ZStack(alignment: .bottomLeading) {
-                                    AsyncImage(url: item.posterURL) { phase in
-                                        if let image = phase.image {
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(height: 240)
-                                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                        } else {
-                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .fill(Color(white: 0.15))
-                                                .frame(height: 240)
-                                        }
-                                    }
-                                    
-                                    // Continue Watching Progress Bar Overlay
-                                    if selectedFilter == .continueWatching {
-                                        VStack {
-                                            Spacer()
-                                            ProgressView(value: 0.65)
-                                                .accentColor(.white)
-                                                .padding(8)
-                                                .background(.ultraThinMaterial)
-                                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                                .padding(8)
-                                        }
-                                    }
+                            if selectedFilter == .continueWatching {
+                                VStack {
+                                    Spacer()
+                                    ProgressView(value: 0.65)
+                                        .accentColor(.white)
+                                        .padding(8)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                        .padding(8)
                                 }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                )
-                                
-                                Text(item.title)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                
-                                Text(item.subtitle)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .padding(.horizontal, 24)
