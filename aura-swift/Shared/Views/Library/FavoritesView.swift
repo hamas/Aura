@@ -2,13 +2,14 @@
 //  FavoritesView.swift
 //  Aura
 //
-//  User Bookmarked & Favorite Titles View.
+//  User Bookmarked & Favorite Titles View with Live Persistence.
 //
 
 import SwiftUI
 
 public struct FavoritesView: View {
     @EnvironmentObject private var playerManager: AVPlayerManager
+    @ObservedObject private var bookmarkManager = BookmarkManager.shared
     var onSelectItem: ((MediaItem) -> Void)? = nil
     
     public init(onSelectItem: ((MediaItem) -> Void)? = nil) {
@@ -18,6 +19,7 @@ public struct FavoritesView: View {
     public var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
+                // Header
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
                         Image(systemName: "heart.fill")
@@ -36,31 +38,53 @@ public struct FavoritesView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
                 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 200), spacing: 20)], spacing: 24) {
-                    ForEach(MediaItem.sampleRailItems) { item in
-                        MediaGridCardView(item: item, action: {
-                            if let onSelect = onSelectItem {
-                                onSelect(item)
-                            } else {
-                                playerManager.loadMedia(item)
-                            }
-                        }) {
-                            VStack {
-                                HStack {
-                                    Spacer()
-                                    Image(systemName: "heart.fill")
-                                        .foregroundColor(.red.opacity(0.9))
-                                        .padding(8)
-                                        .background(.ultraThinMaterial)
-                                        .clipShape(Circle())
-                                        .padding(8)
+                // Content Grid
+                if bookmarkManager.favorites.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "heart.slash")
+                            .font(.system(size: 44))
+                            .foregroundColor(.secondary)
+                        Text("No Favorite Titles Saved")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Text("Tap the heart icon on any movie or series to bookmark it here.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 280)
+                    .padding(.horizontal, 24)
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 200), spacing: 20)], spacing: 24) {
+                        ForEach(bookmarkManager.favorites) { item in
+                            MediaGridCardView(item: item, action: {
+                                if let onSelect = onSelectItem {
+                                    onSelect(item)
+                                } else {
+                                    playerManager.loadMedia(item)
                                 }
-                                Spacer()
+                            }) {
+                                VStack {
+                                    HStack {
+                                        Spacer()
+                                        Button(action: {
+                                            bookmarkManager.toggleFavorite(item)
+                                        }) {
+                                            Image(systemName: "heart.fill")
+                                                .foregroundColor(.red.opacity(0.9))
+                                                .padding(8)
+                                                .background(.ultraThinMaterial)
+                                                .clipShape(Circle())
+                                                .padding(8)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                    Spacer()
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
             }
             .padding(.bottom, 40)
         }

@@ -71,7 +71,7 @@ struct AVPlayerRepresentable: UIViewRepresentable {
         init(player: AVPlayer) {
             super.init(frame: .zero)
             playerLayer.player = player
-            playerLayer.videoGravity = .resizeAspectFill
+            playerLayer.videoGravity = .resizeAspect
         }
         
         required init?(coder: NSCoder) { fatalError() }
@@ -91,7 +91,7 @@ struct AVPlayerRepresentable: NSViewRepresentable {
         let playerView = AVPlayerView()
         playerView.player = player
         playerView.controlsStyle = .none
-        playerView.videoGravity = .resizeAspectFill
+        playerView.videoGravity = .resizeAspect
         return playerView
     }
     
@@ -108,4 +108,3 @@ struct AVPlayerRepresentable: NSViewRepresentable {
         .environmentObject(AVPlayerManager())
         .frame(width: 800, height: 500)
 }
-

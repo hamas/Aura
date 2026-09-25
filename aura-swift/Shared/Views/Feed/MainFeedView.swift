@@ -17,7 +17,6 @@ public struct MainFeedView: View {
     @State private var trendingItems: [MediaItem] = []
     @State private var popularMovies: [MediaItem] = []
     @State private var gridMovies: [MediaItem] = []
-    @State private var searchResults: [MediaItem] = []
     @State private var selectedDetailsItem: MediaItem? = nil
     @State private var currentPage: Int = 1
     @State private var isLoading: Bool = true
@@ -46,8 +45,8 @@ public struct MainFeedView: View {
                         .ignoresSafeArea(.all, edges: .top)
                     
                     // Floating Mute Action Button in Top-Right Corner (Apple TV Style)
-                    Button(action: {}) {
-                        Image(systemName: "speaker.slash.fill")
+                    Button(action: { playerManager.toggleMute() }) {
+                        Image(systemName: playerManager.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white.opacity(0.9))
                             .padding(9)
@@ -109,7 +108,11 @@ public struct MainFeedView: View {
         #if os(macOS)
         switch selectedSidebarSection ?? .home {
         case .search:
-            searchResultsFeed
+            SearchView(searchText: $searchText, onSelectItem: { item in
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedDetailsItem = item
+                }
+            })
         case .home:
             mainContentFeed
         case .clips:
@@ -118,14 +121,20 @@ public struct MainFeedView: View {
                     selectedDetailsItem = item
                 }
             })
-        case .movies, .tvShows:
-            MoviesView(onSelectItem: { item in
+        case .movies:
+            MoviesView(mode: .movies, onSelectItem: { item in
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedDetailsItem = item
+                }
+            })
+        case .tvShows:
+            MoviesView(mode: .tvShows, onSelectItem: { item in
                 withAnimation(.easeInOut(duration: 0.25)) {
                     selectedDetailsItem = item
                 }
             })
         case .categories:
-            UltraHDView(onSelectItem: { item in
+            CategoriesView(onSelectItem: { item in
                 withAnimation(.easeInOut(duration: 0.25)) {
                     selectedDetailsItem = item
                 }
@@ -142,8 +151,14 @@ public struct MainFeedView: View {
             })
         case .downloads:
             DownloadsView()
-        case .watchlist, .history:
-            LibraryView(onSelectItem: { item in
+        case .watchlist:
+            LibraryView(initialFilter: .watchlist, onSelectItem: { item in
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedDetailsItem = item
+                }
+            })
+        case .history:
+            LibraryView(initialFilter: .history, onSelectItem: { item in
                 withAnimation(.easeInOut(duration: 0.25)) {
                     selectedDetailsItem = item
                 }
@@ -259,48 +274,11 @@ public struct MainFeedView: View {
             await loadLiveData()
         }
         .onChange(of: searchText) { _, newQuery in
-            Task {
-                if !newQuery.isEmpty {
-                    #if os(macOS)
-                    selectedSidebarSection = .search
-                    #endif
-                    searchResults = (try? await APIClient.shared.search(query: newQuery)) ?? []
-                }
+            if !newQuery.isEmpty {
+                #if os(macOS)
+                selectedSidebarSection = .search
+                #endif
             }
-        }
-    }
-    
-    private var searchResultsFeed: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Search Results for '\(searchText)'")
-                    .font(.title2.weight(.bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                
-                if searchResults.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondary)
-                        Text("No titles matching '\(searchText)'")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 300)
-                } else {
-                    MediaRailView(
-                        title: "Results",
-                        items: searchResults
-                    ) { selected in
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            selectedDetailsItem = selected
-                        }
-                    }
-                }
-            }
-            .padding(.bottom, 60)
         }
     }
     

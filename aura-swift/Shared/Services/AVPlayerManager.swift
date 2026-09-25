@@ -16,6 +16,7 @@ public final class AVPlayerManager: ObservableObject {
     @Published public private(set) var currentItem: MediaItem?
     @Published public private(set) var streamState: StreamState = .idle
     @Published public var isPlaying: Bool = false
+    @Published public var isMuted: Bool = false
     @Published public var currentTime: Double = 0
     @Published public var duration: Double = 0
     @Published public var isBuffering: Bool = false
@@ -88,6 +89,7 @@ public final class AVPlayerManager: ObservableObject {
         } else {
             let newPlayer = AVPlayer(playerItem: playerItem)
             newPlayer.automaticallyWaitsToMinimizeStalling = true
+            newPlayer.isMuted = isMuted
             self.player = newPlayer
         }
         
@@ -120,9 +122,8 @@ public final class AVPlayerManager: ObservableObject {
     }
     
     public func toggleMute() {
-        if let player = player {
-            player.isMuted.toggle()
-        }
+        isMuted.toggle()
+        player?.isMuted = isMuted
     }
     
     public func seek(by delta: Double) {

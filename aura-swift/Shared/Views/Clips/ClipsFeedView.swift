@@ -81,6 +81,29 @@ public struct ClipsFeedView: View {
                         .id(currentClip.id)
                         .ignoresSafeArea()
                     
+                    // Invisible buttons for macOS Up/Down Arrow keyboard navigation
+                    VStack {
+                        Button("") {
+                            if currentIndex > 0 {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    currentIndex -= 1
+                                }
+                            }
+                        }
+                        .keyboardShortcut(.upArrow, modifiers: [])
+                        
+                        Button("") {
+                            if currentIndex < clips.count - 1 {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    currentIndex += 1
+                                }
+                            }
+                        }
+                        .keyboardShortcut(.downArrow, modifiers: [])
+                    }
+                    .frame(width: 0, height: 0)
+                    .opacity(0)
+                    
                     // Liquid Glass Overlay Control Bar
                     VStack {
                         // Top Bar: Navigation & Title
@@ -93,7 +116,7 @@ public struct ClipsFeedView: View {
                                         .font(.headline.weight(.bold))
                                         .foregroundColor(.white)
                                 }
-                                Text("Discover trending trailers in full 4K HDR")
+                                Text("Discover trending trailers in full 4K HDR (Use ↑ ↓ arrow keys)")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -182,6 +205,7 @@ public struct ClipsFeedView: View {
                                 Button(action: {
                                     let current = isSaved[currentClip.id] ?? false
                                     isSaved[currentClip.id] = !current
+                                    BookmarkManager.shared.toggleFavorite(currentClip.mediaItem)
                                 }) {
                                     VStack(spacing: 4) {
                                         Image(systemName: (isSaved[currentClip.id] ?? false) ? "bookmark.fill" : "bookmark")

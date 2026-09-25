@@ -2,22 +2,29 @@
 //  MoviesView.swift
 //  Aura
 //
-//  Movies & TV Shows Dedicated Catalog View with genre filters and media rails.
+//  Movies & TV Shows Dedicated Catalog View with mode support and genre filters.
 //
 
 import SwiftUI
 
+public enum MoviesViewMode {
+    case movies
+    case tvShows
+}
+
 public struct MoviesView: View {
     @EnvironmentObject private var playerManager: AVPlayerManager
+    public let mode: MoviesViewMode
     @State private var selectedGenre: String = "All Genres"
-    @State private var movies: [MediaItem] = []
-    @State private var series: [MediaItem] = []
+    @State private var items: [MediaItem] = []
+    @State private var popularItems: [MediaItem] = []
     @State private var isLoading: Bool = true
     
     var onSelectItem: ((MediaItem) -> Void)? = nil
     let genres = ["All Genres", "Action", "Sci-Fi", "Drama", "Animation", "Thriller", "Comedy"]
     
-    public init(onSelectItem: ((MediaItem) -> Void)? = nil) {
+    public init(mode: MoviesViewMode = .movies, onSelectItem: ((MediaItem) -> Void)? = nil) {
+        self.mode = mode
         self.onSelectItem = onSelectItem
     }
     
@@ -26,9 +33,15 @@ public struct MoviesView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // Header & Genre Selector
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("Movies & TV Shows")
-                        .font(.title.weight(.bold))
-                        .foregroundColor(.white)
+                    HStack(spacing: 10) {
+                        Image(systemName: mode == .movies ? "film.fill" : "tv.fill")
+                            .font(.title2)
+                            .foregroundColor(Color(red: 0/255, green: 122/255, blue: 255/255))
+                        
+                        Text(mode == .movies ? "Movies Catalog" : "TV Series & Shows")
+                            .font(.title.weight(.bold))
+                            .foregroundColor(.white)
+                    }
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
@@ -49,12 +62,12 @@ public struct MoviesView: View {
                 .padding(.top, 20)
                 
                 if isLoading {
-                    LoadingView()
+                    LoadingView(title: mode == .movies ? "Loading Movies..." : "Loading TV Series...", minHeight: 350)
                 } else {
                     // Featured Rails
                     MediaRailView(
-                        title: "Trending Blockbusters",
-                        items: filteredItems(movies)
+                        title: mode == .movies ? "Trending Movies" : "Trending TV Series",
+                        items: filteredItems(items)
                     ) { item in
                         if let onSelect = onSelectItem {
                             onSelect(item)
@@ -64,8 +77,8 @@ public struct MoviesView: View {
                     }
                     
                     MediaRailView(
-                        title: "Top Rated Series",
-                        items: filteredItems(series)
+                        title: mode == .movies ? "Top Popular Releases" : "Popular Bingeable Shows",
+                        items: filteredItems(popularItems)
                     ) { item in
                         if let onSelect = onSelectItem {
                             onSelect(item)
@@ -82,22 +95,28 @@ public struct MoviesView: View {
         }
     }
     
-    private func filteredItems(_ items: [MediaItem]) -> [MediaItem] {
+    private func filteredItems(_ rawItems: [MediaItem]) -> [MediaItem] {
         if selectedGenre == "All Genres" {
-            return items.isEmpty ? MediaItem.sampleRailItems : items
+            return rawItems.isEmpty ? MediaItem.sampleRailItems : rawItems
         }
-        let filtered = items.filter { $0.genres.contains(selectedGenre) }
-        return filtered.isEmpty ? items : filtered
+        let filtered = rawItems.filter { $0.genres.contains(selectedGenre) }
+        return filtered.isEmpty ? rawItems : filtered
     }
     
     private func loadCatalog() async {
         isLoading = true
         do {
-            async let fetchedMovies = APIClient.shared.fetchTrendingMovies()
-            async let fetchedSeries = APIClient.shared.fetchTrendingSeries()
-            
-            self.movies = try await fetchedMovies
-            self.series = try await fetchedSeries
+            if mode == .movies {
+                async let fetchedTrending = APIClient.shared.fetchTrendingMovies()
+                async let fetchedPopular = APIClient.shared.fetchPopularMovies()
+                self.items = try await fetchedTrending
+                self.popularItems = try await fetchedPopular
+            } else {
+                async let fetchedTrendingSeries = APIClient.shared.fetchTrendingSeries()
+                async let fetchedPopularSeries = APIClient.shared.fetchPopularSeries()
+                self.items = try await fetchedTrendingSeries
+                self.popularItems = try await fetchedPopularSeries
+            }
             self.isLoading = false
         } catch {
             self.isLoading = false
@@ -109,7 +128,7 @@ public struct MoviesView: View {
     ZStack {
         Color(red: 13/255, green: 14/255, blue: 18/255)
             .ignoresSafeArea()
-        MoviesView()
+        MoviesView(mode: .tvShows)
             .environmentObject(AVPlayerManager())
     }
     .frame(width: 900, height: 600)
