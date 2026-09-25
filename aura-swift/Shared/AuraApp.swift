@@ -28,7 +28,6 @@ struct AuraApp: App {
         }
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unified)
         #endif
     }
 }

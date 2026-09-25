@@ -14,6 +14,7 @@ public struct SquircleButton: View {
     let action: () -> Void
     
     @State private var isPressed: Bool = false
+    @State private var isHovered: Bool = false
     
     public init(
         title: String,
@@ -37,32 +38,62 @@ public struct SquircleButton: View {
             HStack(spacing: 8) {
                 if let icon = iconName {
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.subheadline.weight(.bold))
                 }
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.subheadline.weight(.semibold))
             }
             .foregroundColor(isPrimary ? .black : .white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
             .background(
                 Group {
                     if isPrimary {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.white)
+                            .fill(isHovered ? Color.white.opacity(0.92) : Color.white)
+                            .shadow(color: Color.white.opacity(isHovered ? 0.25 : 0.0), radius: 10, x: 0, y: 4)
                     } else {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(.thinMaterial)
+                            .fill(isHovered ? .regularMaterial : .thinMaterial)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    .strokeBorder(
+                                        LinearGradient(
+                                            colors: [
+                                                isHovered ? Color.white.opacity(0.4) : Color.white.opacity(0.2),
+                                                Color.white.opacity(0.05)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
                             )
                     }
                 }
             )
-            .scaleEffect(isPressed ? 0.95 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isPressed)
+            .scaleEffect(isPressed ? 0.95 : (isHovered ? 1.03 : 1.0))
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isHovered)
+            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: isPressed)
         }
         .buttonStyle(PlainButtonStyle())
+        #if os(macOS)
+        .onHover { hovering in
+            isHovered = hovering
+        }
+        #endif
     }
 }
+
+#Preview("Squircle Buttons") {
+    ZStack {
+        Color.black.ignoresSafeArea()
+        HStack(spacing: 16) {
+            SquircleButton(title: "Play Now", iconName: "play.fill", isPrimary: true) {}
+            SquircleButton(title: "Watch Trailer", iconName: "film", isPrimary: false) {}
+        }
+        .padding()
+    }
+}
+
+

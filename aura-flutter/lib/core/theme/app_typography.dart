@@ -20,18 +20,7 @@ class AppTypography {
     required double letterSpacing,
     required double height,
   }) {
-    if (GoogleFonts.config.allowRuntimeFetching) {
-      return GoogleFonts.plusJakartaSans(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-        letterSpacing: letterSpacing,
-        height: height,
-      );
-    }
     return TextStyle(
-      fontFamily: fontFamily,
-      fontFamilyFallback: fontFamilyFallback,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,

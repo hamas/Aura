@@ -14,13 +14,13 @@ public final class AudioSessionManager {
     private init() {}
     
     public func configurePlaybackSession() {
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(
                 .playback,
                 mode: .moviePlayback,
-                options: [.allowAirPlay, .allowBluetoothHFP, .mixWithOthers]
+                options: [.allowAirPlay, .allowBluetoothHFP]
             )
             try session.setActive(true)
         } catch {

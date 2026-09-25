@@ -75,6 +75,11 @@ struct AVPlayerRepresentable: UIViewRepresentable {
         }
         
         required init?(coder: NSCoder) { fatalError() }
+        
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            playerLayer.frame = bounds
+        }
     }
 }
 #else
@@ -82,33 +87,25 @@ struct AVPlayerRepresentable: NSViewRepresentable {
     let player: AVPlayer
     var onLayerReady: ((AVPlayerLayer) -> Void)?
     
-    func makeNSView(context: Context) -> PlayerNSView {
-        let view = PlayerNSView(player: player)
-        onLayerReady?(view.playerLayer)
-        return view
+    func makeNSView(context: Context) -> AVPlayerView {
+        let playerView = AVPlayerView()
+        playerView.player = player
+        playerView.controlsStyle = .none
+        playerView.videoGravity = .resizeAspectFill
+        return playerView
     }
     
-    func updateNSView(_ nsView: PlayerNSView, context: Context) {
-        nsView.playerLayer.player = player
-    }
-    
-    final class PlayerNSView: NSView {
-        let playerLayer = AVPlayerLayer()
-        
-        init(player: AVPlayer) {
-            super.init(frame: .zero)
-            self.wantsLayer = true
-            playerLayer.player = player
-            playerLayer.videoGravity = .resizeAspectFill
-            self.layer?.addSublayer(playerLayer)
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+        if nsView.player != player {
+            nsView.player = player
         }
-        
-        override func layout() {
-            super.layout()
-            playerLayer.frame = self.bounds
-        }
-        
-        required init?(coder: NSCoder) { fatalError() }
     }
 }
 #endif
+
+#Preview("Video Player View") {
+    VideoPlayerView()
+        .environmentObject(AVPlayerManager())
+        .frame(width: 800, height: 500)
+}
+

@@ -2,7 +2,7 @@
 //  AVPlayerManager.swift
 //  Aura
 //
-//  Hardware-accelerated AVPlayer manager with battery optimization & HUD idle timer.
+//  Hardware-accelerated AVPlayer manager with hybrid stream resolver & telemetry diagnostics.
 //
 
 import Foundation
@@ -14,6 +14,7 @@ import SwiftUI
 public final class AVPlayerManager: ObservableObject {
     @Published public private(set) var player: AVPlayer?
     @Published public private(set) var currentItem: MediaItem?
+    @Published public private(set) var streamState: StreamState = .idle
     @Published public var isPlaying: Bool = false
     @Published public var currentTime: Double = 0
     @Published public var duration: Double = 0
@@ -24,14 +25,62 @@ public final class AVPlayerManager: ObservableObject {
     private var timeObserverToken: Any?
     private var cancellables = Set<AnyCancellable>()
     private var hudHideTask: Task<Void, Never>?
+    private var streamResolveTask: Task<Void, Never>?
     
     public init() {}
     
-    public func loadMedia(_ item: MediaItem) {
-        self.currentItem = item
-        let playerItem = AVPlayerItem(url: item.streamURL)
+    public func loadMedia(_ item: MediaItem, magnetURL: String? = nil) {
+        let defaultOption = item.streamOptions.first
+        loadStream(item: item, option: defaultOption ?? StreamOption(
+            id: "\(item.id)-default",
+            quality: "1080p HD",
+            resolution: "1920x1080",
+            codec: "H.264",
+            audio: "AAC 2.0",
+            size: "4.5 GB",
+            seeders: 95,
+            leechers: 8,
+            provider: "⚡️ Real-Debrid CDN",
+            streamURL: item.streamURL,
+            magnetURL: magnetURL
+        ))
+    }
+    
+    public func loadStream(item: MediaItem, option: StreamOption) {
+        print("🎬 [TRIGGER] User selected stream option '\(option.quality)' for '\(item.title)'")
+        print("🎬 [TRIGGER] Target Stream URL: \(option.streamURL), Provider: \(option.provider)")
         
-        // Configure low-latency & high dynamic range preferences
+        stopAndReset()
+        self.currentItem = item
+        self.streamState = .resolving(provider: option.provider)
+        
+        setupPlayerWithURL(option.streamURL)
+        
+        if let magnet = option.magnetURL, !magnet.isEmpty {
+            streamResolveTask = Task {
+                let resolvedURL = await StreamResolverService.shared.resolve(
+                    mediaItem: item,
+                    magnetURLOrHash: magnet,
+                    onStateChange: { [weak self] state in
+                        Task { @MainActor in
+                            self?.streamState = state
+                        }
+                    }
+                )
+                
+                if !Task.isCancelled && resolvedURL != option.streamURL {
+                    print("⚡️ [RESOLVER] Switching player to resolved stream: \(resolvedURL)")
+                    self.setupPlayerWithURL(resolvedURL)
+                }
+            }
+        } else {
+            self.streamState = .playing(url: option.streamURL, isDebrid: true)
+        }
+    }
+    
+    private func setupPlayerWithURL(_ url: URL) {
+        print("▶️ [PLAYER] Initializing AVPlayerItem with URL: \(url)")
+        let playerItem = AVPlayerItem(url: url)
         playerItem.preferredForwardBufferDuration = 10.0
         
         if let existingPlayer = player {
@@ -48,12 +97,14 @@ public final class AVPlayerManager: ObservableObject {
     }
     
     public func play() {
+        print("▶️ [PLAYER] Play command executed.")
         player?.play()
         isPlaying = true
         resetHUDTimer()
     }
     
     public func pause() {
+        print("▶️ [PLAYER] Pause command executed.")
         player?.pause()
         isPlaying = false
         showHUD = true
@@ -69,6 +120,7 @@ public final class AVPlayerManager: ObservableObject {
     }
     
     public func seek(to seconds: Double) {
+        print("▶️ [PLAYER] Seeking to \(seconds)s...")
         let time = CMTime(seconds: seconds, preferredTimescale: 600)
         player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
             Task { @MainActor in
@@ -97,15 +149,22 @@ public final class AVPlayerManager: ObservableObject {
     }
     
     public func stopAndReset() {
+        print("▶️ [PLAYER] Stopping player and releasing media resources.")
         pause()
+        streamResolveTask?.cancel()
+        streamResolveTask = nil
+        
         if let token = timeObserverToken {
             player?.removeTimeObserver(token)
             timeObserverToken = nil
         }
         player = nil
         currentItem = nil
+        streamState = .idle
         cancellables.removeAll()
         hudHideTask?.cancel()
+        
+        LocalTorrentProxyEngine.shared.stopActiveStream()
     }
     
     private func setupObservers() {
@@ -119,13 +178,29 @@ public final class AVPlayerManager: ObservableObject {
             }
         }
         
-        // Observe status & duration
+        // Observe status & failure diagnostics
         player.publisher(for: \.currentItem?.status)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
-                guard let self = self, status == .readyToPlay else { return }
-                if let itemDuration = player.currentItem?.duration.seconds, !itemDuration.isNaN {
-                    self.duration = itemDuration
+                guard let self = self, let status = status else { return }
+                print("▶️ [PLAYER] AVPlayerItem status: \(status.rawValue)")
+                
+                switch status {
+                case .readyToPlay:
+                    print("✅ [PLAYER] AVPlayerItem is readyToPlay!")
+                    if let itemDuration = player.currentItem?.duration.seconds, !itemDuration.isNaN {
+                        self.duration = itemDuration
+                    }
+                case .failed:
+                    let errorDesc = player.currentItem?.error?.localizedDescription ?? "Media decoding error"
+                    print("❌ [PLAYER] AVPlayerItem FAILED: \(errorDesc)")
+                    self.streamState = .failed(error: errorDesc)
+                    self.isBuffering = false
+                    self.isPlaying = false
+                case .unknown:
+                    print("ℹ️ [PLAYER] AVPlayerItem status unknown")
+                @unknown default:
+                    break
                 }
             }
             .store(in: &cancellables)
@@ -134,7 +209,19 @@ public final class AVPlayerManager: ObservableObject {
         player.publisher(for: \.currentItem?.isPlaybackLikelyToKeepUp)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] likelyToKeepUp in
-                self?.isBuffering = !(likelyToKeepUp ?? true)
+                let isBuf = !(likelyToKeepUp ?? true)
+                self?.isBuffering = isBuf
+                print("▶️ [PLAYER] Playback likely to keep up: \(likelyToKeepUp ?? false)")
+            }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                if let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error {
+                    print("❌ [PLAYER] Notification error: \(error.localizedDescription)")
+                    self?.streamState = .failed(error: error.localizedDescription)
+                }
             }
             .store(in: &cancellables)
     }
