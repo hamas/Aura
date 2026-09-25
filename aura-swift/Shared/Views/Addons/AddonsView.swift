@@ -2,31 +2,16 @@
 //  AddonsView.swift
 //  Aura
 //
-//  Addons, Community Extensions & Media Provider Catalogs.
+//  Addons, Community Extensions & Media Provider Catalogs with Stremio v3 Engine.
 //
 
 import SwiftUI
 
-public struct AddonItem: Identifiable {
-    public let id = UUID()
-    public let name: String
-    public let version: String
-    public let description: String
-    public let iconName: String
-    public let manifestURL: String
-    public var isInstalled: Bool
-}
-
 public struct AddonsView: View {
+    @ObservedObject private var addonManager = StremioAddonManager.shared
+    @AppStorage("realDebridApiKey") private var realDebridApiKey: String = ""
+    @AppStorage("torBoxApiKey") private var torBoxApiKey: String = ""
     @State private var customManifestURL: String = ""
-    @State private var installMessage: String = ""
-    @State private var addons: [AddonItem] = [
-        AddonItem(name: "Torrentio Provider", version: "v0.0.14", description: "Scrapes movie & series torrent streams from public indexes with Debrid cache support.", iconName: "bolt.horizontal.fill", manifestURL: "https://torrentio.strem.fun/manifest.json", isInstalled: true),
-        AddonItem(name: "Stremio Cinemeta Catalog", version: "v3.0.4", description: "Official movie and series metadata provider with IMDb/TMDB ratings & clearart logos.", iconName: "film.stack.fill", manifestURL: "https://v3-cinemeta.strem.io/manifest.json", isInstalled: true),
-        AddonItem(name: "OpenSubtitles v3", version: "v1.8.2", description: "Multi-language automated subtitle downloader and sync offset engine.", iconName: "captions.bubble.fill", manifestURL: "https://opensubtitles.strem.fun/manifest.json", isInstalled: true),
-        AddonItem(name: "CyberFlix Catalog", version: "v1.4.1", description: "Extended Netflix, Disney+, Apple TV+, and HBO Max discovery catalogs.", iconName: "tv.fill", manifestURL: "https://cyberflix.strem.fun/manifest.json", isInstalled: true),
-        AddonItem(name: "AnimeKitsu Provider", version: "v1.2.0", description: "Anime catalog scraper and episode release tracker.", iconName: "sparkles.tv.fill", manifestURL: "https://kitsu.strem.fun/manifest.json", isInstalled: false)
-    ]
     
     public init() {}
     
@@ -58,7 +43,7 @@ public struct AddonsView: View {
                     }
                     
                     HStack(spacing: 12) {
-                        TextField("Paste Stremio manifest.json HTTPS URL...", text: $customManifestURL)
+                        TextField("Paste Stremio manifest.json or stremio:// URL...", text: $customManifestURL)
                             .textFieldStyle(PlainTextFieldStyle())
                             .font(.subheadline)
                             .padding(.horizontal, 14)
@@ -70,23 +55,37 @@ public struct AddonsView: View {
                                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
                             )
                         
-                        Button("Install") {
-                            installCustomAddon()
+                        Button(action: {
+                            Task {
+                                let url = customManifestURL
+                                let success = await addonManager.installCustomAddon(urlInput: url)
+                                if success {
+                                    customManifestURL = ""
+                                }
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                if addonManager.isSearchingAddon {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                }
+                                Text("Install")
+                            }
+                            .font(.subheadline.weight(.bold))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
-                        .font(.subheadline.weight(.bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         .buttonStyle(PlainButtonStyle())
-                        .disabled(customManifestURL.isEmpty)
+                        .disabled(customManifestURL.isEmpty || addonManager.isSearchingAddon)
                     }
                     
-                    if !installMessage.isEmpty {
-                        Text(installMessage)
+                    if !addonManager.lastStatusMessage.isEmpty {
+                        Text(addonManager.lastStatusMessage)
                             .font(.caption)
-                            .foregroundColor(installMessage.contains("Success") ? .green : .yellow)
+                            .foregroundColor(addonManager.lastStatusMessage.contains("Successfully") ? .green : (addonManager.lastStatusMessage.contains("Failed") ? .red : .yellow))
                     }
                 }
                 .padding(18)
@@ -100,9 +99,27 @@ public struct AddonsView: View {
                 
                 // 2. Engine Hub Status Banner
                 HStack(spacing: 16) {
-                    engineStatusBadge(name: "Debrid Unrestricting", status: "Active", icon: "bolt.fill", color: .green)
-                    engineStatusBadge(name: "Stremio v3 Parser", status: "Online", icon: "puzzlepiece.fill", color: .blue)
-                    engineStatusBadge(name: "Torrent Proxy", status: "Ready", icon: "arrow.down.circle.fill", color: .purple)
+                    let debridActive = !realDebridApiKey.isEmpty || !torBoxApiKey.isEmpty
+                    engineStatusBadge(
+                        name: "Debrid Engine",
+                        status: debridActive ? "Active (\(realDebridApiKey.isEmpty ? "TorBox" : "Real-Debrid"))" : "Not Configured",
+                        icon: "bolt.fill",
+                        color: debridActive ? .green : .yellow
+                    )
+                    
+                    engineStatusBadge(
+                        name: "Stremio v3 Engine",
+                        status: "\(addonManager.installedAddons.filter(\.isInstalled).count) Add-ons Online",
+                        icon: "puzzlepiece.fill",
+                        color: .blue
+                    )
+                    
+                    engineStatusBadge(
+                        name: "Torrent Proxy",
+                        status: "Local Node Ready",
+                        icon: "arrow.down.circle.fill",
+                        color: .purple
+                    )
                 }
                 .padding(.horizontal, 24)
                 
@@ -114,14 +131,14 @@ public struct AddonsView: View {
                         .padding(.horizontal, 24)
                     
                     VStack(spacing: 12) {
-                        ForEach($addons) { $addon in
+                        ForEach(addonManager.installedAddons) { addon in
                             HStack(spacing: 16) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                         .fill(Color.white.opacity(0.12))
                                         .frame(width: 48, height: 48)
                                     
-                                    Image(systemName: addon.iconName)
+                                    Image(systemName: addon.icon ?? "puzzlepiece.extension.fill")
                                         .font(.title2)
                                         .foregroundColor(.white.opacity(0.9))
                                 }
@@ -151,7 +168,7 @@ public struct AddonsView: View {
                                 
                                 Button(action: {
                                     withAnimation(.easeInOut(duration: 0.2)) {
-                                        addon.isInstalled.toggle()
+                                        addonManager.toggleAddonInstalled(addon)
                                     }
                                 }) {
                                     HStack(spacing: 6) {
@@ -212,21 +229,6 @@ public struct AddonsView: View {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
-    }
-    
-    private func installCustomAddon() {
-        guard !customManifestURL.isEmpty else { return }
-        let newAddon = AddonItem(
-            name: "Custom Manifest",
-            version: "v1.0.0",
-            description: customManifestURL,
-            iconName: "puzzlepiece.extension.fill",
-            manifestURL: customManifestURL,
-            isInstalled: true
-        )
-        addons.insert(newAddon, at: 0)
-        installMessage = "Successfully installed manifest!"
-        customManifestURL = ""
     }
 }
 

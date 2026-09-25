@@ -218,159 +218,16 @@ public final class APIClient {
         }
     }
     
-    // MARK: - Torrentio & Real-Debrid Stream Scraper
+    // MARK: - Stremio Addons & Debrid Stream Aggregator
     
     public func fetchStreams(imdbId: String?, title: String, year: String, type: String = "movie") async -> [StreamOption] {
-        guard let imdb = imdbId, !imdb.isEmpty else {
-            return generateFallbackStreams(title: title, year: year)
-        }
-        
-        let torrentioEndpoint = "https://torrentio.strem.fun/stream/\(type)/\(imdb).json"
-        guard let url = URL(string: torrentioEndpoint) else {
-            return generateFallbackStreams(title: title, year: year)
-        }
-        
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 6.0
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        
-        do {
-            let (data, response) = try await session.data(for: request)
-            guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode),
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let streamsRaw = json["streams"] as? [[String: Any]], !streamsRaw.isEmpty else {
-                return generateFallbackStreams(title: title, year: year)
-            }
-            
-            var options: [StreamOption] = []
-            for (idx, s) in streamsRaw.prefix(8).enumerated() {
-                let name = (s["name"] as? String) ?? "Torrentio"
-                let rawTitle = (s["title"] as? String) ?? title
-                let infoHash = s["infoHash"] as? String
-                let directUrlStr = s["url"] as? String
-                
-                // Parse quality & resolution
-                let combined = "\(name) \(rawTitle)".lowercased()
-                let resolution: String
-                let quality: String
-                if combined.contains("4k") || combined.contains("2160p") || combined.contains("uhd") {
-                    resolution = "3840x2160"
-                    quality = combined.contains("remux") ? "4K REMUX 2160p" : (combined.contains("hdr") ? "4K HDR 2160p" : "4K Ultra HD")
-                } else if combined.contains("1080p") || combined.contains("fhd") {
-                    resolution = "1920x1080"
-                    quality = combined.contains("remux") ? "1080p REMUX" : (combined.contains("web") ? "1080p Web-DL" : "1080p HD")
-                } else if combined.contains("720p") {
-                    resolution = "1280x720"
-                    quality = "720p HD"
-                } else {
-                    resolution = "1920x1080"
-                    quality = "HD 1080p"
-                }
-                
-                // Codec & HDR
-                var codec = "H.264 / AVC"
-                if combined.contains("hevc") || combined.contains("h.265") || combined.contains("x265") {
-                    codec = combined.contains("hdr") ? "HEVC • HDR10" : "HEVC • 10-Bit"
-                } else if combined.contains("av1") {
-                    codec = "AV1 • Next-Gen"
-                }
-                
-                // Audio
-                var audio = "5.1 Surround"
-                if combined.contains("atmos") {
-                    audio = "Dolby Atmos 7.1"
-                } else if combined.contains("7.1") || combined.contains("truehd") {
-                    audio = "TrueHD 7.1"
-                } else if combined.contains("dts") {
-                    audio = "DTS-HD 5.1"
-                } else if combined.contains("aac") {
-                    audio = "AAC 2.0 / 5.1"
-                }
-                
-                // Size & Seeders from Title text (e.g. "👤 142 💾 4.5 GB")
-                var size = "3.2 GB"
-                if let sizeRange = rawTitle.range(of: "💾\\s*([0-9\\.]+\\s*(?:GB|MB))", options: .regularExpression) {
-                    let sub = rawTitle[sizeRange].replacingOccurrences(of: "💾", with: "").trimmingCharacters(in: .whitespaces)
-                    size = sub
-                }
-                
-                var seeders = 85
-                if let seedRange = rawTitle.range(of: "👤\\s*([0-9]+)", options: .regularExpression) {
-                    let seedDigits = rawTitle[seedRange].components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
-                    if let sInt = Int(seedDigits) {
-                        seeders = sInt
-                    }
-                }
-                
-                let magnetURL = infoHash != nil ? "magnet:?xt=urn:btih:\(infoHash!)&dn=\(title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "media")" : nil
-                let playableURL = directUrlStr != nil ? (URL(string: directUrlStr!) ?? URL(string: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8")!) : URL(string: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8")!
-                
-                let isCached = combined.contains("rd+") || combined.contains("⚡") || combined.contains("debrid")
-                let provider = isCached ? "⚡️ Real-Debrid CDN" : "🔄 Torrentio P2P"
-                
-                options.append(StreamOption(
-                    id: "stream-\(imdb)-\(idx)",
-                    quality: quality,
-                    resolution: resolution,
-                    codec: codec,
-                    audio: audio,
-                    size: size,
-                    seeders: seeders,
-                    leechers: max(2, seeders / 12),
-                    provider: provider,
-                    streamURL: playableURL,
-                    magnetURL: magnetURL
-                ))
-            }
-            
-            return options.isEmpty ? generateFallbackStreams(title: title, year: year) : options
-        } catch {
-            return generateFallbackStreams(title: title, year: year)
-        }
-    }
-    
-    private func generateFallbackStreams(title: String, year: String) -> [StreamOption] {
-        return [
-            StreamOption(
-                id: "stream-fb-4k",
-                quality: "4K UHD Web-DL",
-                resolution: "3840x2160",
-                codec: "HEVC • Dolby Vision",
-                audio: "Dolby Atmos 7.1",
-                size: "18.4 GB",
-                seeders: 312,
-                leechers: 24,
-                provider: "⚡️ Real-Debrid CDN",
-                streamURL: URL(string: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8")!,
-                magnetURL: "magnet:?xt=urn:btih:fallback4khash1234567890abcdef"
-            ),
-            StreamOption(
-                id: "stream-fb-1080p",
-                quality: "1080p Full HD",
-                resolution: "1920x1080",
-                codec: "HEVC • 10-Bit Color",
-                audio: "EAC3 5.1 Surround",
-                size: "6.2 GB",
-                seeders: 184,
-                leechers: 15,
-                provider: "⚡️ Real-Debrid CDN",
-                streamURL: URL(string: "https://vjs.zencdn.net/v/oceans.mp4")!,
-                magnetURL: "magnet:?xt=urn:btih:fallback1080phash1234567890abcdef"
-            ),
-            StreamOption(
-                id: "stream-fb-720p",
-                quality: "720p HD Standard",
-                resolution: "1280x720",
-                codec: "H.264 / AVC",
-                audio: "AAC 2.0",
-                size: "2.1 GB",
-                seeders: 72,
-                leechers: 6,
-                provider: "🔄 Native P2P Swarm",
-                streamURL: URL(string: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8")!,
-                magnetURL: "magnet:?xt=urn:btih:fallback720phash1234567890abcdef"
-            )
-        ]
+        return await StremioAddonManager.shared.fetchAggregatedStreams(
+            type: type,
+            id: imdbId ?? "",
+            imdbId: imdbId,
+            title: title,
+            year: year
+        )
     }
 }
 

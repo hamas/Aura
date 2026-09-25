@@ -46,6 +46,7 @@
 		B039 /* BookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F039 /* BookmarkManager.swift */; };
 		B040 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* SearchView.swift */; };
 		B041 /* CategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* CategoriesView.swift */; };
+		B042 /* StremioAddonManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F042 /* StremioAddonManager.swift */; };
 		B017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F017 /* Assets.xcassets */; };
 		B018 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F018 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -91,6 +92,7 @@
 		F039 /* BookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/BookmarkManager.swift; sourceTree = "<group>"; };
 		F040 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/SearchView.swift; sourceTree = "<group>"; };
 		F041 /* CategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/CategoriesView.swift; sourceTree = "<group>"; };
+		F042 /* StremioAddonManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/StremioAddonManager.swift; sourceTree = "<group>"; };
 		F017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F018 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Shared/Config/GoogleService-Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -165,6 +167,7 @@
 				F039 /* BookmarkManager.swift */,
 				F040 /* SearchView.swift */,
 				F041 /* CategoriesView.swift */,
+				F042 /* StremioAddonManager.swift */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -294,6 +297,7 @@
 				B039 /* BookmarkManager.swift in Sources */,
 				B040 /* SearchView.swift in Sources */,
 				B041 /* CategoriesView.swift in Sources */,
+				B042 /* StremioAddonManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
