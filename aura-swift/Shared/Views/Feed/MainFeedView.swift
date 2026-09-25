@@ -112,6 +112,12 @@ public struct MainFeedView: View {
             searchResultsFeed
         case .home:
             mainContentFeed
+        case .clips:
+            ClipsFeedView(onSelectMedia: { item in
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedDetailsItem = item
+                }
+            })
         case .movies, .tvShows:
             MoviesView(onSelectItem: { item in
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -124,6 +130,10 @@ public struct MainFeedView: View {
                     selectedDetailsItem = item
                 }
             })
+        case .watchTogether:
+            WatchTogetherView()
+        case .addons:
+            AddonsView()
         case .wishlist:
             FavoritesView(onSelectItem: { item in
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -138,6 +148,8 @@ public struct MainFeedView: View {
                     selectedDetailsItem = item
                 }
             })
+        case .profile:
+            ProfileView()
         case .settings:
             SettingsView()
         }

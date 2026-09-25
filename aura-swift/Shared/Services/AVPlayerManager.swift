@@ -119,6 +119,17 @@ public final class AVPlayerManager: ObservableObject {
         }
     }
     
+    public func toggleMute() {
+        if let player = player {
+            player.isMuted.toggle()
+        }
+    }
+    
+    public func seek(by delta: Double) {
+        let newTime = max(0, currentTime + delta)
+        seek(to: newTime)
+    }
+    
     public func seek(to seconds: Double) {
         print("▶️ [PLAYER] Seeking to \(seconds)s...")
         let time = CMTime(seconds: seconds, preferredTimescale: 600)

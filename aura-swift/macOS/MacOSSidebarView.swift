@@ -11,9 +11,14 @@ import SwiftUI
 public enum SidebarSection: String, CaseIterable, Identifiable, Hashable {
     case search = "Search"
     case home = "Home"
+    case clips = "Clips"
     case movies = "Movies"
     case tvShows = "TV Shows"
     case categories = "Categories"
+    
+    // Social & Extensions
+    case watchTogether = "Watch Together"
+    case addons = "Add-ons"
     
     // Library
     case wishlist = "Wishlist"
@@ -21,6 +26,7 @@ public enum SidebarSection: String, CaseIterable, Identifiable, Hashable {
     case watchlist = "Watchlist"
     case history = "History"
     
+    case profile = "Profile"
     case settings = "Settings"
     
     public var id: String { rawValue }
@@ -29,15 +35,20 @@ public enum SidebarSection: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .search: return "magnifyingglass"
         case .home: return "house"
+        case .clips: return "film.stack"
         case .movies: return "film"
         case .tvShows: return "tv"
         case .categories: return "square.grid.2x2"
+            
+        case .watchTogether: return "person.2.wave.2"
+        case .addons: return "puzzlepiece"
             
         case .wishlist: return "heart"
         case .downloads: return "arrow.down.circle"
         case .watchlist: return "bookmark"
         case .history: return "clock"
             
+        case .profile: return "person.crop.circle"
         case .settings: return "gearshape"
         }
     }
@@ -67,6 +78,9 @@ public struct MacOSSidebarView: View {
                     SidebarRowButton(section: .home, isSelected: selectedSection == .home) {
                         selectedSection = .home
                     }
+                    SidebarRowButton(section: .clips, isSelected: selectedSection == .clips) {
+                        selectedSection = .clips
+                    }
                     SidebarRowButton(section: .movies, isSelected: selectedSection == .movies) {
                         selectedSection = .movies
                     }
@@ -77,12 +91,27 @@ public struct MacOSSidebarView: View {
                         selectedSection = .categories
                     }
                     
+                    // Social & Protocol Addons Section Header
+                    Text("Ecosystem")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 14)
+                        .padding(.top, 14)
+                        .padding(.bottom, 4)
+                    
+                    SidebarRowButton(section: .watchTogether, isSelected: selectedSection == .watchTogether) {
+                        selectedSection = .watchTogether
+                    }
+                    SidebarRowButton(section: .addons, isSelected: selectedSection == .addons) {
+                        selectedSection = .addons
+                    }
+                    
                     // Library Section Header
                     Text("Library")
                         .font(.caption.weight(.bold))
                         .foregroundColor(.secondary)
                         .padding(.leading, 14)
-                        .padding(.top, 16)
+                        .padding(.top, 14)
                         .padding(.bottom, 4)
                     
                     // Library Navigation Items
@@ -107,22 +136,28 @@ public struct MacOSSidebarView: View {
             Divider()
                 .background(Color.white.opacity(0.1))
             
-            // Bottom Sidebar Footer: Aura Logo & Settings Button
+            // Bottom Sidebar Footer: Profile Avatar & Settings Button
             HStack(spacing: 10) {
-                Image("AuraLogo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 26, height: 26)
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                    )
-                
-                Text("Aura")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+                Button(action: {
+                    selectedSection = .profile
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(selectedSection == .profile ? Color(red: 255/255, green: 45/255, blue: 85/255) : .white)
+                        
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Hamas")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                            Text("Primary Profile")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
                 
                 Spacer()
                 

@@ -28,6 +28,38 @@ struct AuraApp: App {
         }
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)
+        .commands {
+            CommandMenu("Playback") {
+                Button("Play / Pause") {
+                    playerManager.togglePlayPause()
+                }
+                .keyboardShortcut(.space, modifiers: [])
+                
+                Button("Toggle Mute") {
+                    playerManager.toggleMute()
+                }
+                .keyboardShortcut("m", modifiers: [.command])
+                
+                Divider()
+                
+                Button("Seek Forward 10s") {
+                    playerManager.seek(by: 10)
+                }
+                .keyboardShortcut(.rightArrow, modifiers: [])
+                
+                Button("Seek Backward 10s") {
+                    playerManager.seek(by: -10)
+                }
+                .keyboardShortcut(.leftArrow, modifiers: [])
+            }
+            
+            CommandGroup(replacing: .windowList) {
+                Button("Toggle Full Screen") {
+                    MacOSWindowControls.shared.toggleFullScreen()
+                }
+                .keyboardShortcut("f", modifiers: [.command])
+            }
+        }
         #endif
     }
 }

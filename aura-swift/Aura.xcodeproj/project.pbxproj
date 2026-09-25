@@ -42,6 +42,7 @@
 		B035 /* FilterPillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F035 /* FilterPillButton.swift */; };
 		B036 /* MediaGridCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F036 /* MediaGridCardView.swift */; };
 		B037 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F037 /* LoadingView.swift */; };
+		B038 /* ClipsFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F038 /* ClipsFeedView.swift */; };
 		B017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F017 /* Assets.xcassets */; };
 		B018 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F018 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -83,6 +84,7 @@
 		F035 /* FilterPillButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/FilterPillButton.swift; sourceTree = "<group>"; };
 		F036 /* MediaGridCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/MediaGridCardView.swift; sourceTree = "<group>"; };
 		F037 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/LoadingView.swift; sourceTree = "<group>"; };
+		F038 /* ClipsFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Clips/ClipsFeedView.swift; sourceTree = "<group>"; };
 		F017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F018 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Shared/Config/GoogleService-Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -153,6 +155,7 @@
 				F035 /* FilterPillButton.swift */,
 				F036 /* MediaGridCardView.swift */,
 				F037 /* LoadingView.swift */,
+				F038 /* ClipsFeedView.swift */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -278,6 +281,7 @@
 				B035 /* FilterPillButton.swift in Sources */,
 				B036 /* MediaGridCardView.swift in Sources */,
 				B037 /* LoadingView.swift in Sources */,
+				B038 /* ClipsFeedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
