@@ -274,7 +274,20 @@ public final class StremioAddonManager: ObservableObject {
     }
     
     private func fetchStreamsFromAddon(addon: AddonManifest, type: String, id: String, mediaTitle: String) async -> [StreamOption] {
-        let baseUrl = addon.transportUrl.replacingOccurrences(of: "/manifest.json", with: "")
+        var baseUrl = addon.transportUrl.replacingOccurrences(of: "/manifest.json", with: "")
+        
+        // If this is Torrentio and user configured Real-Debrid / TorBox in Settings, inject the token
+        if addon.transportUrl.contains("torrentio.strem.fun") && !addon.transportUrl.contains("realdebrid=") && !addon.transportUrl.contains("torbox=") {
+            let rdKey = UserDefaults.standard.string(forKey: "realDebridApiKey")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let tbKey = UserDefaults.standard.string(forKey: "torBoxApiKey")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            
+            if !rdKey.isEmpty {
+                baseUrl = "https://torrentio.strem.fun/realdebrid=\(rdKey)"
+            } else if !tbKey.isEmpty {
+                baseUrl = "https://torrentio.strem.fun/torbox=\(tbKey)"
+            }
+        }
+        
         let endpoint = "\(baseUrl)/stream/\(type)/\(id).json"
         
         guard let url = URL(string: endpoint) else { return [] }

@@ -98,7 +98,8 @@ public actor StreamResolverService {
     }
     
     private func tryResolveDebrid(magnet: String) async -> URL? {
-        guard let key = apiKey, !key.isEmpty else {
+        let key = apiKey ?? UserDefaults.standard.string(forKey: "realDebridApiKey")?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let validKey = key, !validKey.isEmpty else {
             print("ℹ️ [RESOLVER] No Debrid API token configured.")
             return nil
         }
@@ -114,7 +115,7 @@ public actor StreamResolverService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(validKey)", forHTTPHeaderField: "Authorization")
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
