@@ -17,6 +17,7 @@ public struct MainFeedView: View {
     @State private var trendingItems: [MediaItem] = []
     @State private var popularMovies: [MediaItem] = []
     @State private var gridMovies: [MediaItem] = []
+    @State private var selectedCategoryFilter: MediaCategoryFilter = .all
     @State private var selectedDetailsItem: MediaItem? = nil
     @State private var currentPage: Int = 1
     @State private var isLoading: Bool = true
@@ -101,6 +102,9 @@ public struct MainFeedView: View {
                     .zIndex(10)
             }
         }
+        #if os(macOS)
+        .enableNetflixKeyboardShortcuts()
+        #endif
     }
     
     @ViewBuilder
@@ -200,12 +204,28 @@ public struct MainFeedView: View {
                     .frame(height: 350)
                     .frame(maxWidth: .infinity)
                 } else {
+                    // Sticky Glassmorphic Category Filter Bar
+                    StickyCategoryFilterBar(selectedFilter: $selectedCategoryFilter)
+                    
                     // Auto-scrolling Hero Carousel Banner without top margin
                     HeroCarouselView(items: trendingItems.isEmpty ? [heroItem] : trendingItems) { selected in
                         withAnimation(.easeInOut(duration: 0.25)) {
                             selectedDetailsItem = selected
                         }
                     }
+                    
+                    // Top 10 Numbered Content Rail
+                    TopTenRailView(
+                        items: trendingItems.isEmpty ? MediaItem.sampleRailItems : trendingItems,
+                        onSelect: { selected in
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                selectedDetailsItem = selected
+                            }
+                        },
+                        onPlay: { selected in
+                            playerManager.loadMedia(selected)
+                        }
+                    )
                     
                     MediaRailView(
                         title: "Trending Movies & Shows",
@@ -225,7 +245,7 @@ public struct MainFeedView: View {
                         }
                     }
                     
-                    // Infinite Grid of Movies
+                    // Infinite Grid of Movies with Desktop Hover Expansion Cards
                     VStack(alignment: .leading, spacing: 18) {
                         HStack {
                             Text("Explore All Movies & Shows")
@@ -233,17 +253,37 @@ public struct MainFeedView: View {
                                 .foregroundColor(.white)
                             Spacer()
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 28)
                         
                         LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: 165, maximum: 220), spacing: 20)],
+                            columns: [GridItem(.adaptive(minimum: 175, maximum: 220), spacing: 20)],
                             spacing: 24
                         ) {
                             ForEach(gridMovies) { movie in
-                                MediaCardItemView(item: movie) {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        selectedDetailsItem = movie
+                                Group {
+                                    #if os(macOS)
+                                    DesktopHoverCardView(
+                                        item: movie,
+                                        width: 175,
+                                        onSelect: {
+                                            withAnimation(.easeInOut(duration: 0.25)) {
+                                                selectedDetailsItem = movie
+                                            }
+                                        },
+                                        onPlay: {
+                                            playerManager.loadMedia(movie)
+                                        },
+                                        onToggleWatchlist: {
+                                            AuraDataStore.shared.toggleWatchlist(movie)
+                                        }
+                                    )
+                                    #else
+                                    MediaCardItemView(item: movie) {
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            selectedDetailsItem = movie
+                                        }
                                     }
+                                    #endif
                                 }
                                 .onAppear {
                                     if movie.id == gridMovies.last?.id {
@@ -252,7 +292,7 @@ public struct MainFeedView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 28)
                         
                         if isLoadingMore {
                             HStack {

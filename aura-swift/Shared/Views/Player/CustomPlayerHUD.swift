@@ -55,8 +55,34 @@ public struct CustomPlayerHUD: View {
                 
                 Spacer()
                 
-                // PiP & AirPlay Buttons
+                // Actions: Lock, Aspect Ratio, PiP, AirPlay
                 HStack(spacing: 16) {
+                    #if os(iOS)
+                    // Screen Lock Toggle Button (iOS)
+                    Button(action: {
+                        iOSHapticsManager.shared.triggerImpact(.medium)
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            playerManager.isScreenLocked = true
+                        }
+                    }) {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // Aspect Ratio Cycle Button
+                    Button(action: {
+                        iOSHapticsManager.shared.triggerImpact(.light)
+                        playerManager.cycleAspectRatioMode()
+                    }) {
+                        Image(systemName: "aspectratio")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    #endif
+                    
                     if pipController.isPiPSupported {
                         Button(action: {
                             pipController.togglePiP()
@@ -169,8 +195,41 @@ public struct CustomPlayerHUD: View {
             
             Spacer()
             
-            // Bottom Scrubber Bar
-            VStack(spacing: 8) {
+            // Middle: Seek Ripple Feedback Overlay or Playback State
+            if let rippleText = playerManager.seekRippleText {
+                SeekRippleOverlay(text: rippleText)
+            }
+            
+            Spacer()
+            
+            // Overlays Layer: Smart Skip & Next Episode Binge Countdown
+            HStack {
+                // Smart Skip Button (Intro / Recap)
+                if let interval = playerManager.activeInterval {
+                    SmartSkipButton(interval: interval) {
+                        playerManager.skipCurrentInterval()
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+                }
+                
+                Spacer()
+                
+                // Next Episode Glassmorphic Countdown
+                if playerManager.showNextEpisodeCountdown {
+                    NextEpisodeCountdownOverlay(
+                        remainingSeconds: playerManager.remainingCountdownSeconds,
+                        nextEpisodeTitle: "Next Episode",
+                        onPlayNow: { playerManager.triggerNextEpisode() },
+                        onDismiss: { playerManager.dismissNextEpisodeCountdown() }
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.bottom, 8)
+            
+            // Bottom Scrubber Bar & Quick Action Controls
+            VStack(spacing: 12) {
                 // Slider timeline scrubber
                 Slider(
                     value: Binding(
@@ -182,16 +241,87 @@ public struct CustomPlayerHUD: View {
                     ),
                     in: 0...max(1, playerManager.duration)
                 )
-                .accentColor(.white)
+                .accentColor(Color(red: 184/255, green: 119/255, blue: 255/255))
                 
-                HStack {
+                HStack(spacing: 16) {
                     Text(formatTime(playerManager.currentTime))
+                        .font(.caption.monospaced())
+                        .monospacedDigit()
+                        .foregroundColor(.secondary)
+                    
+                    Text("/")
+                        .font(.caption)
+                        .foregroundColor(.secondary.opacity(0.5))
+                    
+                    Text(formatTime(playerManager.duration))
                         .font(.caption.monospaced())
                         .monospacedDigit()
                         .foregroundColor(.secondary)
                     
                     Spacer()
                     
+                    // Episodes Drawer Toggle
+                    Button(action: {
+                        playerManager.userInteractedWithHUD()
+                        playerManager.showEpisodeDrawer.toggle()
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "list.bullet.rectangle.portrait")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Episodes")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.12))
+                        .foregroundColor(.white)
+                        .cornerRadius(6)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // Subtitles & Audio Appearance
+                    Button(action: {
+                        playerManager.userInteractedWithHUD()
+                        playerManager.showSubtitleModal.toggle()
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "captions.bubble.fill")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Subtitles")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.12))
+                        .foregroundColor(.white)
+                        .cornerRadius(6)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // Dialogue Boost Vocal EQ Toggle
+                    Button(action: {
+                        playerManager.userInteractedWithHUD()
+                        playerManager.toggleDialogueBoost()
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: playerManager.dialogueBoostEnabled ? "waveform.and.mic" : "mic.slash")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Vocal Boost")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            playerManager.dialogueBoostEnabled
+                                ? Color(red: 184/255, green: 119/255, blue: 255/255)
+                                : Color.white.opacity(0.12)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(6)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // Remaining Time
                     Text("-\(formatTime(max(0, playerManager.duration - playerManager.currentTime)))")
                         .font(.caption.monospaced())
                         .monospacedDigit()
@@ -203,6 +333,35 @@ public struct CustomPlayerHUD: View {
             .padding(.bottom, 24)
             .padding(.horizontal, 20)
         }
+        .overlay(
+            Group {
+                if playerManager.showEpisodeDrawer {
+                    ZStack {
+                        Color.black.opacity(0.5)
+                            .ignoresSafeArea()
+                            .onTapGesture { playerManager.showEpisodeDrawer = false }
+                        
+                        InPlayerEpisodeSheet {
+                            playerManager.showEpisodeDrawer = false
+                        }
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
+                
+                if playerManager.showSubtitleModal {
+                    ZStack {
+                        Color.black.opacity(0.5)
+                            .ignoresSafeArea()
+                            .onTapGesture { playerManager.showSubtitleModal = false }
+                        
+                        SubtitleCustomizerModal(config: $playerManager.subtitleConfig) {
+                            playerManager.showSubtitleModal = false
+                        }
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
+            }
+        )
         .contentShape(Rectangle())
         .onTapGesture {
             playerManager.userInteractedWithHUD()

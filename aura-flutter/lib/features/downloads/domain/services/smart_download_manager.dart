@@ -104,8 +104,10 @@ class SmartDownloadManager {
         allTasks.where((t) => t.id == completedTaskId).firstOrNull;
     if (completedTask == null) return;
 
-    // Step 1: Delete the watched episode file to reclaim vault space.
-    await _safeDelete(completedTask);
+    // Step 1: Delete the watched episode file to reclaim vault space (if autoDeleteWatched is enabled).
+    if (settings.autoDeleteWatched) {
+      await _safeDelete(completedTask);
+    }
 
     // Step 2: Check constraints before queuing next episodes.
     final vaultBytes = await _downloadRepository.getTotalStorageUsage();

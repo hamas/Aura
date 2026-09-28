@@ -19,12 +19,17 @@ public struct VideoPlayerView: View {
             Color.black.ignoresSafeArea()
             
             if let player = playerManager.player {
-                AVPlayerRepresentable(player: player) { layer in
+                AVPlayerRepresentable(
+                    player: player,
+                    aspectMode: playerManager.videoAspectRatioMode
+                ) { layer in
                     pipController.setup(with: layer)
                 }
                 .ignoresSafeArea()
                 .onTapGesture {
-                    playerManager.userInteractedWithHUD()
+                    if !playerManager.isScreenLocked {
+                        playerManager.userInteractedWithHUD()
+                    }
                 }
             }
             
@@ -35,8 +40,8 @@ public struct VideoPlayerView: View {
                     .scaleEffect(1.8)
             }
             
-            // HUD Overlay (Fades out when idling to conserve screen compositor energy during 4K/HDR)
-            if playerManager.showHUD {
+            // HUD Overlay (Fades out when idling or when screen is locked)
+            if playerManager.showHUD && !playerManager.isScreenLocked {
                 CustomPlayerHUD(pipController: pipController) {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         playerManager.stopAndReset()
@@ -44,7 +49,13 @@ public struct VideoPlayerView: View {
                 }
                 .transition(.opacity)
             }
+            
+            #if os(iOS)
+            // Screen Lock Overlay
+            PlayerScreenLockOverlay()
+            #endif
         }
+        .enableTouchPlayerGestures()
     }
 }
 
@@ -52,6 +63,7 @@ public struct VideoPlayerView: View {
 #if os(iOS)
 struct AVPlayerRepresentable: UIViewRepresentable {
     let player: AVPlayer
+    let aspectMode: AVPlayerManager.VideoAspectMode
     var onLayerReady: ((AVPlayerLayer) -> Void)?
     
     func makeUIView(context: Context) -> PlayerUIView {
@@ -62,6 +74,15 @@ struct AVPlayerRepresentable: UIViewRepresentable {
     
     func updateUIView(_ uiView: PlayerUIView, context: Context) {
         uiView.playerLayer.player = player
+        uiView.playerLayer.videoGravity = gravityForMode(aspectMode)
+    }
+    
+    private func gravityForMode(_ mode: AVPlayerManager.VideoAspectMode) -> AVLayerVideoGravity {
+        switch mode {
+        case .fit: return .resizeAspect
+        case .fill: return .resizeAspectFill
+        case .stretch: return .resize
+        }
     }
     
     final class PlayerUIView: UIView {
@@ -85,19 +106,29 @@ struct AVPlayerRepresentable: UIViewRepresentable {
 #else
 struct AVPlayerRepresentable: NSViewRepresentable {
     let player: AVPlayer
+    let aspectMode: AVPlayerManager.VideoAspectMode
     var onLayerReady: ((AVPlayerLayer) -> Void)?
     
     func makeNSView(context: Context) -> AVPlayerView {
         let playerView = AVPlayerView()
         playerView.player = player
         playerView.controlsStyle = .none
-        playerView.videoGravity = .resizeAspect
+        playerView.videoGravity = gravityForMode(aspectMode)
         return playerView
     }
     
     func updateNSView(_ nsView: AVPlayerView, context: Context) {
         if nsView.player != player {
             nsView.player = player
+        }
+        nsView.videoGravity = gravityForMode(aspectMode)
+    }
+    
+    private func gravityForMode(_ mode: AVPlayerManager.VideoAspectMode) -> AVLayerVideoGravity {
+        switch mode {
+        case .fit: return .resizeAspect
+        case .fill: return .resizeAspectFill
+        case .stretch: return .resize
         }
     }
 }

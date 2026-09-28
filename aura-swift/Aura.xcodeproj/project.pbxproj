@@ -47,6 +47,31 @@
 		B040 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F040 /* SearchView.swift */; };
 		B041 /* CategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F041 /* CategoriesView.swift */; };
 		B042 /* StremioAddonManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F042 /* StremioAddonManager.swift */; };
+		B043 /* MediaInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F043 /* MediaInterval.swift */; };
+		B044 /* SubtitleStyleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F044 /* SubtitleStyleConfig.swift */; };
+		B045 /* EpisodeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F045 /* EpisodeItem.swift */; };
+		B046 /* SmartSkipButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F046 /* SmartSkipButton.swift */; };
+		B047 /* NextEpisodeCountdownOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F047 /* NextEpisodeCountdownOverlay.swift */; };
+		B048 /* SeekRippleOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F048 /* SeekRippleOverlay.swift */; };
+		B049 /* SubtitleCustomizerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F049 /* SubtitleCustomizerModal.swift */; };
+		B050 /* InPlayerEpisodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F050 /* InPlayerEpisodeSheet.swift */; };
+		B051 /* TopTenRailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* TopTenRailView.swift */; };
+		B052 /* DesktopHoverCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F052 /* DesktopHoverCardView.swift */; };
+		B053 /* StickyCategoryFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* StickyCategoryFilterBar.swift */; };
+		B054 /* AuraDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F054 /* AuraDataStore.swift */; };
+		B055 /* TraktScrobblerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* TraktScrobblerService.swift */; };
+		B056 /* OfflineVaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F056 /* OfflineVaultManager.swift */; };
+		B057 /* MacOSKeyboardShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* MacOSKeyboardShortcutManager.swift */; };
+		B058 /* MacOSNowPlayingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F058 /* MacOSNowPlayingManager.swift */; };
+		B059 /* MobileVolumeBrightnessHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = F059 /* MobileVolumeBrightnessHUD.swift */; };
+		B060 /* TouchPlayerGesturesModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F060 /* TouchPlayerGesturesModifier.swift */; };
+		B061 /* PlayerScreenLockOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F061 /* PlayerScreenLockOverlay.swift */; };
+		B062 /* PosterLongPressPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F062 /* PosterLongPressPreviewSheet.swift */; };
+		B063 /* MobileBottomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F063 /* MobileBottomTabBar.swift */; };
+		B064 /* iPadAdaptiveNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F064 /* iPadAdaptiveNavigationView.swift */; };
+		B065 /* iOSSmartDownloadSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F065 /* iOSSmartDownloadSettingsModal.swift */; };
+		B066 /* SharePlayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F066 /* SharePlayCoordinator.swift */; };
+		B067 /* MacOSMenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F067 /* MacOSMenuBarController.swift */; };
 		B017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F017 /* Assets.xcassets */; };
 		B018 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F018 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -93,6 +118,31 @@
 		F040 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/SearchView.swift; sourceTree = "<group>"; };
 		F041 /* CategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/CategoriesView.swift; sourceTree = "<group>"; };
 		F042 /* StremioAddonManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/StremioAddonManager.swift; sourceTree = "<group>"; };
+		F043 /* MediaInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/MediaInterval.swift; sourceTree = "<group>"; };
+		F044 /* SubtitleStyleConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/SubtitleStyleConfig.swift; sourceTree = "<group>"; };
+		F045 /* EpisodeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/EpisodeItem.swift; sourceTree = "<group>"; };
+		F046 /* SmartSkipButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/SmartSkipButton.swift; sourceTree = "<group>"; };
+		F047 /* NextEpisodeCountdownOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/NextEpisodeCountdownOverlay.swift; sourceTree = "<group>"; };
+		F048 /* SeekRippleOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/SeekRippleOverlay.swift; sourceTree = "<group>"; };
+		F049 /* SubtitleCustomizerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/SubtitleCustomizerModal.swift; sourceTree = "<group>"; };
+		F050 /* InPlayerEpisodeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Player/InPlayerEpisodeSheet.swift; sourceTree = "<group>"; };
+		F051 /* TopTenRailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Feed/TopTenRailView.swift; sourceTree = "<group>"; };
+		F052 /* DesktopHoverCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/DesktopHoverCardView.swift; sourceTree = "<group>"; };
+		F053 /* StickyCategoryFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Views/Components/StickyCategoryFilterBar.swift; sourceTree = "<group>"; };
+		F054 /* AuraDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/AuraDataStore.swift; sourceTree = "<group>"; };
+		F055 /* TraktScrobblerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/TraktScrobblerService.swift; sourceTree = "<group>"; };
+		F056 /* OfflineVaultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/OfflineVaultManager.swift; sourceTree = "<group>"; };
+		F057 /* MacOSKeyboardShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOS/MacOSKeyboardShortcutManager.swift; sourceTree = "<group>"; };
+		F058 /* MacOSNowPlayingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOS/MacOSNowPlayingManager.swift; sourceTree = "<group>"; };
+		F059 /* MobileVolumeBrightnessHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/MobileVolumeBrightnessHUD.swift; sourceTree = "<group>"; };
+		F060 /* TouchPlayerGesturesModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/TouchPlayerGesturesModifier.swift; sourceTree = "<group>"; };
+		F061 /* PlayerScreenLockOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/PlayerScreenLockOverlay.swift; sourceTree = "<group>"; };
+		F062 /* PosterLongPressPreviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/PosterLongPressPreviewSheet.swift; sourceTree = "<group>"; };
+		F063 /* MobileBottomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/MobileBottomTabBar.swift; sourceTree = "<group>"; };
+		F064 /* iPadAdaptiveNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/iPadAdaptiveNavigationView.swift; sourceTree = "<group>"; };
+		F065 /* iOSSmartDownloadSettingsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS/iOSSmartDownloadSettingsModal.swift; sourceTree = "<group>"; };
+		F066 /* SharePlayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Services/SharePlayCoordinator.swift; sourceTree = "<group>"; };
+		F067 /* MacOSMenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOS/MacOSMenuBarController.swift; sourceTree = "<group>"; };
 		F017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F018 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Shared/Config/GoogleService-Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -168,6 +218,7 @@
 				F040 /* SearchView.swift */,
 				F041 /* CategoriesView.swift */,
 				F042 /* StremioAddonManager.swift */,
+				F066 /* SharePlayCoordinator.swift */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -176,6 +227,13 @@
 			isa = PBXGroup;
 			children = (
 				F015 /* iOSHapticsManager.swift */,
+				F059 /* MobileVolumeBrightnessHUD.swift */,
+				F060 /* TouchPlayerGesturesModifier.swift */,
+				F061 /* PlayerScreenLockOverlay.swift */,
+				F062 /* PosterLongPressPreviewSheet.swift */,
+				F063 /* MobileBottomTabBar.swift */,
+				F064 /* iPadAdaptiveNavigationView.swift */,
+				F065 /* iOSSmartDownloadSettingsModal.swift */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
@@ -185,6 +243,9 @@
 			children = (
 				F016 /* MacOSWindowControls.swift */,
 				F019 /* MacOSSidebarView.swift */,
+				F057 /* MacOSKeyboardShortcutManager.swift */,
+				F058 /* MacOSNowPlayingManager.swift */,
+				F067 /* MacOSMenuBarController.swift */,
 			);
 			name = macOS;
 			sourceTree = "<group>";
@@ -298,6 +359,31 @@
 				B040 /* SearchView.swift in Sources */,
 				B041 /* CategoriesView.swift in Sources */,
 				B042 /* StremioAddonManager.swift in Sources */,
+				B043 /* MediaInterval.swift in Sources */,
+				B044 /* SubtitleStyleConfig.swift in Sources */,
+				B045 /* EpisodeItem.swift in Sources */,
+				B046 /* SmartSkipButton.swift in Sources */,
+				B047 /* NextEpisodeCountdownOverlay.swift in Sources */,
+				B048 /* SeekRippleOverlay.swift in Sources */,
+				B049 /* SubtitleCustomizerModal.swift in Sources */,
+				B050 /* InPlayerEpisodeSheet.swift in Sources */,
+				B051 /* TopTenRailView.swift in Sources */,
+				B052 /* DesktopHoverCardView.swift in Sources */,
+				B053 /* StickyCategoryFilterBar.swift in Sources */,
+				B054 /* AuraDataStore.swift in Sources */,
+				B055 /* TraktScrobblerService.swift in Sources */,
+				B056 /* OfflineVaultManager.swift in Sources */,
+				B057 /* MacOSKeyboardShortcutManager.swift in Sources */,
+				B058 /* MacOSNowPlayingManager.swift in Sources */,
+				B059 /* MobileVolumeBrightnessHUD.swift in Sources */,
+				B060 /* TouchPlayerGesturesModifier.swift in Sources */,
+				B061 /* PlayerScreenLockOverlay.swift in Sources */,
+				B062 /* PosterLongPressPreviewSheet.swift in Sources */,
+				B063 /* MobileBottomTabBar.swift in Sources */,
+				B064 /* iPadAdaptiveNavigationView.swift in Sources */,
+				B065 /* iOSSmartDownloadSettingsModal.swift in Sources */,
+				B066 /* SharePlayCoordinator.swift in Sources */,
+				B067 /* MacOSMenuBarController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

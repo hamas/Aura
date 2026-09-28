@@ -1,9 +1,15 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../library/domain/entities/library_item.dart';
+import '../../../library/presentation/bloc/library_bloc.dart';
+import '../../../library/presentation/bloc/library_event.dart';
+import '../../../library/presentation/bloc/library_state.dart';
 import '../../domain/entities/media_item.dart';
 
 class BillboardHeroBanner extends StatefulWidget {
@@ -282,11 +288,123 @@ class _BillboardHeroBannerState extends State<BillboardHeroBanner> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 14.0),
 
-                // 20px space between content (genre + year) and slider dots
-                const SizedBox(height: 20.0),
+                // 4. Netflix Iconic Hero Action Buttons (My List | Play | Info)
+                BlocBuilder<LibraryBloc, LibraryState>(
+                  builder: (context, libState) {
+                    final isTv = item.type == MediaType.series;
+                    final isInWatchlist = libState.watchlist.any(
+                      (w) => w.id == item.id.toString(),
+                    );
 
-                // 4. White 50% Smaller Slider Dots
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Left: My List
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            final libBloc = context.read<LibraryBloc>();
+                            libBloc.add(
+                              ToggleWatchlistEvent(
+                                LibraryItem(
+                                  id: item.id.toString(),
+                                  title: item.title,
+                                  type: isTv ? 'series' : 'movie',
+                                  posterPath: item.posterPath,
+                                  backdropPath: item.backdropPath,
+                                  category: LibraryCategory.watchlist,
+                                  updatedAt: DateTime.now(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isInWatchlist ? Icons.check : Icons.add,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'My List',
+                                  style: TextStyle(
+                                    color: isInWatchlist ? AppColors.accentPink : Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Center: Play Button
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          onPressed: () => widget.onPlayTap?.call(item),
+                          icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 24),
+                          label: const Text(
+                            'Play',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Right: Info Button
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => widget.onDetailsTap?.call(item),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Info',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 14.0),
+
+                // 5. White Subtle Slider Dots
                 if (widget.items.length > 1)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -96,12 +96,23 @@ class MediaItem extends Equatable {
   String get fullPosterUrl =>
       posterPath != null ? '${ApiConstants.tmdbPosterW500}$posterPath' : '';
 
+  /// High-resolution poster URL tailored for desktop 1440p/4K monitors
+  String get highDefPosterUrl =>
+      posterPath != null ? '${ApiConstants.tmdbPosterW780}$posterPath' : '';
+
   String get fullBackdropUrl => backdropPath != null
       ? '${ApiConstants.tmdbBackdropW1280}$backdropPath'
       : '';
 
+  /// Ultra-HD original/w1280 backdrop URL for desktop widescreen monitors
+  String get highDefBackdropUrl => backdropPath != null
+      ? '${ApiConstants.tmdbBackdropOriginal}$backdropPath'
+      : '';
+
   String? get logoUrl =>
-      logoPath != null ? 'https://image.tmdb.org/t/p/w500$logoPath' : null;
+      logoPath != null ? 'https://image.tmdb.org/t/p/original$logoPath' : null;
+
+  String? get clearartUrl => logoUrl;
 
   List<int> get genreIds => genres.map((g) => g.id).toList();
 

@@ -370,11 +370,56 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                               ),
                             ),
 
+                          // Netflix Iconic Top 10 in Aura Today Numbered Shelf
+                          if (catalogState.trending.isNotEmpty &&
+                              _selectedFilter == MediaCategoryFilter.all)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                                child: TopTenShelf(
+                                  title: 'Top 10 in Movies & TV Today',
+                                  items: catalogState.trending,
+                                  onItemTap: _navigateToDetail,
+                                  onPlayTap: _navigateToDetail,
+                                ),
+                              ),
+                            ),
+
+                          // Top 10 Movies (When filtered to Movies)
+                          if (catalogState.trendingMovies.isNotEmpty &&
+                              _selectedFilter == MediaCategoryFilter.movies)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                                child: TopTenShelf(
+                                  title: 'Top 10 Movies Today',
+                                  items: catalogState.trendingMovies,
+                                  onItemTap: _navigateToDetail,
+                                  onPlayTap: _navigateToDetail,
+                                ),
+                              ),
+                            ),
+
+                          // Top 10 Shows (When filtered to Shows)
+                          if (catalogState.trendingSeries.isNotEmpty &&
+                              _selectedFilter == MediaCategoryFilter.tvShows)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                                child: TopTenShelf(
+                                  title: 'Top 10 TV Shows Today',
+                                  items: catalogState.trendingSeries,
+                                  onItemTap: _navigateToDetail,
+                                  onPlayTap: _navigateToDetail,
+                                ),
+                              ),
+                            ),
+
                           // 1. Latest Slider (Respects Selected Category Filter)
                           if (latestItems.isNotEmpty)
                             SliverToBoxAdapter(
                               child: HorizontalContentShelf.media(
-                                title: 'Latest',
+                                title: 'Trending Now',
                                 items: latestItems,
                                 onItemTap: _navigateToDetail,
                               ),
@@ -387,7 +432,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                                       MediaCategoryFilter.movies))
                             SliverToBoxAdapter(
                               child: HorizontalContentShelf.media(
-                                title: 'Top Movies',
+                                title: 'Blockbuster Movies',
                                 items: catalogState.trendingMovies,
                                 onItemTap: _navigateToDetail,
                               ),
@@ -400,7 +445,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                                       MediaCategoryFilter.tvShows))
                             SliverToBoxAdapter(
                               child: HorizontalContentShelf.media(
-                                title: 'Top Shows',
+                                title: 'Binge-Worthy TV Shows',
                                 items: catalogState.trendingSeries,
                                 onItemTap: _navigateToDetail,
                               ),
@@ -410,7 +455,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           if (catalogState.internationalHits.isNotEmpty)
                             SliverToBoxAdapter(
                               child: HorizontalContentShelf.media(
-                                title: 'Top International & Asian Dramas',
+                                title: 'International & Global Hits',
                                 items: catalogState.internationalHits,
                                 onItemTap: _navigateToDetail,
                               ),

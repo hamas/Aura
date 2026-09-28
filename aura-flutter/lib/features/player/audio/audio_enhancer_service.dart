@@ -3,7 +3,9 @@ import 'dart:async';
 enum AudioEnhancementMode {
   off,
   dialogueBoost,
-  nightMode;
+  nightMode,
+  surroundPassthrough,
+  audioNormalizer;
 
   String get label {
     switch (this) {
@@ -13,6 +15,10 @@ enum AudioEnhancementMode {
         return 'Dialogue Boost (+5dB)';
       case AudioEnhancementMode.nightMode:
         return 'Night Mode (DRC Limiter)';
+      case AudioEnhancementMode.surroundPassthrough:
+        return 'Surround Sound Passthrough (Bitstream)';
+      case AudioEnhancementMode.audioNormalizer:
+        return 'Dynamic Normalizer (EBU R128)';
     }
   }
 
@@ -24,6 +30,10 @@ enum AudioEnhancementMode {
         return 'Boosts human vocal frequencies (1.0 kHz - 3.2 kHz) for clear speech.';
       case AudioEnhancementMode.nightMode:
         return 'Dynamic range compression to reduce sudden loud audio peaks.';
+      case AudioEnhancementMode.surroundPassthrough:
+        return 'Direct bitstream passthrough (Dolby Digital / DTS / AC3) to external AV receivers.';
+      case AudioEnhancementMode.audioNormalizer:
+        return 'Maintains consistent volume across explosions, dialogue, and quiet scenes.';
     }
   }
 
@@ -38,6 +48,12 @@ enum AudioEnhancementMode {
       case AudioEnhancementMode.nightMode:
         // Dynamic Range Compressor (DRC) peak clamping
         return 'acompressor=threshold=-20dB:ratio=4:attack=5:release=50';
+      case AudioEnhancementMode.surroundPassthrough:
+        // Direct channel mapping for multichannel surround
+        return 'surround';
+      case AudioEnhancementMode.audioNormalizer:
+        // EBU R128 standard two-pass loudnorm/dynaudnorm
+        return 'dynaudnorm=f=150:g=15';
     }
   }
 }

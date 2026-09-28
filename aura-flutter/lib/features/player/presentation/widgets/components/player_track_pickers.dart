@@ -16,6 +16,7 @@ class PlayerTrackPickers {
     ValueChanged<SubtitleTrackInfo?>? onSelectSecondarySubtitleTrack,
     ValueChanged<double>? onSubtitleOffsetChanged,
     ValueChanged<double>? onNudgeSubtitleOffset,
+    VoidCallback? onOpenSubtitleAppearance,
   }) {
     showModalBottomSheet<void>(
       context: context,
@@ -68,6 +69,23 @@ class PlayerTrackPickers {
                       },
                     ),
                   ),
+                  if (onOpenSubtitleAppearance != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white24),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.style_outlined, size: 16, color: AppColors.accentPink),
+                        label: const Text('Subtitle Appearance & Style'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onOpenSubtitleAppearance();
+                        },
+                      ),
+                    ),
                   const Divider(color: AppColors.borderSubtle),
 
                   // Primary Subtitle Selector

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/subtitle_cue.dart';
+import '../../../domain/entities/subtitle_style_config.dart';
 
 class DualSubtitleOverlay extends StatelessWidget {
   final List<SubtitleCue> primaryCues;
@@ -7,6 +8,7 @@ class DualSubtitleOverlay extends StatelessWidget {
   final Duration currentPosition;
   final double offsetSeconds;
   final double fontScale;
+  final SubtitleStyleConfig styleConfig;
 
   const DualSubtitleOverlay({
     super.key,
@@ -15,6 +17,7 @@ class DualSubtitleOverlay extends StatelessWidget {
     required this.currentPosition,
     this.offsetSeconds = 0.0,
     this.fontScale = 1.0,
+    this.styleConfig = SubtitleStyleConfig.netflixWhite,
   });
 
   @override
@@ -49,7 +52,9 @@ class DualSubtitleOverlay extends StatelessWidget {
                   textColor: const Color(0xFFE2C4FF),
                   borderColor: const Color(0x7FB877FF),
                   backgroundColor: const Color(0xA6000000),
-                  fontSize: 14 * fontScale,
+                  fontSize: (styleConfig.fontSize - 3) * fontScale,
+                  isBold: styleConfig.isBold,
+                  hasShadow: styleConfig.hasTextShadow,
                 );
               }).toList(),
             ),
@@ -65,11 +70,13 @@ class DualSubtitleOverlay extends StatelessWidget {
               children: activePrimary.map((cue) {
                 return _SubtitleBadge(
                   text: cue.text,
-                  textColor: Colors.white,
+                  textColor: styleConfig.textColor,
                   borderColor: Colors.transparent,
-                  backgroundColor: const Color(0xBF000000),
+                  backgroundColor: styleConfig.effectiveBackgroundColor,
                   isPrimary: true,
-                  fontSize: 16 * fontScale,
+                  fontSize: styleConfig.fontSize * fontScale,
+                  isBold: styleConfig.isBold,
+                  hasShadow: styleConfig.hasTextShadow,
                 );
               }).toList(),
             ),
@@ -86,6 +93,8 @@ class _SubtitleBadge extends StatelessWidget {
   final Color backgroundColor;
   final bool isPrimary;
   final double fontSize;
+  final bool isBold;
+  final bool hasShadow;
 
   const _SubtitleBadge({
     required this.text,
@@ -94,20 +103,22 @@ class _SubtitleBadge extends StatelessWidget {
     required this.backgroundColor,
     this.isPrimary = false,
     required this.fontSize,
+    this.isBold = true,
+    this.hasShadow = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: borderColor, width: 1),
-        boxShadow: isPrimary
-            ? const [
-                BoxShadow(
+        boxShadow: hasShadow
+            ? [
+                const BoxShadow(
                   color: Color(0x80000000),
                   blurRadius: 4,
                   offset: Offset(0, 2),
@@ -121,10 +132,11 @@ class _SubtitleBadge extends StatelessWidget {
         style: TextStyle(
           color: textColor,
           fontSize: fontSize,
-          fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
           height: 1.3,
         ),
       ),
     );
   }
 }
+

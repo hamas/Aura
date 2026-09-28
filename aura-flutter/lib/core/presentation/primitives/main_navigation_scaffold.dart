@@ -7,6 +7,7 @@ import '../../services/deep_link_service.dart';
 import '../../../features/addons/presentation/bloc/addon_bloc.dart';
 import '../../../features/addons/presentation/bloc/addon_state.dart';
 import 'aura_floating_bottom_pill.dart';
+import 'aura_leanback_navigation_sidebar.dart';
 
 class MainNavigationScaffold extends StatefulWidget {
   final Widget child;
@@ -41,6 +42,17 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
+    if (location.startsWith('/search')) return 0;
+    if (location == '/') return 1;
+    if (location.startsWith('/clips')) return 2;
+    if (location.startsWith('/library')) return 3;
+    if (location.startsWith('/downloads')) return 4;
+    if (location.startsWith('/settings')) return 5;
+    return 1;
+  }
+
+  int _calculateMobileIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/clips')) {
       return 1;
     }
@@ -50,7 +62,7 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
     return 0;
   }
 
-  void _onItemTapped(int index, BuildContext context) {
+  void _onMobileItemTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
         context.go('/');
@@ -66,7 +78,10 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = _calculateSelectedIndex(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWidescreen = screenWidth >= 900;
+    final mobileIndex = _calculateMobileIndex(context);
+    final tvIndex = _calculateSelectedIndex(context);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final totalBottomBlurHeight = bottomPadding + 100.0;
 
@@ -99,75 +114,84 @@ class _MainNavigationScaffoldState extends State<MainNavigationScaffold> {
       child: Scaffold(
         extendBody: true,
         backgroundColor: AppColors.surfaceBackground,
-        body: Stack(
-          children: [
-            Positioned.fill(child: widget.child),
+        body: isWidescreen
+            ? AuraLeanbackNavigationSidebar(
+                selectedIndex: tvIndex,
+                onDestinationSelected: (_) {},
+                child: widget.child,
+              )
+            : Stack(
+                children: [
+                  Positioned.fill(child: widget.child),
 
-            // Bottom Bar Background Blur Overlay (matching top bar!)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: totalBottomBlurHeight,
-              child: ClipRect(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: ShaderMask(
-                        blendMode: BlendMode.dstIn,
-                        shaderCallback: (Rect bounds) {
-                          return const LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Color(0xFFFFFFFF),
-                              Color(0x99FFFFFF),
-                              Color(0x00FFFFFF),
-                            ],
-                            stops: [0.0, 0.60, 1.0],
-                          ).createShader(bounds);
-                        },
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
-                          child: const ColoredBox(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              AppColors.surfaceBackground.withValues(alpha: 0.51),
-                              AppColors.surfaceBackground.withValues(alpha: 0.21),
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.60, 1.0],
+                  // Bottom Bar Background Blur Overlay (matching top bar!)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: totalBottomBlurHeight,
+                    child: ClipRect(
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ShaderMask(
+                              blendMode: BlendMode.dstIn,
+                              shaderCallback: (Rect bounds) {
+                                return const LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Color(0xFFFFFFFF),
+                                    Color(0x99FFFFFF),
+                                    Color(0x00FFFFFF),
+                                  ],
+                                  stops: [0.0, 0.60, 1.0],
+                                ).createShader(bounds);
+                              },
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                    sigmaX: 16.0, sigmaY: 16.0),
+                                child: const ColoredBox(color: Colors.black),
+                              ),
+                            ),
                           ),
-                        ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    AppColors.surfaceBackground
+                                        .withValues(alpha: 0.51),
+                                    AppColors.surfaceBackground
+                                        .withValues(alpha: 0.21),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.60, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
 
-            // Floating Pill Toolbar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: bottomPadding + 8,
-              child: Center(
-                child: AuraFloatingBottomPill(
-                  currentIndex: currentIndex,
-                  onTap: (idx) => _onItemTapped(idx, context),
-                ),
+                  // Floating Pill Toolbar
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: bottomPadding + 8,
+                    child: Center(
+                      child: AuraFloatingBottomPill(
+                        currentIndex: mobileIndex,
+                        onTap: (idx) => _onMobileItemTapped(idx, context),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

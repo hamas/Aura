@@ -23,9 +23,44 @@ public final class AVPlayerManager: ObservableObject {
     @Published public var showHUD: Bool = true
     @Published public var isFullScreen: Bool = false
     
+    // Netflix Cinematic Player Extensions
+    @Published public var mediaIntervals: [MediaInterval] = []
+    @Published public var activeInterval: MediaInterval? = nil
+    @Published public var showNextEpisodeCountdown: Bool = false
+    @Published public var remainingCountdownSeconds: Int = 10
+    @Published public var showEpisodeDrawer: Bool = false
+    @Published public var showSubtitleModal: Bool = false
+    @Published public var subtitleConfig: SubtitleStyleConfig = .default
+    @Published public var seekRippleText: String? = nil
+    @Published public var playbackSpeed: Float = 1.0
+    @Published public var dialogueBoostEnabled: Bool = false
+    @Published public var availableSeasons: [SeasonItem] = []
+    @Published public var selectedSeason: SeasonItem? = nil
+    @Published public var isScreenLocked: Bool = false
+    @Published public var videoAspectRatioMode: VideoAspectMode = .fit
+    
+    public enum VideoAspectMode: String, CaseIterable {
+        case fit = "Original (16:9)"
+        case fill = "Fill Screen (Cropped)"
+        case stretch = "Stretch"
+    }
+    
+    public func cycleAspectRatioMode() {
+        switch videoAspectRatioMode {
+        case .fit: videoAspectRatioMode = .fill
+        case .fill: videoAspectRatioMode = .stretch
+        case .stretch: videoAspectRatioMode = .fit
+        }
+        triggerSeekFeedback(text: videoAspectRatioMode.rawValue)
+    }
+    
+    public var onNextEpisode: (() -> Void)? = nil
+    
     private var timeObserverToken: Any?
     private var cancellables = Set<AnyCancellable>()
     private var hudHideTask: Task<Void, Never>?
+    private var countdownTimerTask: Task<Void, Never>?
+    private var seekFeedbackTask: Task<Void, Never>?
     private var streamResolveTask: Task<Void, Never>?
     
     public init() {}
@@ -131,12 +166,78 @@ public final class AVPlayerManager: ObservableObject {
         seek(to: newTime)
     }
     
+    public func seekWithFeedback(delta: Double) {
+        seek(by: delta)
+        let sign = delta >= 0 ? "+" : ""
+        triggerSeekFeedback(text: "\(sign)\(Int(delta))s")
+    }
+    
+    public func triggerSeekFeedback(text: String) {
+        seekRippleText = text
+        seekFeedbackTask?.cancel()
+        seekFeedbackTask = Task {
+            try? await Task.sleep(nanoseconds: 800_000_000)
+            if !Task.isCancelled {
+                seekRippleText = nil
+            }
+        }
+    }
+    
     public func seek(to seconds: Double) {
         print("▶️ [PLAYER] Seeking to \(seconds)s...")
         let time = CMTime(seconds: seconds, preferredTimescale: 600)
         player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
             Task { @MainActor in
                 self?.resetHUDTimer()
+            }
+        }
+    }
+    
+    public func skipCurrentInterval() {
+        guard let interval = activeInterval else { return }
+        print("⚡️ [SMART_SKIP] Skipping \(interval.type.label) to \(interval.endSeconds)s")
+        seek(to: interval.endSeconds + 0.5)
+        activeInterval = nil
+    }
+    
+    public func setPlaybackSpeed(_ speed: Float) {
+        self.playbackSpeed = speed
+        if isPlaying {
+            player?.rate = speed
+        }
+    }
+    
+    public func toggleDialogueBoost() {
+        dialogueBoostEnabled.toggle()
+        print("🎙️ [AUDIO] Dialogue Boost vocal EQ toggled: \(dialogueBoostEnabled)")
+    }
+    
+    public func triggerNextEpisode() {
+        countdownTimerTask?.cancel()
+        showNextEpisodeCountdown = false
+        onNextEpisode?()
+    }
+    
+    public func dismissNextEpisodeCountdown() {
+        countdownTimerTask?.cancel()
+        showNextEpisodeCountdown = false
+    }
+    
+    public func startNextEpisodeCountdown() {
+        guard !showNextEpisodeCountdown, onNextEpisode != nil else { return }
+        showNextEpisodeCountdown = true
+        remainingCountdownSeconds = 10
+        
+        countdownTimerTask?.cancel()
+        countdownTimerTask = Task {
+            for _ in 0..<10 {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if Task.isCancelled { return }
+                remainingCountdownSeconds -= 1
+                if remainingCountdownSeconds <= 0 {
+                    triggerNextEpisode()
+                    return
+                }
             }
         }
     }
@@ -182,11 +283,29 @@ public final class AVPlayerManager: ObservableObject {
     private func setupObservers() {
         guard let player = player else { return }
         
-        // Periodic time observer for UI scrubber
+        // Periodic time observer for UI scrubber & interval marker check
         let interval = CMTime(seconds: 0.2, preferredTimescale: 600)
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             Task { @MainActor in
-                self?.currentTime = time.seconds
+                guard let self = self else { return }
+                let currentSec = time.seconds
+                self.currentTime = currentSec
+                
+                // Evaluate Smart Skip Intervals (Intro / Recap)
+                if let matched = self.mediaIntervals.first(where: { $0.contains(position: currentSec) }) {
+                    if self.activeInterval?.id != matched.id {
+                        self.activeInterval = matched
+                    }
+                } else {
+                    if self.activeInterval != nil {
+                        self.activeInterval = nil
+                    }
+                }
+                
+                // Evaluate Binge Next Episode auto-countdown (last 25 seconds)
+                if self.duration > 60 && (self.duration - currentSec) <= 25.0 && !self.showNextEpisodeCountdown {
+                    self.startNextEpisodeCountdown()
+                }
             }
         }
         

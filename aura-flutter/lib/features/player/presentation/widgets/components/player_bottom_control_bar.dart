@@ -14,6 +14,7 @@ class PlayerBottomControlBar extends StatelessWidget {
   final VoidCallback onUserInteraction;
   final VoidCallback? onToggleFullscreen;
   final VoidCallback? onNextEpisode;
+  final VoidCallback? onOpenEpisodeDrawer;
 
   const PlayerBottomControlBar({
     super.key,
@@ -22,6 +23,7 @@ class PlayerBottomControlBar extends StatelessWidget {
     required this.onUserInteraction,
     this.onToggleFullscreen,
     this.onNextEpisode,
+    this.onOpenEpisodeDrawer,
   });
 
   @override
@@ -101,6 +103,24 @@ class PlayerBottomControlBar extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
+                // Netflix style In-Player Episode drawer button
+                if (onOpenEpisodeDrawer != null)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    ),
+                    icon: const Icon(Icons.video_library_outlined, size: 18, color: Colors.white),
+                    label: const Text(
+                      'Episodes',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: onOpenEpisodeDrawer,
+                  ),
                 // Next episode button if series
                 if (onNextEpisode != null)
                   IconButton(

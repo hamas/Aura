@@ -43,39 +43,60 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Left Double-Tap Seek Animation Ripple (YouTube style circular badge + ripple)
+        // Left Double-Tap Seek Animation Ripple (Netflix style curved ripple + chevron wave)
         if (showLeftSeekRipple)
           Positioned(
             left: 0,
             top: 0,
             bottom: 0,
-            width: size.width * 0.42,
+            width: size.width * 0.45,
             child: ClipRRect(
-              borderRadius: const BorderRadius.horizontal(right: Radius.circular(100)),
+              borderRadius: const BorderRadius.horizontal(right: Radius.elliptical(220, 400)),
               child: Container(
-                color: Colors.white.withAlpha(25),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.accentPink.withValues(alpha: 0.22),
+                      Colors.white.withValues(alpha: 0.04),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.all(AppTokens.spacingMd),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(140),
-                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: AppColors.accentPink.withValues(alpha: 0.4),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accentPink.withValues(alpha: 0.2),
+                          blurRadius: 16,
+                        ),
+                      ],
                     ),
-                    child: Column(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const AuraIcon(
-                          AppIcons.replay10,
-                          color: Colors.white,
-                          size: 36,
+                        const Icon(
+                          Icons.fast_rewind_rounded,
+                          color: AppColors.accentPink,
+                          size: 28,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(width: 8),
                         Text(
-                          '-${leftSeekSeconds}s',
-                          style: context.auraText.caption.copyWith(
+                          '${leftSeekSeconds}s',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
@@ -86,40 +107,61 @@ class PlayerGestureFeedbackOverlay extends StatelessWidget {
             ),
           ),
 
-        // Right Double-Tap Seek Animation Ripple (YouTube style circular badge + ripple)
+        // Right Double-Tap Seek Animation Ripple (Netflix style curved ripple + chevron wave)
         if (showRightSeekRipple)
           Positioned(
             right: 0,
             top: 0,
             bottom: 0,
-            width: size.width * 0.42,
+            width: size.width * 0.45,
             child: ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(100)),
+              borderRadius: const BorderRadius.horizontal(left: Radius.elliptical(220, 400)),
               child: Container(
-                color: Colors.white.withAlpha(25),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.white.withValues(alpha: 0.04),
+                      AppColors.accentPink.withValues(alpha: 0.22),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.all(AppTokens.spacingMd),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(140),
-                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: AppColors.accentPink.withValues(alpha: 0.4),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accentPink.withValues(alpha: 0.2),
+                          blurRadius: 16,
+                        ),
+                      ],
                     ),
-                    child: Column(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const AuraIcon(
-                          AppIcons.forward10,
-                          color: Colors.white,
-                          size: 36,
-                        ),
-                        const SizedBox(height: 4),
                         Text(
-                          '+${rightSeekSeconds}s',
-                          style: context.auraText.caption.copyWith(
+                          '${rightSeekSeconds}s',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.fast_forward_rounded,
+                          color: AppColors.accentPink,
+                          size: 28,
                         ),
                       ],
                     ),

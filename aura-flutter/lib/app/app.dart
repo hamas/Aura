@@ -15,7 +15,10 @@ import '../features/clips/data/repositories/clips_repository_impl.dart';
 import '../features/clips/domain/repositories/clips_repository.dart';
 import '../features/clips/presentation/bloc/clips_bloc.dart';
 import '../features/downloads/data/repositories/download_repository_impl.dart';
+import '../features/downloads/data/repositories/smart_download_settings_repository_impl.dart';
 import '../features/downloads/domain/repositories/download_repository.dart';
+import '../features/downloads/domain/repositories/smart_download_settings_repository.dart';
+import '../features/downloads/domain/services/smart_download_manager.dart';
 import '../features/downloads/presentation/bloc/downloads_bloc.dart';
 import '../features/downloads/presentation/bloc/downloads_event.dart';
 import '../features/library/data/repositories/library_repository_impl.dart';
@@ -42,6 +45,12 @@ class AuraApp extends StatelessWidget {
     final ClipsRepository clipsRepository =
         ClipsRepositoryImpl(catalogRepository: catalogRepository);
     final DownloadRepository downloadRepository = DownloadRepositoryImpl();
+    final SmartDownloadSettingsRepository smartDownloadSettingsRepository =
+        SmartDownloadSettingsRepositoryImpl(prefs: prefs);
+    final SmartDownloadManager smartDownloadManager = SmartDownloadManager(
+      downloadRepository: downloadRepository,
+      settingsRepository: smartDownloadSettingsRepository,
+    );
 
     return MultiRepositoryProvider(
       providers: [
@@ -51,6 +60,10 @@ class AuraApp extends StatelessWidget {
         RepositoryProvider<LibraryRepository>.value(value: libraryRepository),
         RepositoryProvider<ClipsRepository>.value(value: clipsRepository),
         RepositoryProvider<DownloadRepository>.value(value: downloadRepository),
+        RepositoryProvider<SmartDownloadSettingsRepository>.value(
+            value: smartDownloadSettingsRepository),
+        RepositoryProvider<SmartDownloadManager>.value(
+            value: smartDownloadManager),
       ],
       child: MultiBlocProvider(
         providers: [

@@ -22,6 +22,33 @@ public struct MediaItem: Identifiable, Hashable, Codable {
     public let genres: [String]
     public let isHDR: Bool
     public let is4K: Bool
+    public let voteAverage: Double?
+    public let certification: String
+    public let isSeries: Bool
+    
+    public var matchScore: String {
+        let avg = voteAverage ?? 8.5
+        let percentage = min(99, max(65, Int(avg * 10) + 12))
+        return "\(percentage)% Match"
+    }
+    
+    public var highDefPosterURL: URL? {
+        if let original = posterURL?.absoluteString {
+            return URL(string: original.replacingOccurrences(of: "/w500/", with: "/w780/")) ?? posterURL
+        }
+        return posterURL
+    }
+    
+    public var highDefBackdropURL: URL? {
+        if let original = backdropURL?.absoluteString {
+            return URL(string: original.replacingOccurrences(of: "/w1280/", with: "/original/")) ?? backdropURL
+        }
+        return backdropURL
+    }
+    
+    public var clearartURL: URL? {
+        return logoURL
+    }
     
     public init(
         id: String,
@@ -37,7 +64,10 @@ public struct MediaItem: Identifiable, Hashable, Codable {
         releaseYear: String,
         genres: [String],
         isHDR: Bool = true,
-        is4K: Bool = true
+        is4K: Bool = true,
+        voteAverage: Double? = nil,
+        certification: String = "PG-13",
+        isSeries: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -53,6 +83,9 @@ public struct MediaItem: Identifiable, Hashable, Codable {
         self.genres = genres
         self.isHDR = isHDR
         self.is4K = is4K
+        self.voteAverage = voteAverage
+        self.certification = certification
+        self.isSeries = isSeries
     }
 }
 

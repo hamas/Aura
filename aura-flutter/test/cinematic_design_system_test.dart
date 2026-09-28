@@ -3,9 +3,35 @@ import 'package:aura/core/theme/aura_theme.dart';
 import 'package:aura/features/catalog/domain/entities/media_item.dart';
 import 'package:aura/features/catalog/presentation/widgets/widgets.dart';
 import 'package:aura/features/library/domain/entities/library_item.dart';
+import 'package:aura/features/library/domain/repositories/library_repository.dart';
+import 'package:aura/features/library/presentation/bloc/library_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+class _FakeLibraryRepository implements LibraryRepository {
+  @override
+  Future<List<LibraryItem>> getLibraryItems({LibraryCategory? category}) async => [];
+  @override
+  Future<void> saveLibraryItem(LibraryItem item) async {}
+  @override
+  Future<void> removeItem(String mediaId) async {}
+  @override
+  Future<void> syncWithCloud() async {}
+  @override
+  Future<void> updateWatchProgress({
+    required String mediaId,
+    required String title,
+    required String? posterPath,
+    required String? backdropPath,
+    required String type,
+    required int positionSeconds,
+    required int durationSeconds,
+    int? seasonNumber,
+    int? episodeNumber,
+  }) async {}
+}
 
 void main() {
   setUpAll(() {
@@ -69,33 +95,27 @@ void main() {
       updatedAt: DateTime(2026, 1, 1),
     );
 
+    Widget createTestApp(Widget child) {
+      return BlocProvider<LibraryBloc>(
+        create: (_) => LibraryBloc(libraryRepository: _FakeLibraryRepository()),
+        child: MaterialApp(
+          theme: AuraTheme.darkTheme,
+          home: Scaffold(body: child),
+        ),
+      );
+    }
+
     testWidgets('MediaPosterCard renders poster image with 2:3 ratio', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AuraTheme.darkTheme,
-          home: const Scaffold(
-            body: MediaPosterCard(item: testMedia),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestApp(const MediaPosterCard(item: testMedia)));
       expect(find.byType(MediaPosterCard), findsOneWidget);
     });
 
     testWidgets('ContinueWatchingCard renders progress and title', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AuraTheme.darkTheme,
-          home: Scaffold(
-            body: ContinueWatchingCard(item: testLibraryItem),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestApp(ContinueWatchingCard(item: testLibraryItem)));
       expect(find.text('Stranger Things'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
@@ -104,13 +124,10 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AuraTheme.darkTheme,
-          home: const Scaffold(
-            body: BillboardHeroBanner(
-              items: [testMedia],
-              autoScroll: false,
-            ),
+        createTestApp(
+          const BillboardHeroBanner(
+            items: [testMedia],
+            autoScroll: false,
           ),
         ),
       );
@@ -123,14 +140,11 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AuraTheme.darkTheme,
-          home: Scaffold(
-            body: HorizontalContentShelf.media(
-              title: 'Trending Now',
-              subtitle: 'Top worldwide cinema',
-              items: const [testMedia],
-            ),
+        createTestApp(
+          HorizontalContentShelf.media(
+            title: 'Trending Now',
+            subtitle: 'Top worldwide cinema',
+            items: const [testMedia],
           ),
         ),
       );

@@ -7,6 +7,7 @@ import '../../domain/entities/player_state.dart';
 import '../../domain/entities/stream_track.dart';
 import 'components/player_bottom_control_bar.dart';
 import 'components/player_gesture_feedback_overlay.dart';
+import 'components/player_lock_overlay.dart';
 import 'components/player_top_control_bar.dart';
 import 'components/player_track_pickers.dart';
 import 'skip_interval_pill.dart';
@@ -27,6 +28,8 @@ class PlayerControlsOverlay extends StatefulWidget {
   final VoidCallback? onToggleAuraGlow;
   final VoidCallback? onSkipInterval;
   final VoidCallback? onNextEpisode;
+  final VoidCallback? onOpenEpisodeDrawer;
+  final VoidCallback? onOpenSubtitleAppearance;
   final VoidCallback? onWatchTogether;
   final VoidCallback? onRetryStream;
   final VoidCallback onBack;
@@ -48,6 +51,8 @@ class PlayerControlsOverlay extends StatefulWidget {
     this.onToggleAuraGlow,
     this.onSkipInterval,
     this.onNextEpisode,
+    this.onOpenEpisodeDrawer,
+    this.onOpenSubtitleAppearance,
     this.onWatchTogether,
     this.onRetryStream,
     required this.onBack,
@@ -86,6 +91,9 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   String? _zoomToastMessage;
   Timer? _zoomToastTimer;
 
+  // Lock state
+  bool _isLocked = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +103,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
 
   void _startHideTimer() {
     _hideTimer?.cancel();
-    if (widget.state.isPlaying) {
+    if (widget.state.isPlaying && !_isLocked) {
       _hideTimer = Timer(const Duration(milliseconds: 3500), () {
         if (mounted) {
           setState(() => _isVisible = false);
@@ -105,6 +113,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   }
 
   void _toggleVisibility() {
+    if (_isLocked) return;
     setState(() {
       _isVisible = !_isVisible;
     });
@@ -119,6 +128,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   int _rightSeekAmount = 0;
 
   void _handleDoubleTapLeft() {
+    if (_isLocked) return;
     _leftSeekAmount += 10;
     final target = widget.state.position - const Duration(seconds: 10);
     widget.onSeek(target < Duration.zero ? Duration.zero : target);
@@ -138,6 +148,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   }
 
   void _handleDoubleTapRight() {
+    if (_isLocked) return;
     _rightSeekAmount += 10;
     final target = widget.state.position + const Duration(seconds: 10);
     widget.onSeek(
@@ -160,6 +171,7 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
   void _onScaleStart(ScaleStartDetails details) {}
 
   void _onScaleUpdate(ScaleUpdateDetails details, double screenWidth, double screenHeight) {
+    if (_isLocked) return;
     if (details.pointerCount == 2) {
       // Pinch to zoom gesture detected
       final scale = details.scale;
@@ -259,25 +271,27 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
         ),
 
         // Visual Feedback for Gestures (Seek ripples, Volume/Brightness HUDs, Zoom toast, Scrub preview)
-        PlayerGestureFeedbackOverlay(
-          showLeftSeekRipple: _showLeftSeekRipple,
-          showRightSeekRipple: _showRightSeekRipple,
-          leftSeekSeconds: _leftSeekAmount > 0 ? _leftSeekAmount : 10,
-          rightSeekSeconds: _rightSeekAmount > 0 ? _rightSeekAmount : 10,
-          showBrightnessHud: _showBrightnessHud,
-          currentBrightness: _currentBrightness,
-          showVolumeHud: _showVolumeHud,
-          currentVolume: _currentVolume,
-          isScrubbing: _isScrubbing,
-          scrubOffset: _scrubOffset,
-          scrubTarget: _scrubTarget,
-          zoomToastMessage: _zoomToastMessage,
-          size: size,
-          formatDuration: Formatters.formatDuration,
-        ),
+        if (!_isLocked)
+          PlayerGestureFeedbackOverlay(
+            showLeftSeekRipple: _showLeftSeekRipple,
+            showRightSeekRipple: _showRightSeekRipple,
+            leftSeekSeconds: _leftSeekAmount > 0 ? _leftSeekAmount : 10,
+            rightSeekSeconds: _rightSeekAmount > 0 ? _rightSeekAmount : 10,
+            showBrightnessHud: _showBrightnessHud,
+            currentBrightness: _currentBrightness,
+            showVolumeHud: _showVolumeHud,
+            currentVolume: _currentVolume,
+            isScrubbing: _isScrubbing,
+            scrubOffset: _scrubOffset,
+            scrubTarget: _scrubTarget,
+            zoomToastMessage: _zoomToastMessage,
+            size: size,
+            formatDuration: Formatters.formatDuration,
+          ),
 
         // Smart Skip Interval Animated Pill Overlay (Bottom Right)
-        if (widget.state.activeInterval != null &&
+        if (!_isLocked &&
+            widget.state.activeInterval != null &&
             (widget.state.activeInterval!.type == MediaIntervalType.intro ||
                 widget.state.activeInterval!.type == MediaIntervalType.recap))
           Positioned(
@@ -290,7 +304,8 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
 
         // Next Episode Auto-Trigger Countdown Overlay (Bottom Right during Credits)
-        if (widget.state.activeInterval != null &&
+        if (!_isLocked &&
+            widget.state.activeInterval != null &&
             widget.state.activeInterval!.type == MediaIntervalType.credits &&
             widget.onNextEpisode != null)
           Positioned(
@@ -303,96 +318,116 @@ class _PlayerControlsOverlayState extends State<PlayerControlsOverlay>
           ),
 
         // Top, Center & Bottom Overlay Controls (YouTube style fade on inactivity)
-        AnimatedOpacity(
-          opacity: _isVisible ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 250),
-          child: IgnorePointer(
-            ignoring: !_isVisible,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withAlpha(200),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withAlpha(220),
-                  ],
-                  stops: const [0.0, 0.25, 0.65, 1.0],
+        if (!_isLocked)
+          AnimatedOpacity(
+            opacity: _isVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: IgnorePointer(
+              ignoring: !_isVisible,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withAlpha(200),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withAlpha(220),
+                    ],
+                    stops: const [0.0, 0.25, 0.65, 1.0],
+                  ),
                 ),
-              ),
-              child: SafeArea(
-                child: Stack(
-                  children: [
-                    // Top Controls (Back, Title, Subtitle, AspectRatio, Speed, Tracks)
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: PlayerTopControlBar(
-                        state: widget.state,
-                        onBack: widget.onBack,
-                        onWatchTogether: widget.onWatchTogether,
-                        onPictureInPicture: widget.onPictureInPicture,
-                        onAspectRatioChange: widget.onAspectRatioChange,
-                        onSpeedChange: widget.onSpeedChange,
-                        onToggleAuraGlow: widget.onToggleAuraGlow,
-                        onShowSubtitlePicker: () =>
-                            PlayerTrackPickers.showSubtitlePicker(
-                          context: context,
+                child: SafeArea(
+                  child: Stack(
+                    children: [
+                      // Top Controls (Back, Title, Subtitle, AspectRatio, Speed, Tracks)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: PlayerTopControlBar(
                           state: widget.state,
-                          onSelectSubtitleTrack: widget.onSelectSubtitleTrack,
-                          onSelectSecondarySubtitleTrack:
-                              widget.onSelectSecondarySubtitleTrack,
-                          onSubtitleOffsetChanged:
-                              widget.onSubtitleOffsetChanged,
-                          onNudgeSubtitleOffset: widget.onNudgeSubtitleOffset,
+                          onBack: widget.onBack,
+                          onWatchTogether: widget.onWatchTogether,
+                          onPictureInPicture: widget.onPictureInPicture,
+                          onAspectRatioChange: widget.onAspectRatioChange,
+                          onSpeedChange: widget.onSpeedChange,
+                          onToggleAuraGlow: widget.onToggleAuraGlow,
+                          onShowSubtitlePicker: () =>
+                              PlayerTrackPickers.showSubtitlePicker(
+                            context: context,
+                            state: widget.state,
+                            onSelectSubtitleTrack: widget.onSelectSubtitleTrack,
+                            onSelectSecondarySubtitleTrack:
+                                widget.onSelectSecondarySubtitleTrack,
+                            onSubtitleOffsetChanged:
+                                widget.onSubtitleOffsetChanged,
+                            onNudgeSubtitleOffset: widget.onNudgeSubtitleOffset,
+                            onOpenSubtitleAppearance:
+                                widget.onOpenSubtitleAppearance,
+                          ),
+                          onShowAudioPicker: () =>
+                              PlayerTrackPickers.showAudioPicker(
+                            context: context,
+                            state: widget.state,
+                            onSelectAudioTrack: widget.onSelectAudioTrack,
+                          ),
                         ),
-                        onShowAudioPicker: () =>
-                            PlayerTrackPickers.showAudioPicker(
-                          context: context,
+                      ),
+
+                      // Center Controls (Play, Pause, Buffering with 20s timeout & retry)
+                      Align(
+                        alignment: Alignment.center,
+                        child: PlayerCenterControls(
                           state: widget.state,
-                          onSelectAudioTrack: widget.onSelectAudioTrack,
+                          onPlayPause: widget.onPlayPause,
+                          onSeek: widget.onSeek,
+                          onUserInteraction: _startHideTimer,
+                          onRetry: widget.onRetryStream,
                         ),
                       ),
-                    ),
 
-                    // Center Controls (Play, Pause, Buffering with 20s timeout & retry)
-                    Align(
-                      alignment: Alignment.center,
-                      child: PlayerCenterControls(
-                        state: widget.state,
-                        onPlayPause: widget.onPlayPause,
-                        onSeek: widget.onSeek,
-                        onUserInteraction: _startHideTimer,
-                        onRetry: widget.onRetryStream,
+                      // Bottom Controls (Timecode, YouTube Red/Accent Scrubber, Fullscreen, Episodes)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: PlayerBottomControlBar(
+                          state: widget.state,
+                          onSeek: widget.onSeek,
+                          onUserInteraction: _startHideTimer,
+                          onNextEpisode: widget.onNextEpisode,
+                          onOpenEpisodeDrawer: widget.onOpenEpisodeDrawer,
+                          onToggleFullscreen: () {
+                            // Toggle aspect ratio / fill as fullscreen shortcut
+                            final nextFit = widget.state.fit == BoxFit.contain
+                                ? BoxFit.cover
+                                : BoxFit.contain;
+                            widget.onAspectRatioChange(nextFit);
+                            _showZoomToast(nextFit == BoxFit.cover
+                                ? 'Zoomed to fill'
+                                : 'Original aspect ratio');
+                          },
+                        ),
                       ),
-                    ),
-
-                    // Bottom Controls (Timecode, YouTube Red/Accent Scrubber, Fullscreen)
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: PlayerBottomControlBar(
-                        state: widget.state,
-                        onSeek: widget.onSeek,
-                        onUserInteraction: _startHideTimer,
-                        onNextEpisode: widget.onNextEpisode,
-                        onToggleFullscreen: () {
-                          // Toggle aspect ratio / fill as fullscreen shortcut
-                          final nextFit = widget.state.fit == BoxFit.contain
-                              ? BoxFit.cover
-                              : BoxFit.contain;
-                          widget.onAspectRatioChange(nextFit);
-                          _showZoomToast(nextFit == BoxFit.cover
-                              ? 'Zoomed to fill'
-                              : 'Original aspect ratio');
-                        },
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+
+        // Screen Touch Lock / Unlock Overlay
+        PlayerLockOverlay(
+          isLocked: _isLocked,
+          onToggleLock: () {
+            setState(() {
+              _isLocked = !_isLocked;
+              if (!_isLocked) {
+                _isVisible = true;
+                _startHideTimer();
+              } else {
+                _isVisible = false;
+              }
+            });
+          },
         ),
       ],
     );

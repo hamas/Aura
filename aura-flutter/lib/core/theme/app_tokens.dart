@@ -11,6 +11,8 @@ class AppTokens {
   // Standard Dimension Defaults
   static const double posterWidthMobile = 118.0;
   static const double posterHeightMobile = 177.0; // 118 * 1.5 (2:3)
+  static const double posterWidthDesktop = 180.0;
+  static const double posterHeightDesktop = 270.0; // 180 * 1.5 (2:3)
 
   static const double continueWatchingWidth = 220.0;
   static const double continueWatchingHeight = 124.0; // ~16:9

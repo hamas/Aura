@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_icons.dart';
 import '../../../../../core/theme/app_tokens.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../bloc/downloads_state.dart';
+import 'smart_downloads_settings_modal.dart';
 
 class DownloadsStorageBanner extends StatelessWidget {
   final DownloadsState state;
@@ -153,40 +154,43 @@ class DownloadsStorageBanner extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // Smart Downloads Status Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceElevated,
-            borderRadius: AppTokens.borderRadiusSmall,
-            border: Border.all(
-              color: AppColors.accentPink.withAlpha((0.3 * 255).round()),
-            ),
-          ),
-          child: Row(
-            children: [
-              const AuraIcon(
-                AppIcons.autoAwesome,
-                color: AppColors.accentPink,
-                size: 18,
+        // Smart Downloads Status Banner (Interactive)
+        InkWell(
+          borderRadius: AppTokens.borderRadiusSmall,
+          onTap: () => SmartDownloadsSettingsModal.show(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: AppTokens.borderRadiusSmall,
+              border: Border.all(
+                color: AppColors.accentPink.withAlpha((0.3 * 255).round()),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Auto-Delete Watched (>=80%) • Wi-Fi Only Mode Active',
-                  style: context.auraText.caption.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
+            ),
+            child: Row(
+              children: [
+                const AuraIcon(
+                  AppIcons.autoAwesome,
+                  color: AppColors.accentPink,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Smart Downloads • Auto-Delete & Next Episode Queue',
+                    style: context.auraText.caption.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              const AuraBadge(
-                label: 'AIR-GAP READY',
-                backgroundColor: Color(0x1EA0E1E5),
-                borderColor: AppColors.accentPink,
-                textColor: AppColors.accentPink,
-              ),
-            ],
+                const Icon(
+                  Icons.settings_outlined,
+                  color: AppColors.accentPink,
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
       ],
