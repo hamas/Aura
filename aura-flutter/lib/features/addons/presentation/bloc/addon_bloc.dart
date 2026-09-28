@@ -137,18 +137,29 @@ class AddonBloc extends HydratedBloc<AddonEvent, AddonState> {
 
   Future<void> _onFetchStreamsForMedia(
       FetchStreamsForMediaEvent event, Emitter<AddonState> emit) async {
-    emit(state.copyWith(isLoadingStreams: true, resolvedStreams: []));
+    emit(state.copyWith(
+      isLoadingStreams: true,
+      activeMediaId: event.id,
+      resolvedStreams: [],
+    ));
     try {
       final streams = await _addonRepository.getStreams(
         type: event.type,
         id: event.id,
       );
-      emit(state.copyWith(isLoadingStreams: false, resolvedStreams: streams));
+      if (state.activeMediaId == event.id) {
+        emit(state.copyWith(
+          isLoadingStreams: false,
+          resolvedStreams: streams,
+        ));
+      }
     } catch (e) {
-      emit(state.copyWith(
-        isLoadingStreams: false,
-        errorMessage: 'Failed to load streams: $e',
-      ));
+      if (state.activeMediaId == event.id) {
+        emit(state.copyWith(
+          isLoadingStreams: false,
+          errorMessage: 'Failed to load streams: $e',
+        ));
+      }
     }
   }
 }

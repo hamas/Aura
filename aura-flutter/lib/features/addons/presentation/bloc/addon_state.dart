@@ -9,6 +9,7 @@ class AddonState extends Equatable {
   final List<AddonManifest> installedAddons;
   final List<AddonStream> resolvedStreams;
   final bool isLoadingStreams;
+  final String? activeMediaId;
   final String? errorMessage;
   final String? successMessage;
 
@@ -17,6 +18,7 @@ class AddonState extends Equatable {
     this.installedAddons = const [],
     this.resolvedStreams = const [],
     this.isLoadingStreams = false,
+    this.activeMediaId,
     this.errorMessage,
     this.successMessage,
   });
@@ -26,6 +28,7 @@ class AddonState extends Equatable {
     List<AddonManifest>? installedAddons,
     List<AddonStream>? resolvedStreams,
     bool? isLoadingStreams,
+    String? activeMediaId,
     String? errorMessage,
     String? successMessage,
   }) {
@@ -34,6 +37,7 @@ class AddonState extends Equatable {
       installedAddons: installedAddons ?? this.installedAddons,
       resolvedStreams: resolvedStreams ?? this.resolvedStreams,
       isLoadingStreams: isLoadingStreams ?? this.isLoadingStreams,
+      activeMediaId: activeMediaId ?? this.activeMediaId,
       errorMessage: errorMessage,
       successMessage: successMessage,
     );
@@ -45,6 +49,7 @@ class AddonState extends Equatable {
         installedAddons,
         resolvedStreams,
         isLoadingStreams,
+        activeMediaId,
         errorMessage,
         successMessage,
       ];

@@ -54,7 +54,6 @@ aura-swift/*.xcodeproj/project.xcworkspace/xcuserdata/
 aura-swift/*.xcodeproj/xcuserdata/
 aura-swift/*.xcworkspace/xcuserdata/
 
-# ==========================================
 # IDEs & Developer Tooling
 # ==========================================
 .idea/
@@ -63,3 +62,9 @@ aura-swift/*.xcworkspace/xcuserdata/
 *~
 *.sublime-project
 *.sublime-workspace
+
+# ==========================================
+# Root Markdown Documentation & Analysis Files
+# ==========================================
+/*.md
+

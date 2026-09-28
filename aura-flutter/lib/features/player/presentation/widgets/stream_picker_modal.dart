@@ -69,8 +69,11 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
 
   @override
   Widget build(BuildContext context) {
+    final directStreams = widget.streams
+        .where((s) => (s.url ?? '').startsWith('http'))
+        .toList();
     final filteredStreams = _selectedTabIndex == 0
-        ? widget.streams.where((s) => (s.url ?? '').startsWith('http')).toList()
+        ? (directStreams.isNotEmpty ? directStreams : widget.streams)
         : widget.streams;
 
     return ClipRRect(
@@ -502,54 +505,6 @@ class _StreamPickerModalState extends State<StreamPickerModal> {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          if (!isDirect) {
-                            showDialog<void>(
-                              context: context,
-                              builder: (dialogCtx) => AlertDialog(
-                                backgroundColor: const Color(0xFF191A1E),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(color: AppTheme.warningAccent.withValues(alpha: 0.4)),
-                                ),
-                                title: const Row(
-                                  children: [
-                                    AuraIcon(AppIcons.warning, color: AppTheme.warningAccent, size: 22),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Direct Stream Gateway Required',
-                                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                content: const Text(
-                                  'Aura is a store-compliant media player and does not bundle a BitTorrent engine. To stream this title, configure an HTTPS debrid service (Real-Debrid, TorBox) in your add-on, or pick a direct stream.',
-                                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(dialogCtx).pop(),
-                                    child: const Text('Understood', style: TextStyle(color: Colors.white54)),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.primaryAccent,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.of(dialogCtx).pop();
-                                      Navigator.of(context).pop();
-                                      context.push('/addons');
-                                    },
-                                    child: const Text('Configure Add-ons'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            return;
-                          }
                           Navigator.of(context).pop();
                           widget.onStreamSelected(stream);
                         },

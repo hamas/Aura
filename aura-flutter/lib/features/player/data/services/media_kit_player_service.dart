@@ -20,15 +20,13 @@ class MediaKitPlayerService {
     player = Player(
       configuration: const PlayerConfiguration(
         bufferSize: 32 * 1024 * 1024, // 32MB buffer for high-bitrate 4K
-        logLevel: MPVLogLevel.warn,
+        logLevel: MPVLogLevel.debug,
       ),
     );
     controller = VideoController(
       player,
       configuration: const VideoControllerConfiguration(
         enableHardwareAcceleration: true,
-        androidAttachSurfaceAfterVideoParameters: true,
-        hwdec: 'auto-safe',
       ),
     );
 
@@ -46,11 +44,6 @@ class MediaKitPlayerService {
         );
         (platform as dynamic).setProperty('demuxer-max-bytes', '33554432'); // 32MB
         (platform as dynamic).setProperty('demuxer-max-back-bytes', '16777216'); // 16MB
-        (platform as dynamic).setProperty('network-timeout', '15');
-        (platform as dynamic).setProperty('http-header-fields', 'User-Agent: Mozilla/5.0');
-        (platform as dynamic).setProperty('reconnect', 'yes');
-        (platform as dynamic).setProperty('reconnect-delay-max', '5');
-        (platform as dynamic).setProperty('reconnect-streamed', 'yes');
         (platform as dynamic).setProperty('demuxer-readahead-secs', '25');
       }
     } catch (_) {}
@@ -70,6 +63,12 @@ class MediaKitPlayerService {
   }
 
   void _listenToPlayerEvents() {
+    _subscriptions.add(
+      player.stream.log.listen((log) {
+        debugPrint('MPV LOG [${log.level}]: [${log.prefix}] ${log.text}');
+      }),
+    );
+
     _subscriptions.add(
       player.stream.playing.listen((playing) {
         _emit(_currentState.copyWith(

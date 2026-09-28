@@ -82,6 +82,224 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
         );
   }
 
+  void _onQuickPlayPressed(
+    MediaItem item, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) async {
+    final effectiveSeason = item.type == MediaType.series
+        ? (seasonNumber ?? _selectedSeasonNumber)
+        : null;
+    final effectiveEpisode =
+        item.type == MediaType.series ? (episodeNumber ?? 1) : null;
+
+    final stremioId = item.getStremioId(
+      season: effectiveSeason,
+      episode: effectiveEpisode,
+    );
+
+    final addonBloc = context.read<AddonBloc>();
+    final installedAddons = addonBloc.state.installedAddons.where((a) => a.isEnabled).toList();
+
+    // 1. If zero add-ons, launch sample stream directly
+    if (installedAddons.isEmpty) {
+      const sampleStream = AddonStream(
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        name: '⚡ Demo Free HD Stream 1080p',
+        title: '⚡ Demo Free HD Stream (Instant 1-Tap Playback)',
+        addonName: 'Free Community Engine',
+      );
+      _playStreamDirectly(
+        sampleStream,
+        item,
+        seasonNumber: effectiveSeason,
+        episodeNumber: effectiveEpisode,
+        episodeTitle: episodeTitle,
+      );
+      return;
+    }
+
+    setState(() => _isResolvingStream = true);
+
+    // 2. Fetch streams if not already loaded for active title
+    List<AddonStream> streams = addonBloc.state.resolvedStreams;
+    final bool isSameMediaLoaded =
+        addonBloc.state.activeMediaId == stremioId && streams.isNotEmpty;
+
+    if (!isSameMediaLoaded) {
+      if (addonBloc.state.activeMediaId != stremioId ||
+          !addonBloc.state.isLoadingStreams) {
+        addonBloc.add(FetchStreamsForMediaEvent(
+          type: item.type == MediaType.movie ? 'movie' : 'series',
+          id: stremioId,
+        ));
+      }
+
+      // Wait until BLoC state finishes loading streams for target media or 6s timeout
+      try {
+        await addonBloc.stream
+            .firstWhere(
+              (s) => s.activeMediaId == stremioId && !s.isLoadingStreams,
+            )
+            .timeout(const Duration(seconds: 6));
+      } catch (_) {}
+
+      streams = addonBloc.state.resolvedStreams;
+    }
+
+    if (streams.isEmpty) {
+      if (mounted) {
+        setState(() => _isResolvingStream = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'No stream links found for this title. Please check your add-ons or network.'),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    // 3. Select optimal stream (Direct HTTPS stream > first resolved stream)
+    final targetStream = streams.firstWhere(
+      (s) =>
+          (s.url ?? '').startsWith('http://') ||
+          (s.url ?? '').startsWith('https://'),
+      orElse: () => streams.first,
+    );
+
+    _playStreamDirectly(
+      targetStream,
+      item,
+      seasonNumber: effectiveSeason,
+      episodeNumber: effectiveEpisode,
+      episodeTitle: episodeTitle,
+    );
+  }
+
+  void _playStreamDirectly(
+    AddonStream stream,
+    MediaItem item, {
+    int? seasonNumber,
+    int? episodeNumber,
+    String? episodeTitle,
+  }) async {
+    final String rawUrl = stream.url ?? '';
+
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      if (mounted) setState(() => _isResolvingStream = false);
+      if (!mounted) return;
+
+      context.read<LibraryBloc>().add(
+            UpdateProgressEvent(
+              mediaId: item.id.toString(),
+              title: item.title,
+              posterPath: item.posterPath,
+              backdropPath: item.backdropPath,
+              type: item.type.name,
+              positionSeconds: 1,
+              durationSeconds: (item.runtimeMinutes ?? 120) * 60,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+            ),
+          );
+
+      final subtitleText = (item.type == MediaType.series && seasonNumber != null)
+          ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
+          : (stream.name ?? stream.resolution);
+
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (navContext) => PlayerView(
+            args: {
+              'streamUrl': rawUrl,
+              'title': item.title,
+              'subtitle': subtitleText,
+              'headers': stream.headers,
+              'mediaId': item.id.toString(),
+              'posterPath': item.posterPath,
+              'backdropPath': item.backdropPath,
+              'type': item.type.name,
+              'seasonNumber': seasonNumber,
+              'episodeNumber': episodeNumber,
+            },
+            onBack: () => Navigator.of(navContext).pop(),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final engine = HttpDebridEngine();
+    try {
+      final rawTarget = stream.url ?? stream.infoHash ?? '';
+      final resolved = await engine.resolveStream(
+        rawUrlOrInfoHash: rawTarget,
+        extraParams: {
+          'title': stream.title ?? item.title,
+          'quality': stream.resolution,
+          'headers': stream.headers,
+          'fileIdx': stream.fileIdx,
+        },
+      );
+
+      if (mounted) setState(() => _isResolvingStream = false);
+      if (!mounted) return;
+
+      context.read<LibraryBloc>().add(
+            UpdateProgressEvent(
+              mediaId: item.id.toString(),
+              title: item.title,
+              posterPath: item.posterPath,
+              backdropPath: item.backdropPath,
+              type: item.type.name,
+              positionSeconds: 1,
+              durationSeconds: (item.runtimeMinutes ?? 120) * 60,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+            ),
+          );
+
+      final subtitleText = (item.type == MediaType.series && seasonNumber != null)
+          ? 'S$seasonNumber:E${episodeNumber ?? 1} • ${episodeTitle ?? ''}'
+          : (stream.name ?? stream.resolution);
+
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (navContext) => PlayerView(
+            args: {
+              'streamUrl': resolved.streamUrl,
+              'title': item.title,
+              'subtitle': subtitleText,
+              'headers': resolved.httpHeaders,
+              'mediaId': item.id.toString(),
+              'posterPath': item.posterPath,
+              'backdropPath': item.backdropPath,
+              'type': item.type.name,
+              'seasonNumber': seasonNumber,
+              'episodeNumber': episodeNumber,
+            },
+            onBack: () => Navigator.of(navContext).pop(),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isResolvingStream = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.redAccent,
+            content: Text('Failed to resolve stream: $e'),
+          ),
+        );
+      }
+    }
+  }
+
   void _openStreamPicker(
     BuildContext context,
     MediaItem item, {
@@ -131,7 +349,14 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
             return StreamPickerModal(
               streams: addonState.resolvedStreams,
               isLoading: addonState.isLoadingStreams,
-              onStreamSelected: (stream) => _onStreamSelected(parentContext, stream, item),
+              onStreamSelected: (stream) => _onStreamSelected(
+                parentContext,
+                stream,
+                item,
+                seasonNumber: effectiveSeason,
+                episodeNumber: effectiveEpisode,
+                episodeTitle: episodeTitle,
+              ),
             );
           },
         );
@@ -708,12 +933,14 @@ class _MediaDetailsScreenState extends State<MediaDetailsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 4. Centered Play / Trailer / Download Action Buttons
+                        // 4. Centered Play / Streams / Trailer / Download Action Buttons
                         Center(
                           child: DetailsActionButtons(
                             item: item,
                             isInWatchlist: isInWatchlist,
-                            onPlayPressed: () => _openStreamPicker(context, item),
+                            isResolving: _isResolvingStream,
+                            onPlayPressed: () => _onQuickPlayPressed(item),
+                            onStreamsPressed: () => _openStreamPicker(context, item),
                             onTrailerPressed: () {
                               if (item.trailerUrl != null &&
                                   item.trailerUrl!.isNotEmpty) {

@@ -73,6 +73,44 @@ class StremioAddonApi {
     }
   }
 
+  static final Map<String, String> _imdbResolutionCache = {};
+
+  /// Resolves tmdb:ID IDs into standardized tt... IMDb IDs using Cinemeta if needed
+  Future<String> resolveImdbIdIfNeeded(String type, String id) async {
+    if (!id.startsWith('tmdb:')) return id;
+    if (_imdbResolutionCache.containsKey(id)) {
+      return _imdbResolutionCache[id]!;
+    }
+
+    try {
+      final parts = id.split(':');
+      final tmdbId = parts[1];
+      final seasonEpisodeSuffix =
+          parts.length > 2 ? ':${parts.sublist(2).join(':')}' : '';
+
+      final cinemetaUrl =
+          'https://v3-cinemeta.strem.io/meta/$type/tmdb:$tmdbId.json';
+      final res = await _apiClient.get<Map<String, dynamic>>(
+        cinemetaUrl,
+        options: Options(
+          sendTimeout: const Duration(milliseconds: 2500),
+          receiveTimeout: const Duration(milliseconds: 2500),
+        ),
+      );
+
+      final meta = res.data?['meta'] as Map<String, dynamic>?;
+      final imdbId = meta?['imdb_id'] as String?;
+
+      if (imdbId != null && imdbId.startsWith('tt')) {
+        final resolved = '$imdbId$seasonEpisodeSuffix';
+        _imdbResolutionCache[id] = resolved;
+        return resolved;
+      }
+    } catch (_) {}
+
+    return id;
+  }
+
   /// Queries stream endpoint for an add-on: `{baseUrl}/stream/{type}/{id}.json`
   /// Standardized format:
   /// - Movies: `GET {addon_base_url}/stream/movie/{imdb_id}.json`
@@ -91,21 +129,24 @@ class StremioAddonApi {
       return [];
     }
 
+    // Auto-resolve tmdb:ID to tt... IMDb ID if needed so community add-ons get the correct target
+    final targetId = await resolveImdbIdIfNeeded(type, id);
+
     // Strip /manifest.json to obtain base transport URL
     final baseUrl =
         manifest.transportUrl.replaceAll(RegExp(r'/manifest\.json$'), '');
-    final streamUrl = '$baseUrl/stream/$type/$id.json';
+    final streamUrl = '$baseUrl/stream/$type/$targetId.json';
 
     try {
       final response = await _apiClient
           .get<Map<String, dynamic>>(
             streamUrl,
             options: Options(
-              sendTimeout: const Duration(milliseconds: 3500),
-              receiveTimeout: const Duration(milliseconds: 3500),
+              sendTimeout: const Duration(milliseconds: 4000),
+              receiveTimeout: const Duration(milliseconds: 4000),
             ),
           )
-          .timeout(const Duration(milliseconds: 3500));
+          .timeout(const Duration(milliseconds: 4000));
 
       final streamsRaw = response.data?['streams'] as List<dynamic>? ?? [];
       return streamsRaw
@@ -113,7 +154,7 @@ class StremioAddonApi {
           .map((json) => AddonStream.fromJson(json, addonName: manifest.name))
           .toList();
     } catch (_) {
-      // Individual add-on timeouts (3.5s) or errors fail gracefully
+      // Individual add-on timeouts (4.0s) or errors fail gracefully
       // without blocking other add-on stream aggregations
       return [];
     }
@@ -137,20 +178,21 @@ class StremioAddonApi {
       return [];
     }
 
+    final targetId = await resolveImdbIdIfNeeded(type, id);
     final baseUrl =
         manifest.transportUrl.replaceAll(RegExp(r'/manifest\.json$'), '');
-    final subtitleUrl = '$baseUrl/subtitles/$type/$id.json';
+    final subtitleUrl = '$baseUrl/subtitles/$type/$targetId.json';
 
     try {
       final response = await _apiClient
           .get<Map<String, dynamic>>(
             subtitleUrl,
             options: Options(
-              sendTimeout: const Duration(milliseconds: 3500),
-              receiveTimeout: const Duration(milliseconds: 3500),
+              sendTimeout: const Duration(milliseconds: 4000),
+              receiveTimeout: const Duration(milliseconds: 4000),
             ),
           )
-          .timeout(const Duration(milliseconds: 3500));
+          .timeout(const Duration(milliseconds: 4000));
 
       final subsRaw = response.data?['subtitles'] as List<dynamic>? ?? [];
       return subsRaw

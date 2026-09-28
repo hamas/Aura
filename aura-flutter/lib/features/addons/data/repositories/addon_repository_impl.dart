@@ -14,6 +14,7 @@ class AddonRepositoryImpl implements AddonRepository {
   static const String _keyInstalledAddons = 'aura_installed_addons_v1';
   static const List<String> defaultManifestUrls = [
     ApiConstants.defaultCinemetaUrl,
+    ApiConstants.defaultTorrentioUrl,
     'https://opensubtitles-v3.strem.io/manifest.json',
   ];
 
@@ -32,6 +33,19 @@ class AddonRepositoryImpl implements AddonRepository {
   Future<List<AddonManifest>> getInstalledAddons() async {
     final rawList = _prefs.getStringList(_keyInstalledAddons);
     if (rawList == null || rawList.isEmpty) {
+      final defaultAddons = <AddonManifest>[];
+      for (final url in defaultManifestUrls) {
+        try {
+          final manifest = await _addonApi.fetchManifest(url);
+          defaultAddons.add(manifest);
+        } catch (_) {}
+      }
+      if (defaultAddons.isNotEmpty) {
+        final rawJsonList =
+            defaultAddons.map((a) => jsonEncode(a.toJson())).toList();
+        await _prefs.setStringList(_keyInstalledAddons, rawJsonList);
+        return defaultAddons;
+      }
       return [];
     }
 
