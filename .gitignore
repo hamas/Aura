@@ -19,7 +19,7 @@ Thumbs.db
 *.pem
 
 # ==========================================
-# Flutter / Dart (aura-flutter)
+# Flutter / Dart (aura-flutter: Android, Windows, TV)
 # ==========================================
 aura-flutter/.dart_tool/
 aura-flutter/.flutter-plugins
@@ -34,13 +34,8 @@ aura-flutter/android/local.properties
 aura-flutter/android/captures/
 aura-flutter/android/gradle/
 aura-flutter/android/app/build/
-aura-flutter/ios/Pods/
-aura-flutter/ios/.symlinks/
-aura-flutter/ios/Flutter/Flutter.podspec
-aura-flutter/ios/Flutter/Generated.xcconfig
-aura-flutter/macos/Pods/
-aura-flutter/macos/.symlinks/
-aura-flutter/macos/Flutter/ephemeral/
+aura-flutter/windows/flutter/ephemeral/
+
 
 # ==========================================
 # Swift / Apple Platforms (aura-swift)
