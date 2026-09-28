@@ -50,12 +50,22 @@ public actor StreamResolverService {
     public func resolve(
         mediaItem: MediaItem,
         magnetURLOrHash: String?,
+        streamURL: URL? = nil,
         onStateChange: @Sendable @escaping (StreamState) -> Void
     ) async -> URL {
         print("⚡️ [RESOLVER] Initializing stream resolution for '\(mediaItem.title)' [ID: \(mediaItem.id)]")
-        onStateChange(.resolving(provider: "Debrid CDN"))
+        onStateChange(.resolving(provider: "Stremio & Debrid CDN"))
         
-        // 1. Tier 1: Check Debrid Fast-Path if magnet or torrent hash is provided
+        // 1. Check if streamURL is a direct high-speed web stream (and not a local proxy placeholder)
+        if let directURL = streamURL,
+           directURL.scheme == "http" || directURL.scheme == "https",
+           !directURL.absoluteString.contains("127.0.0.1:8888") {
+            print("✅ [RESOLVER] Direct High-Speed Web Stream Selected: \(directURL)")
+            onStateChange(.playing(url: directURL, isDebrid: true))
+            return directURL
+        }
+        
+        // 2. Tier 1: Check Debrid Fast-Path if magnet or torrent hash is provided
         if let magnet = magnetURLOrHash, !magnet.isEmpty {
             print("⚡️ [RESOLVER] Querying Debrid API for magnet/hash: \(magnet.prefix(30))...")
             if let directDebridURL = await tryResolveDebrid(magnet: magnet) {
@@ -63,28 +73,28 @@ public actor StreamResolverService {
                 onStateChange(.playing(url: directDebridURL, isDebrid: true))
                 return directDebridURL
             } else {
-                print("⚠️ [RESOLVER] Debrid uncached or key missing. Falling back to direct HTTP stream...")
+                print("⚠️ [RESOLVER] Debrid uncached or key missing. Routing to Local Torrent Proxy...")
             }
         }
         
-        // 2. Direct Web Stream Handoff
-        if mediaItem.streamURL.scheme == "http" || mediaItem.streamURL.scheme == "https" {
-            print("✅ [RESOLVER] Direct High-Speed Web Stream Selected: \(mediaItem.streamURL)")
-            onStateChange(.playing(url: mediaItem.streamURL, isDebrid: true))
-            return mediaItem.streamURL
+        // 3. Tier 2: Local P2P Torrent Proxy Engine
+        if let magnet = magnetURLOrHash, !magnet.isEmpty {
+            print("🔄 [RESOLVER] Routing to Tier 2 Embedded P2P Torrent Proxy...")
+            onStateChange(.connectingPeers(peersCount: 52))
+            
+            let localProxyURL = await LocalTorrentProxyEngine.shared.getOrStartProxyStream(
+                magnetURL: magnet
+            )
+            
+            print("✅ [RESOLVER] Local P2P Proxy Stream Active: \(localProxyURL)")
+            onStateChange(.playing(url: localProxyURL, isDebrid: false))
+            return localProxyURL
         }
         
-        // 3. Tier 2: Local P2P Torrent Proxy Engine
-        print("🔄 [RESOLVER] Routing to Tier 2 Embedded P2P Torrent Proxy...")
-        onStateChange(.connectingPeers(peersCount: 42))
-        
-        let localProxyURL = await LocalTorrentProxyEngine.shared.getOrStartProxyStream(
-            magnetURL: magnetURLOrHash ?? mediaItem.streamURL.absoluteString
-        )
-        
-        print("✅ [RESOLVER] Local P2P Proxy Stream Active: \(localProxyURL)")
-        onStateChange(.playing(url: localProxyURL, isDebrid: false))
-        return localProxyURL
+        // 4. Default fallback to provided URL
+        let fallback = streamURL ?? mediaItem.streamURL
+        onStateChange(.playing(url: fallback, isDebrid: true))
+        return fallback
     }
     
     private func tryResolveDebrid(magnet: String) async -> URL? {

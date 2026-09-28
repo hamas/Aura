@@ -311,12 +311,12 @@ public struct MediaDetailsView: View {
     private var actionButtonsRow: some View {
         HStack(spacing: 16) {
             Button(action: {
-                if let stream = selectedStream {
+                if let stream = selectedStream ?? streamOptions.first {
                     onPlayStream(stream)
                 }
             }) {
                 HStack(spacing: 10) {
-                    if isLoadingStreams {
+                    if isLoadingStreams && streamOptions.isEmpty {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .scaleEffect(0.8)
@@ -325,7 +325,7 @@ public struct MediaDetailsView: View {
                             .font(.system(size: 16, weight: .bold))
                     }
                     
-                    Text(isLoadingStreams ? "Fetching Streams..." : "Play \(selectedStream?.quality ?? "Stream")")
+                    Text((isLoadingStreams && streamOptions.isEmpty) ? "Fetching Streams..." : "Play \(selectedStream?.quality ?? streamOptions.first?.quality ?? "Stream")")
                         .font(.system(size: 15, weight: .bold))
                 }
                 .foregroundColor(.white)
@@ -342,7 +342,7 @@ public struct MediaDetailsView: View {
                 .shadow(color: Color.purple.opacity(0.4), radius: 10, x: 0, y: 4)
             }
             .buttonStyle(PlainButtonStyle())
-            .disabled(isLoadingStreams && selectedStream == nil)
+            .disabled(isLoadingStreams && streamOptions.isEmpty)
         }
     }
     

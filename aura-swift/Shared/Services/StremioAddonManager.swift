@@ -232,12 +232,18 @@ public final class StremioAddonManager: ObservableObject {
     public func fetchAggregatedStreams(type: String, id: String, imdbId: String?, title: String, year: String) async -> [StreamOption] {
         let activeStreamAddons = installedAddons.filter { $0.isInstalled && ($0.resources.contains("stream") || $0.resources.contains("streams")) }
         
-        guard !activeStreamAddons.isEmpty else {
+        var targetId = imdbId ?? id
+        if !targetId.starts(with: "tt") && !id.isEmpty {
+            if let resolved = await APIClient.shared.resolveImdbId(tmdbId: id, isMovie: type == "movie") {
+                targetId = resolved
+            }
+        }
+        
+        guard !targetId.isEmpty else {
             return generateFallbackStreams(title: title, year: year)
         }
         
-        let targetId = imdbId ?? id
-        guard !targetId.isEmpty else {
+        guard !activeStreamAddons.isEmpty else {
             return generateFallbackStreams(title: title, year: year)
         }
         

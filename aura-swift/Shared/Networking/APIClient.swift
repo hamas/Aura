@@ -218,6 +218,23 @@ public final class APIClient {
         }
     }
     
+    public func resolveImdbId(tmdbId: String, isMovie: Bool = true) async -> String? {
+        if tmdbId.starts(with: "tt") { return tmdbId }
+        let endpoint = isMovie ? "/movie/\(tmdbId)/external_ids" : "/tv/\(tmdbId)/external_ids"
+        guard let req = makeRequest(endpoint: endpoint) else { return nil }
+        do {
+            let (data, response) = try await session.data(for: req)
+            guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let imdb = json["imdb_id"] as? String, !imdb.isEmpty else {
+                return nil
+            }
+            return imdb
+        } catch {
+            return nil
+        }
+    }
+    
     // MARK: - Stremio Addons & Debrid Stream Aggregator
     
     public func fetchStreams(imdbId: String?, title: String, year: String, type: String = "movie") async -> [StreamOption] {

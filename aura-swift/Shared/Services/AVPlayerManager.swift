@@ -66,20 +66,32 @@ public final class AVPlayerManager: ObservableObject {
     public init() {}
     
     public func loadMedia(_ item: MediaItem, magnetURL: String? = nil) {
-        let defaultOption = item.streamOptions.first
-        loadStream(item: item, option: defaultOption ?? StreamOption(
-            id: "\(item.id)-default",
-            quality: "1080p HD",
-            resolution: "1920x1080",
-            codec: "H.264",
-            audio: "AAC 2.0",
-            size: "4.5 GB",
-            seeders: 95,
-            leechers: 8,
-            provider: "⚡️ Real-Debrid CDN",
-            streamURL: item.streamURL,
-            magnetURL: magnetURL
-        ))
+        stopAndReset()
+        self.currentItem = item
+        self.streamState = .resolving(provider: "Searching Active Stremio Streams...")
+        
+        streamResolveTask = Task {
+            let isMovie = !item.subtitle.lowercased().contains("series") && !item.subtitle.lowercased().contains("season")
+            let imdbId = await APIClient.shared.resolveImdbId(tmdbId: item.id, isMovie: isMovie)
+            
+            let streams = await StremioAddonManager.shared.fetchAggregatedStreams(
+                type: isMovie ? "movie" : "series",
+                id: item.id,
+                imdbId: imdbId,
+                title: item.title,
+                year: item.releaseYear
+            )
+            
+            guard !Task.isCancelled else { return }
+            
+            if let bestStream = streams.first {
+                self.loadStream(item: item, option: bestStream)
+            } else if let defaultOption = item.streamOptions.first {
+                self.loadStream(item: item, option: defaultOption)
+            } else {
+                self.streamState = .failed(error: "No active streams found for '\(item.title)'.")
+            }
+        }
     }
     
     public func loadStream(item: MediaItem, option: StreamOption) {
@@ -90,27 +102,21 @@ public final class AVPlayerManager: ObservableObject {
         self.currentItem = item
         self.streamState = .resolving(provider: option.provider)
         
-        setupPlayerWithURL(option.streamURL)
-        
-        if let magnet = option.magnetURL, !magnet.isEmpty {
-            streamResolveTask = Task {
-                let resolvedURL = await StreamResolverService.shared.resolve(
-                    mediaItem: item,
-                    magnetURLOrHash: magnet,
-                    onStateChange: { [weak self] state in
-                        Task { @MainActor in
-                            self?.streamState = state
-                        }
+        streamResolveTask = Task {
+            let resolvedURL = await StreamResolverService.shared.resolve(
+                mediaItem: item,
+                magnetURLOrHash: option.magnetURL,
+                streamURL: option.streamURL,
+                onStateChange: { [weak self] state in
+                    Task { @MainActor in
+                        self?.streamState = state
                     }
-                )
-                
-                if !Task.isCancelled && resolvedURL != option.streamURL {
-                    print("⚡️ [RESOLVER] Switching player to resolved stream: \(resolvedURL)")
-                    self.setupPlayerWithURL(resolvedURL)
                 }
-            }
-        } else {
-            self.streamState = .playing(url: option.streamURL, isDebrid: true)
+            )
+            
+            guard !Task.isCancelled else { return }
+            print("⚡️ [RESOLVER] Initializing player with resolved stream: \(resolvedURL)")
+            self.setupPlayerWithURL(resolvedURL)
         }
     }
     
